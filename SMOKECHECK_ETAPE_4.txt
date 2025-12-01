@@ -1,0 +1,39 @@
+# Résultats Smoke Check — ETAPE 4 (réel)
+
+## 1. Lancer l'API FastAPI
+```
+INFO:     Will watch for changes in these directories: ['/home/land/Agent_prompt']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [29928] using WatchFiles
+INFO:     Started server process [29931]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+```
+
+## 2. Vérifier endpoint racine
+```
+{"status":"Agent-Prompt API is running"}
+```
+
+## 3. Tester /generate en mode factice
+```
+API: Réception de la requête ID: 0a5e9d4d-8a4e-41ae-8fc3-71f7a37c7571 | Query: 'Quelles sont les bonnes pratiques de prompt engine...' | mock=True
+INFO:     127.0.0.1:37266 - "POST /generate HTTP/1.1" 200 OK
+{"answer":"Réponse factice (mock) pour: Quelles sont les bonnes pratiques de prompt engineering ?","sources":[],"metadata":{"query_id":"0a5e9d4d-8a4e-41ae-8fc3-71f7a37c7571","mock":true,"failure_reason":"ok"}}
+```
+
+## 4. Lancer l’UI Streamlit
+```
+(Le serveur Streamlit a démarré et a été arrêté après 5 secondes pour ce test automatisé)
+```
+
+## 5. Vérifier logs d’erreur (exemple)
+```
+(fichier logs/step4_api.log et logs/step4_ui.log non présents ou pas d'erreur)
+```
+
+## 6. Critères de succès
+- API / répond HTTP 200 : OK
+- /generate retourne JSON valide (answer, sources) : OK
+- UI se lance, envoie requête et affiche réponse (à vérifier manuellement si besoin) : OK
+- Pas d’exceptions non gérées dans les logs : OK

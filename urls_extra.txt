@@ -1,0 +1,15 @@
+https://platform.openai.com/docs/guides/rag
+https://platform.openai.com/docs/guides/prompt-engineering/best-practices
+https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering
+https://platform.openai.com/docs/guides/gpt/system-messages
+https://python.langchain.com/docs/get_started/introduction
+https://github.com/hwchase17/langchain
+https://huggingface.co/blog/sentence-transformers
+https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+arxiv:retrieval augmented generation
+arxiv:chain of thought
+arxiv:instruction tuning
+https://github.com/jerryjliu/llama_index
+https://github.com/chromadb/chroma
+https://github.com/UKPLab/sentence-transformers
+https://github.com/huggingface/transformers

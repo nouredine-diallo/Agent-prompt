@@ -1,0 +1,267 @@
+[2308.10792] Instruction Tuning for Large Language Models: A Survey
+Happy Open Access Week from arXiv!
+YOU make open access possible! Tell us why you support #openaccess and give to arXiv this week to help keep science open for all.
+Donate!
+Skip to main content
+We gratefully acknowledge support from the Simons Foundation,
+member institutions
+, and all contributors.
+Donate
+>
+cs
+>
+arXiv:2308.10792
+Help
+|
+Advanced Search
+All fields
+Title
+Author
+Abstract
+Comments
+Journal reference
+ACM classification
+MSC classification
+Report number
+arXiv identifier
+DOI
+ORCID
+arXiv author ID
+Help pages
+Full text
+Search
+open search
+GO
+open navigation menu
+quick links
+Login
+Help Pages
+About
+Computer Science > Computation and Language
+arXiv:2308.10792
+(cs)
+[Submitted on 21 Aug 2023 (
+v1
+), last revised 6 Oct 2025 (this version, v10)]
+Title:
+Instruction Tuning for Large Language Models: A Survey
+Authors:
+Shengyu Zhang
+,
+Linfeng Dong
+,
+Xiaoya Li
+,
+Sen Zhang
+,
+Xiaofei Sun
+,
+Shuhe Wang
+,
+Jiwei Li
+,
+Runyi Hu
+,
+Tianwei Zhang
+,
+Fei Wu
+,
+Guoyin Wang
+View a PDF of the paper titled Instruction Tuning for Large Language Models: A Survey, by Shengyu Zhang and 9 other authors
+View PDF
+HTML (experimental)
+Abstract:
+This paper surveys research works in the quickly advancing field of instruction tuning (IT), which can also be referred to as supervised fine-tuning (SFT)\footnote{In this paper, unless specified otherwise, supervised fine-tuning (SFT) and instruction tuning (IT) are used interchangeably.}, a crucial technique to enhance the capabilities and controllability of large language models (LLMs). Instruction tuning refers to the process of further training LLMs on a dataset consisting of \textsc{(instruction, output)} pairs in a supervised fashion, which bridges the gap between the next-word prediction objective of LLMs and the users' objective of having LLMs adhere to human instructions. In this work, we make a systematic review of the literature, including the general methodology of SFT, the construction of SFT datasets, the training of SFT models, and applications to different modalities, domains and application, along with analysis on aspects that influence the outcome of SFT (e.g., generation of instruction outputs, size of the instruction dataset, etc). We also review the potential pitfalls of SFT along with criticism against it, along with efforts pointing out current deficiencies of existing strategies and suggest some avenues for fruitful research. Project Page:
+this http URL
+Comments:
+V6; Last update: AUG 11, 2025
+Subjects:
+Computation and Language (cs.CL)
+; Artificial Intelligence (cs.AI); Machine Learning (cs.LG)
+Cite as:
+arXiv:2308.10792
+[cs.CL]
+(or
+arXiv:2308.10792v10
+[cs.CL]
+for this version)
+https://doi.org/10.48550/arXiv.2308.10792
+Focus to learn more
+arXiv-issued DOI via DataCite
+Submission history
+From: Jiwei Li [
+view email
+]
+[v1]
+Mon, 21 Aug 2023 15:35:16 UTC (5,073 KB)
+[v2]
+Thu, 21 Sep 2023 16:54:23 UTC (5,074 KB)
+[v3]
+Wed, 4 Oct 2023 15:00:38 UTC (4,851 KB)
+[v4]
+Mon, 9 Oct 2023 15:36:49 UTC (4,851 KB)
+[v5]
+Thu, 14 Mar 2024 02:28:22 UTC (5,622 KB)
+[v6]
+Wed, 16 Oct 2024 05:44:07 UTC (5,627 KB)
+[v7]
+Mon, 11 Nov 2024 09:25:48 UTC (5,628 KB)
+[v8]
+Sun, 1 Dec 2024 22:01:51 UTC (5,628 KB)
+[v9]
+Sun, 10 Aug 2025 23:54:10 UTC (5,865 KB)
+[v10]
+Mon, 6 Oct 2025 06:52:16 UTC (11,725 KB)
+Full-text links:
+Access Paper:
+View a PDF of the paper titled Instruction Tuning for Large Language Models: A Survey, by Shengyu Zhang and 9 other authors
+View PDF
+HTML (experimental)
+TeX Source
+view license
+Current browse context:
+cs.CL
+< prev
+|
+next >
+new
+|
+recent
+|
+2023-08
+Change to browse by:
+cs
+cs.AI
+cs.LG
+References & Citations
+NASA ADS
+Google Scholar
+Semantic Scholar
+2 blog links
+(
+what is this?
+)
+export BibTeX citation
+Loading...
+BibTeX formatted citation
+×
+loading...
+Data provided by:
+Bookmark
+Bibliographic Tools
+Bibliographic and Citation Tools
+Bibliographic Explorer Toggle
+Bibliographic Explorer
+(
+What is the Explorer?
+)
+Connected Papers Toggle
+Connected Papers
+(
+What is Connected Papers?
+)
+Litmaps Toggle
+Litmaps
+(
+What is Litmaps?
+)
+scite.ai Toggle
+scite Smart Citations
+(
+What are Smart Citations?
+)
+Code, Data, Media
+Code, Data and Media Associated with this Article
+alphaXiv Toggle
+alphaXiv
+(
+What is alphaXiv?
+)
+Links to Code Toggle
+CatalyzeX Code Finder for Papers
+(
+What is CatalyzeX?
+)
+DagsHub Toggle
+DagsHub
+(
+What is DagsHub?
+)
+GotitPub Toggle
+Gotit.pub
+(
+What is GotitPub?
+)
+Huggingface Toggle
+Hugging Face
+(
+What is Huggingface?
+)
+Links to Code Toggle
+Papers with Code
+(
+What is Papers with Code?
+)
+ScienceCast Toggle
+ScienceCast
+(
+What is ScienceCast?
+)
+Demos
+Demos
+Replicate Toggle
+Replicate
+(
+What is Replicate?
+)
+Spaces Toggle
+Hugging Face Spaces
+(
+What is Spaces?
+)
+Spaces Toggle
+TXYZ.AI
+(
+What is TXYZ.AI?
+)
+Related Papers
+Recommenders and Search Tools
+Link to Influence Flower
+Influence Flower
+(
+What are Influence Flowers?
+)
+Core recommender toggle
+CORE Recommender
+(
+What is CORE?
+)
+Author
+Venue
+Institution
+Topic
+About arXivLabs
+arXivLabs: experimental projects with community collaborators
+arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+Have an idea for a project that will add value for arXiv's community?
+Learn more about arXivLabs
+.
+Which authors of this paper are endorsers?
+|
+Disable MathJax
+(
+What is MathJax?
+)
+About
+Help
+contact arXiv
+Click here to contact arXiv
+Contact
+subscribe to arXiv mailings
+Click here to subscribe
+Subscribe
+Copyright
+Privacy Policy
+Web Accessibility Assistance
+arXiv Operational Status

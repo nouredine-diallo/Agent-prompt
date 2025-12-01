@@ -1,0 +1,465 @@
+AI-Enabled Digital Twins for Next-Generation
+Networks: Forecasting Traffic and Resource
+Management in 5G/6G
+John Sengendo Fabrizio Granelli
+Dept. of Information Engineering and Computer Science Dept. of Information Engineering and Computer Science
+University of Trento University of Trento
+Trento, ITALY Trento, ITALY
+Email: john.sengendo@unitn.it Email: fabrizio.granelli@unitn.it
+Abstract—As 5G and future 6G mobile networks become and environmental inputs, DTs become “living” models that
+increasingly more sophisticated, the requirements for agility, evolve in tandem with their physical counterpart [4], [5].
+scalability, resilience, and precision in real-time service pro-
+This safe modeling environment provided by Digital Twins
+visioning cannot be met using traditional and heuristic-based
+allows operators to analyze and optimize complex scenarios
+resource management techniques, just like any advancing tech-
+nology. With the aim of overcoming such limitations, network suchastrafficsurges,hardwarefailures,orservicemigrations
+operators are foreseeing Digital Twins (DTs) as key enablers, withoutriskinglive-networkdisruptions[6].BecauseDTscan
+which are designed as dynamic and virtual replicas of net- execute hypothetical reconfiguration commands and incorpo-
+work infrastructure, allowing operators to model, analyze, and
+ratecontextualfactors(e.g.deviceconditionsorinterference),
+optimize various operations without any risk of affecting the
+they enable foresight into network behavior under change.
+live network. However, for Digital Twin Networks (DTNs)
+to meet the challenges faced by operators especially in line In practice, these twin-based capabilities support advanced
+with resource management, a driving engine is needed. In planning and resource management (for example, forecasting
+this paper, an AI (Artificial Intelligence)-driven approach is capacity needs and re-allocating bandwidth to underutilized
+presented by integrating a Long Short-Term Memory (LSTM)
+links) that traditional methods cannot achieve [7].
+neural network into the DT framework, aimed at forecasting
+Incorporating AI techniques into Digital Twins allows
+network traffic patterns and proactively managing resource
+allocation. Through analytical experiments, the AI-Enabled DT network operators to intelligently model and forecast re-
+framework demonstrates superior performance benchmarked source behaviors as well as control their allocation in real-
+against baseline methods. Our study concludes that embedding time, which improves the Quality of Service (QoS), energy
+AI capabilities within DTs paves the way for fully autonomous,
+consumption, and fault tolerance [2], [8]. Additionally, AI-
+adaptive,andhigh-performancenetworkmanagementinfuture
+Enabled DTs allow operations to shift from a reactive re-
+mobile networks.
+Index Terms—Digital Twins (DTs), Resource Allocation, Ar- sponse mode to proactive, and even fully autonomous oper-
+tificial Intelligence (AI). ations which escalate operations like network segmentation,
+traffic forecasting, and resource provisioning, which require
+I. INTRODUCTION a high degree of precision and adaptability. This integration
+The growing shift towards sophisticated mobile networks of AI forms the main topic of study in this paper, where we
+like 5G Advanced and next-generation networks has enabled demonstratehowAI-drivenapproachesintegratedwithinDTs
+new functionalities and ushered in unique challenges with excel in forecasting and network resource allocation.
+respect to users’ needs, demanding mobile heterogeneous The rest of the paper is organized as follows. In section
+services, and real-time resource allocation. Traditional man- II we present the related works in line with DTs and AI. In
+agementapproachesarefailingtoachieveagility,intelligence, section III a detailed methodology of our work is presented.
+and responsiveness in the present day network environments Section IV presents the results analysis from our study, and
+asthesestudies,[1] &[2]highlight.Withexcellence inareas section V provides a conclusion of this work.
+such as the medical field where real-time monitoring and
+II. BACKGROUNDANDRELATEDWORKS
+intelligent control are vital as noted in [3], DTs are a new
+direction of focus in next-generation networks. The rapid evolution of mobile networks is transforming
+In the mobile networks ecosystem, Digital Twins are how network infrastructures are deployed, managed, and
+comprehensive, dynamic virtual replicas of actual networks optimized. These next-generation networks demand unprece-
+operations that mirror topologies, components, and real-time dented agility, precision, and scalability to support latency-
+operational states such as, traffic patterns. By continuously sensitiveapplications,includingautonomoussystems,remote
+ingesting live telemetry (traffic patterns, device metrics, etc.) healthcare, and immersive virtual reality. As studies in [9]
+5202
+tcO
+32
+]IN.sc[
+1v69702.0152:viXra
+
+--- Page Suivante ---
+
+suggest,staticandtraditionalresourcemanagementstrategies A. Dataset Description
+prevalent in legacy networks are increasingly inadequate
+We used a time series dataset described in [16], collected
+to cope with the highly dynamic and heterogeneous traffic
+from a network operator. The dataset includes four key per-
+environment characteristic of 5G/6G ecosystems [9]. formance indicators (KPIs): internet usage, active sessions,
+Despite all of these challenges, Digital Twins (DTs) have VPN connections, and downstream throughput. The dataset
+emerged as a promising enabling technology. They offer
+includestime-seriesdatatrackingfouressentialnetworkindi-
+virtualizedandreal-timerepresentations,enablingcontinuous
+cators sampled at 5-minute intervals over a period exceeding
+observance, and safe optimization of network operations
+one month [16]. In Figure 1, we provide a representation
+without interrupting live services. As literature in [2] noted,
+of the data showing the KPIs variations overtime. The data
+DT-driven frameworks provide operational simulation and
+represents measurements from various operator facilities and
+validation capabilities to resource management techniques
+encompasses: total Internet traffic flow (measured in bits per
+before executing them in the real world, thus eliminating
+second), downlink traffic volume (in bits per second), count
+critical operational risks and network downtime [2]. It’s thus,
+of concurrent user sessions, and VPN traffic throughput (in
+possible to consider the integration of DTs into network
+bits per second). To protect sensitive information, all data
+management pipelines as a self-sufficient cornerstone for
+was anonymized, timestamps normalized to start from zero
+future mobile networks.
+for each series, and metric values have been rescaled across
+Giventhedynamicshiftsintrafficpatterns,enablingframe-
+all time series [16].
+works must incorporate highly accurate predictive engines
+In our LSTM approach following the standard sliding-
+focused on functional real-time resource allocation. AI im-
+window techniques, we used a fixed input window of past
+plementations, particularly deep learning frameworks such as valuestopredictthefuturevalueoftheinternetKPI.Thefinal
+LSTM neural networks, as described in [10], are suitable for dataset consisted of an input array X and a corresponding
+thisroleduetotheireffectivenessincapturingcomplextraffic target vector y. X represented as X ∈Rn×t×4, where:
+patternsandmodelingtemporaldependenciesoversignificant
+• n is the number of training samples (sliding windows).
+periodsoftime[10].Likewise,instudiespresentedbyauthors
+• t is the number of time steps in the input window.
+in[11],theydiscussedstrategiesrelatedtoresourceallocation
+• The 4 features which are:
+to optimize IoT systems in 5G and 6G networks and stressed
+1) Total Internet traffic flow (bps)
+thedegreeofimprovementsofferedbyLSTMintegrationinto
+2) Downlink traffic volume (bps)
+the frameworks relative to traditional baseline approaches.
+3) Concurrent user sessions (count)
+Additionally, the study depicted in [12] shows that while
+4) VPN traffic throughput (bps)
+generativeAIcoupledwithDTnetworkscanoutperformnon-
+generative LSTM models in high-load conditions, the latter
+EachelementoftheinputtensorX
+i,j,k
+represented:Samplei,
+strategystillretainsitsrelevanceinforecastingscenarios[12]. time step j, feature k ∈ {1,2,3,4}. The tensor is structured
+Their findings further strengthen the argument that hybrid as below where each matrix slice in X represents a single
+AI-Driven DT solutions will dominate the discourse on 6G training sample, capturing the temporal evolution of four
+network management systems. features across t time steps.
+More studies such as in [13], the authors investigated AI-   x(1) x(1) x(1) x(1)  
+Based DT frameworks for multimedia service provisioning, 1,1 1,2 1,3 1,4
+their findings show that the temporal modeling capacities of
+
+
+
+
+x(
+2
+1
+,1
+) x(
+2
+1
+,2
+) x(
+2
+1
+,3
+) x(
+2
+1
+,4
+) 
+
+
+
+LSTM networks was highly effective for resource manage-     . . . . . . . .    
+  . . . .  
+ment tasks. Additional, more works supporting these find- 
+
+x(1) x(1) x(1) x(1) 
+
+ings is presented by authors in [14], where they stress the  t,1 t,2 t,3 t,4 
+ 
+scalability and accuracy of LSTM-directed configurations in  
+challenging, multi-domain network configurations [14].
+
+
+ x(
+1
+2
+,1
+) x(
+1
+2
+,2
+) x(
+1
+2
+,3
+) x(
+1
+2
+,4
+)  
+
+dir O ec v t e io ra n ll p , r c e u fe rr r e ri n n t g st A u I d - i a e u s g i m nd e i n c t a e t d e D an T u m nm od i e st l a s k f a o b r le in r te e l s l e ig ar e c n h t X =         x( 2 . . 2 ,1 ) x( 2 . . 2 ,2 ) x( 2 . . 2 ,3 ) x( 2 . . 2 ,4 )        
+ . . . . 
+network management. But as authors in [15] noted, there    
+ x(2) x(2) x(2) x(2) 
+is, nevertheless, still quite a room to benchmark and show  t,1 t,2 t,3 t,4 
+ . 
+how AI-Driven DTs excel under realistic and variable traffic  . . 
+ 
+conditions. Filling this gap, in the subsequent sections we 
+
+ x(n) x(n) x(n) x(n)  
+
+present the technical methodology of our work and later  1,1 1,2 1,3 1,4 
+  x(n) x(n) x(n) x(n)  
+discuss results from our implementation framework.   2,1 2,2 2,3 2,4  
+  . . . .  
+III. METHODOLOGY     . . . . . . . .    
+x(n) x(n) x(n) x(n)
+In this section, we provide a detailed methodology of t,1 t,2 t,3 t,4
+our approach demonstrating the techniques performed and The corresponding target vector y ∈ Rn contained the
+evaluation methods. future value of the Internet KPI (e.g., total traffic flow)
+
+--- Page Suivante ---
+
+Fig.1. Datasetoverview.
+represented as: standarddeviationtoaccountforvariabilityandprobablepeak
+demands.Thiscomputationwasthenusedtoactasabaseline
+ y(1)
+predictionduringsubsequentfuturetimestepsduringtexting.
+y(2)
+This baseline approach provided an upper-bound estimate, to
+y =  . .   refer to as a reference point for comparison with other more
+ . 
+y(n) dynamic prediction models.
+The dataset was split chronologically into training, validation Algorithm 2 Baseline 2 Percentile (P95) Forecasting
+and test set without shuffling to preserve temporal integrity
+Require: Training series Y = {y ,y ,...,y }, Forecast
+train 1 2 T
+in time series.
+horizon N
+B. Baseline Methods Ensure: Forecast Yˆ ={yˆ 1 ,yˆ 2 ,...,yˆ N }
+1: Compute p 95 ←Percentile(Y train , 95)
+Algorithm 1 Baseline 1 (µ+2σ) Forecasting 2: for i=1 to N do
+Require: Training series Y train = {y 1 ,y 2 ,...,y T }, Forecast 3: yˆ i ←p 95
+horizon N 4: end for
+Ensure: Forecast Yˆ ={yˆ ,yˆ ,...,yˆ } 5: return Yˆ
+1 2 N
+1: Compute µ← (cid:113)T 1 (cid:80)T t=1 y t
+2: Compute σ ← T 1 (cid:80)T t=1 (y t −µ)2 Ba F s o el r in a e m 2 o w re hic c h om ad p o ar p a t t e i d ve a a p p e p rc ro e a n c ti h le , - w ba e se a d ls s o tra im te p g l y e . m In en t t h e i d s
+3: c←µ+2σ
+method,asweillustrateinAlgorithm2wecomputedthe95th
+4: for i=1 to N do
+percentile(P95)oftheinternetKPIvaluesfromthetrain-
+5: yˆ i ←c
+ingsetandusedthisoutcometoforecastallfuturetimepoints.
+6: end for
+7: return Yˆ This approach was adopted to capture high-usage scenarios
+by focusing on extreme values observed in the historical
+data. The P95 baseline is particularly useful in bandwidth
+IntheframeworkofBaseline 1,weadoptedastaticproce-
+provisioning, as it ensures that allocated resources exceed
+durebasedonthemeanandstandarddeviationofinternet
+the demand in 95% of the training instances [17], offering
+KPI values from the training dataset. As illustrated in Algo-
+a robust alternative to the mean-based baseline approach.
+rithm 1, we calculated the mean and then added twice the
+
+--- Page Suivante ---
+
+TABLEI where yˆ i and y i denote the predicted and true values at
+SUMMARYOFEXPERIMENTALSETUP time step i, respectively.
+Category Details • Allocation Performance: The effectiveness of the re-
+Data&Preprocessing KPIs: Internet usage, sessions, VPNs, down- source allocation strategy was evaluated using the fol-
+streamthroughput(Mbps).
+lowing metrics:
+Target:Internetusageatt+1(Mbps);window:
+10-step→1-step-ahead. (cid:18) (cid:19)
+actual
+Tensor:[N,10,4];Split:80%train/20%test; Efficiency=min ,1 (2)
+20%validationfromtraining. allocated
+ModelArchitecture BiLSTM(128)→BiLSTM(128)→BiLSTM
+(64)→Dense(1). (cid:18) allocated−actual (cid:19)
+Dropout(p=0.2),BatchNorm;Optimizer:Adam Wastage=max ,0 (3)
++LRscheduler. allocated
+TrainingSettings Max 30 epochs; early stopping (patience = 5);
+Batchsize:32;LR:0.0001. actual
+Utilization= (4)
+Baselines B1:µytrain +2σytrain .
+allocated
+B2:95thpercentileP95(ytrain).
+Metrics MAE, RMSE, Efficiency, Wastage, Utilization, Over-Provisioning=max(allocated−actual,0) (5)
+Over-Provisioning.
+where actual represented the true resource demand, and
+allocated denoted the predicted resource allocation. These
+C. AI Enabled Digital Twin Model: Bidirectional LSTM
+metrics captured different aspects of allocation effectiveness,
+We modeled our AI-DT approach on a deep bidirectional
+including under-utilization, efficiency, and potential over-
+long-short-term memory (BiLSTM) network, which is capa-
+provisioning.
+ble of capturing complex temporal dependencies in multi-
+variate sequences [18], [19] where X = {x ,x ,...,x } Algorithm3BidirectionalLSTMforTimeSeriesForecasting
+1 2 T
+denoted the input sequence, where each x t ∈Rd represented Require: Multivariate series X ∈ RT×d, window size w,
+a d-dimensional feature vector at time step t. The BiLSTM
+target index j
+processes the input in both forward and backward directions
+→− ←− Ensure: Forecasts yˆ w+1 ,...,yˆ T
+as elaborated in [19], producing hidden states h t and h t , Preprocessing
+which are t →− hen ← c − oncatenated to form the context representa- 1: for t=1 to T −w do
+tion h t =[h t ; h t ]. 2: X(t) ←X t:t+w−1 ▷ Input window
+The specific layer configurations, regularization strategy 3: y(t) ←X t+w, j ▷ Target value
+(including dropout rate p), and optimizer settings (such as 4: end for
+Adam with learning rate η) where set as depicted in Table I 5: Split into train, validation and test sets: {X(t),y(t)} →
+above.Thefinaloutputofthemodelbeingascalaryˆ T+1 ∈R, D train ,D test
+representing the predicted internet demand at the next time Model
+step T +1, computed as: 6: Define Bidirectional LSTM with 3 layers: [128, 128, 64
+units], with dropout and batch norm
+yˆ =f (X),
+T+1 θ
+7: Final layer: Dense(64) → Dense(1)
+where f denotes the BiLSTM model parameterized by θ.
+θ Training
+Trainingwasconductedusingameansquarederror(MSE)
+8: TrainmodelonD train withAdamoptimizerandMSEloss
+loss function,
+Inference
+L(θ)= N 1 (cid:88) N (cid:16) y T (i + ) 1 −yˆ T (i + ) 1 (cid:17)2 , 1 9 0 : : for yˆ e ( a t c ) h ← X m (t) od ∈ el D (X tes ( t t) d ) o
+i=1 11: end for
+where N is the number of training samples. Algorithm 3 12: return {yˆ(t)}
+further demonstrates the work flow of this approach.
+D. Evaluation Metrics
+IV. RESULTSDISCUSSION
+We evaluated both the accuracy and operational efficiency
+In this section we provide an analysis and visual repre-
+of bandwidth allocation using the following metrics. For
+sentation of the results obtained. Figures 2 and 3 provide
+effectivenessoftheproposedapproaches,twomaincategories
+a quantitative comparison between the proposed AI-Enabled
+of metrics are employed:
+Digital Twin strategy to the two baseline approaches among
+• Forecasting Accuracy:Thepredictiveperformancewas three prominent performance metrics: Mean Absolute Error,
+quantified using the Mean Absolute Error (MAE) and Root Mean Square Error , and the mean over-provisioning
+the Root Mean Squared Error (RMSE), defined as: respectively. In forecasting accuracy, the AI-Enabled DT
+(cid:118) approach achieves much lower error values as the green bar
+n (cid:117) n
+MAE= n 1 (cid:88) |yˆ i −y i |, RMSE= (cid:117) (cid:116) n 1 (cid:88) (yˆ i −y i )2 depicts, with approximately MAE ≈ 25 and RMSE ≈ 40,
+while Baseline 1 and Baseline 2 demonstrated very large
+i=1 i=1
+(1) errors.
+
+--- Page Suivante ---
+
+Fig.2. MAEandRMSEcomparison.
+On average over-provisioning analysis (in terms of KPI Fig.4. Radarchart.
+units), the AI-Enabled DT exhibited excellent performance
+with a significant lower value, benchmarked against Baseline
+1 and Baseline 2 which show values higher than 450 and
+350 units, as shown in Figures 3 below. This highlighted the
+capacity of the DT not only to enhance predictive accuracy
+through a lower prediction/forecasting error but also elimi-
+nating resource allocation inefficiencies in dynamic network
+environments.
+Fig.5. Resourceoptimizationcomparison.
+maintaining minimal wastage ratios (ω < 0.05). This ad-
+vanced metrics comparison illustrates that the AI-Enabled
+DT approach exhibits an efficient utilization factor (ρ ≈ 1),
+significantly outperforming both baselines when it comes to
+efficient optimization of network resources.
+Fig.3. Overprovisioningcomparison.
+The radar chart we present in Figure 4 provides a visual-
+ization of performance where all metric values are normal-
+ized on a scale from 0 to 1, where higher values indicate
+better performance. As depicted, AI-Enabled DT method
+achieved near-maximum normalized performance across all
+evaluateddimensions,withparticularlystrongperformancein
+efficiency (η ≈ 1.0), cost efficiency (CE ≈ 1.0) and
+norm norm
+average utilization. These results indicate that the proposed
+AI-Enabled approach not only provides superior predictive
+accuracy but also enables significant resource optimization,
+reducing operational costs.
+In terms of resource optimization metrics as depicted in
+Fig.6. Resourcedistributioncomparison.
+Figure 5, the AI-Enabled DT method achieves an efficiency
+η ≈ 0.95, indicating near-optimal resource utilization, while Additionally,inFigure6wepresentacomparativeanalysis
+
+--- Page Suivante ---
+
+of resource efficiency distributions across the two baselines [2] H. Tran-Dang and D.-S. Kim, “Digital twin-empowered
+and the proposed AI-Enabled DT model. As observed, Base- intelligent computation offloading for edge computing in
+the era of 5G and beyond: A state-of-the-art survey,” ICT
+line1hadamedianresourceefficiencyof0.474,whileBase-
+Express, vol. 11, no. 1, pp. 167–180, 2025. [Online]. Available:
+line 2 showed a slightly higher median of 0.543. In contrast, https://doi.org/10.1016/j.icte.2025.01.002
+the AI-enabled DT significantly outperforms both baselines [3] M. S. Roopa and K. R. Venugopal, “Digital twins for cyber-physical
+healthcaresystems:Architecture,requirements,systematicanalysis,and
+with a median efficiency of 0.987. Additionally, the AI-
+futureprospects,”IEEEAccess,vol.13,pp.44963–44996,2025,doi:
+Enabled DT exhibited lower variability and a more compact 10.1109/ACCESS.2025.3547991.
+inter-quartile range, indicating more consistent performance. [4] M.Kherbache,M.Maimour,andE.Rondeau,“Whendigitaltwinmeets
+network softwarization in the industrial IoT: Real-time requirements
+These results highlight the effectiveness of integrating AI-
+casestudy,”Sensors,vol.21,no.24,p.8194,2021.[Online].Available:
+based forecasting and control into the DT framework for https://doi.org/10.3390/s21248194
+optimizing resource usage. [5] R.Vilalta,etal.,“Applyingdigitaltwinstoopticalnetworkswithcloud-
+native SDN controllers,” IEEE Commun. Mag., vol. 61, no. 12, pp.
+128–134,Dec.2023,doi:10.1109/MCOM.003.2300105.
+TABLEII [6] M.SanzRodrigo,D.Rivera,J.I.Moreno,M.A`lvarez-Campana,andD.
+MODELSIZEANDIN-MEMORYCOMPARISONACROSSMETHODS R.Lo´pez,“Digitaltwinsfor5Gnetworks:Amodelinganddeployment
+methodology,” IEEE Access, vol. 11, pp. 38112–38126, 2023, doi:
+Metric Baseline1 Baseline2 AI-EnabledDT 10.1109/ACCESS.2023.3267548.
+ModelSize(MB) 2.00 1.00 2.69 [7] B. Qin, et al., “Machine and deep learning for digital twin networks:
+In-memoryRequirement Moderate Lightweight Heavy Asurvey,”IEEEInternetThingsJ.,vol.11,no.21,pp.34694–34716,
+Nov.1,2024,doi:10.1109/JIOT.2024.3416733.
+In line with computational complexity, we provide results [8] M. Sheraz, T. C. Chuah, Y. L. Lee, M. M. Alam, A. Al-Habashna,
+andZ.Han,“Acomprehensivesurveyonrevolutionizingconnectivity
+in Tabel II which indicate memory footprint requirement by
+through artificial intelligence-enabled digital twin network in 6G,”
+each method. Our results indicated that the Baseline models IEEE Access, vol. 12, pp. 49184–49215, 2024, doi: 10.1109/AC-
+aremorelightweightincomparisontotheAI-DrivenDT.De- CESS.2024.3384272.
+[9] T. Li, Q. Long, H. Chai, S. Zhang, F. Jiang, H. Liu, W. Huang, D.
+spite the excellent performance in forecasting, resource man-
+Jin,andY.Li,“GenerativeAIEmpoweredNetworkDigitalTwins:Ar-
+agement and optimization provided by the AI-Enabled DT chitecture,Technologies,andApplications,”ACMComputingSurveys,
+framework, there still a challenge of computational resource vol.57,no.6,pp.1–43,Jun.2025,doi:10.1145/3711682.
+[10] Gbenga-Ilori, A.; Imoize, A.L.; Noor, K.; Adebolu-Ololade, P.O. Ar-
+requirement both for memory requirement and computation
+tificial Intelligence Empowering Dynamic Spectrum Access in Ad-
+complexityastherearemanytrainingparametersneededasit vanced Wireless Communications: A Comprehensive Overview. [On-
+wasshowninTabelI.Thiscreatesanopenresearchdirection line].Available:https://doi.org/10.3390/ai6060126
+[11] Yaraziz, M.S.; Hill, R. A Review of Resource Allocation for Max-
+of solving the price needed to pay for computation as also
+imizing Performance of IoT Systems. IEEE Access, 98426–98451.
+highlighted in recent studies like [20]. doi.org/10.1109/ACCESS.2025.3576716
+[12] Tao, Z.; Xu, W.; Huang, Y.; Wang, X.; You, X. Wireless Network
+V. CONCLUSION DigitalTwinfor6G:GenerativeAIasaKeyEnabler.IEEEWireless
+Communications2024,24–31.doi.org/10.1109/MWC.002.2300564
+Inthispaper,wepresentedacomparativestudythatdemon-
+[13] Boffetti, E.; Rago, A.; Piro, G.; Boggia, G. Design of AI-
+strated both traditional techniques and an AI-Enabled Digital based Digital Twin Network for Multimedia Service Provision-
+Twins framework in optimizing resource management. Our ing. Proceedings of the 2024 IEEE Symposium on Comput-
+ers and Communications (ISCC), Paris, France, 2024; pp. 1–6.
+findings showed how superior AI enabling can improve fore-
+doi.org/10.1109/ISCC61673.2024.10733642
+casting and resource management, highlighting the potential [14] Zhu, F, et al. Wireless Large AI Model: Shaping the AI-
+for improved network management. We propose that enabler Native Future of 6G and Beyond. arXiv 2025, arXiv:2504.14653.
+https://arxiv.org/abs/2504.14653
+technologies like AI-Enabled Digital Twins are fundamental
+[15] Zawish, M, et al. AI and 6G Into the Metaverse:
+in sustaining reliability and efficiency of next-generation Fundamentals, Challenges and Future Research Trends. IEEE
+mobile networks like 6G where real-time monitoring and Open J. Commun. Soc 2024, 730–778. [Online]. Available:
+https://doi.org/10.1109/OJCOMS.2024.3349465
+optimization is fundamental. Future research work will focus
+[16] P. Fondo-Ferreiro, M. Rodelgo-Lacruz, F. J. Gonza´lez-Castan˜o, F.
+on computational requirement of AI, so that network service Gil-Castin˜eira, and D. Candal-Ventureira, “Network operator KPIs
+providers can benefit from both efficient resource manage- time series dataset (1.0) [Data set],” Zenodo, 2023, doi: 10.5281/zen-
+odo.8147768.
+ment and less computational requirement.
+[17] H. Sharma, et al., “Optimizing network provisioning through cooper-
+ation,” in Proc. 19th USENIX Symp. Networked Syst. Design Imple-
+ACKNOWLEDGMENT
+ment.(NSDI),Renton,WA,Apr.2022,pp.1179–1194.[Online].Avail-
+This work has been carried out with support from the able:https://www.usenix.org/conference/nsdi22/presentation/sharma
+[18] T. Yang, et al., “A deep learning framework for sequence
+HORSEproject(Holistic,Omnipresent,ResilientServicesfor
+mining with bidirectional LSTM and multi-scale attention,”
+Future 6G Wireless and Computing Ecosystems), funded by arXiv preprint arXiv:2504.15223, 2025. [Online]. Available:
+the Smart Networks and Services Joint Undertaking (SNS https://arxiv.org/abs/2504.15223
+[19] R. L. Abduljabbar, H. Dia, and P.-W. Tsai, “Unidirectional and bidi-
+JU).
+rectional LSTM models for short-term traffic prediction,” J. Adv.
+Transp.,vol.2021,ArticleID5589075,Mar.2021.[Online].Available:
+REFERENCES
+https://doi.org/10.1155/2021/5589075
+[1] A. S. Mahomed and A. K. Saha, “Unleashing the potential of [20] Z. Zhang, et al., “Digital twin-enhanced deep reinforcement learning
+5G for smart cities: A focus on real-time digital twin integra- forresourcemanagementinnetworksslicing,”IEEETrans.Commun.,
+tion,” Smart Cities, vol. 8, no. 2, p. 70, 2025. [Online]. Available: vol.72,no.10,pp.6209–6224,doi:10.1109/TCOMM.2024.3395698
+https://doi.org/10.3390/smartcities8020070

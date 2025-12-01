@@ -1,0 +1,266 @@
+{
+  "Prompt-Engineering-Guide.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:29.646349",
+    "author": ""
+  },
+  "HoloCine Holistic Generation of Cinematic Multi-Shot Long Video Narratives.txt": {
+    "source_url": "https://arxiv.org/abs/HoloCine Holistic Generation of Cinematic Multi-Shot Long Video Narratives",
+    "original_file": "docs/arxiv/HoloCine Holistic Generation of Cinematic Multi-Shot Long Video Narratives.pdf",
+    "date": "2025-10-24T21:40:00.146350",
+    "author": ""
+  },
+  "Prompt-Engineering-Lecture-Elvis.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/prompt-engineering.html",
+    "date": "2025-10-24T21:39:26.386351",
+    "author": ""
+  },
+  "what-is-prompt-engineering.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/what-is-prompt-engineering.html",
+    "date": "2025-10-24T21:40:29.576349",
+    "author": ""
+  },
+  "RAG.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/rag.html",
+    "date": "2025-10-24T21:39:25.686351",
+    "author": ""
+  },
+  "google_just.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/google_just.html",
+    "date": "2025-10-24T21:40:30.246349",
+    "author": ""
+  },
+  "Bayesian Inference of Primordial Magnetic Field Parameters from CMB with Spheric.txt": {
+    "source_url": "https://arxiv.org/abs/Bayesian Inference of Primordial Magnetic Field Parameters from CMB with Spheric",
+    "original_file": "docs/arxiv/Bayesian Inference of Primordial Magnetic Field Parameters from CMB with Spheric.pdf",
+    "date": "2025-10-24T21:39:57.496350",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_LICENSE.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "The Reality Gap in Robotics Challenges Solutions and Best Practices.txt": {
+    "source_url": "https://arxiv.org/abs/The Reality Gap in Robotics Challenges Solutions and Best Practices",
+    "original_file": "docs/arxiv/The Reality Gap in Robotics Challenges Solutions and Best Practices.pdf",
+    "date": "2025-10-24T21:40:04.466350",
+    "author": ""
+  },
+  "how_to_call_functions_with_chat_models.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/how_to_call_functions_with_chat_models.html",
+    "date": "2025-10-24T21:40:29.236349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-basic-usage.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "llamaindex-rag.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/llamaindex-rag.html",
+    "date": "2025-10-24T21:40:28.986349",
+    "author": ""
+  },
+  "2501.09136.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2501.09136.html",
+    "date": "2025-10-24T21:40:29.256349",
+    "author": ""
+  },
+  "2308.10792v5.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2308.10792v5.html",
+    "date": "2025-10-24T21:40:29.856349",
+    "author": ""
+  },
+  "prompt-engineering.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/prompt-engineering.html",
+    "date": "2025-10-24T21:40:29.916349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_README.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-chatgpt.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "2308.10792.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2308.10792.html",
+    "date": "2025-10-24T21:40:30.266349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-advanced-usage.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-reliability.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "GSWorld Closed-Loop Photo-Realistic Simulation Suite for Robotic Manipulation.txt": {
+    "source_url": "https://arxiv.org/abs/GSWorld Closed-Loop Photo-Realistic Simulation Suite for Robotic Manipulation",
+    "original_file": "docs/arxiv/GSWorld Closed-Loop Photo-Realistic Simulation Suite for Robotic Manipulation.pdf",
+    "date": "2025-10-24T21:40:01.876350",
+    "author": ""
+  },
+  "ARGenSeg Image Segmentation with Autoregressive Image Generation Model.txt": {
+    "source_url": "https://arxiv.org/abs/ARGenSeg Image Segmentation with Autoregressive Image Generation Model",
+    "original_file": "docs/arxiv/ARGenSeg Image Segmentation with Autoregressive Image Generation Model.pdf",
+    "date": "2025-10-24T21:40:11.316350",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_README.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "rag_zephyr_langchain.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/rag_zephyr_langchain.html",
+    "date": "2025-10-24T21:40:28.756349",
+    "author": ""
+  },
+  "anthropic_just.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/anthropic_just.html",
+    "date": "2025-10-24T21:40:29.266349",
+    "author": ""
+  },
+  "Compress to Impress Efficient LLM Adaptation Using a Single Gradient Step on 100.txt": {
+    "source_url": "https://arxiv.org/abs/Compress to Impress Efficient LLM Adaptation Using a Single Gradient Step on 100",
+    "original_file": "docs/arxiv/Compress to Impress Efficient LLM Adaptation Using a Single Gradient Step on 100.pdf",
+    "date": "2025-10-24T21:40:15.786350",
+    "author": ""
+  },
+  "retrieval-augmented-generation-with-huggingfa.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/retrieval-augmented-generation-with-huggingfa.html",
+    "date": "2025-10-24T21:40:30.586349",
+    "author": ""
+  },
+  "2309.15402v3.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2309.15402v3.html",
+    "date": "2025-10-24T21:40:28.966349",
+    "author": ""
+  },
+  "index.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/index.html",
+    "date": "2025-10-24T21:40:30.576349",
+    "author": ""
+  },
+  "AI-Enabled Digital Twins for Next-Generation Networks Forecasting Traffic and Re.txt": {
+    "source_url": "https://arxiv.org/abs/AI-Enabled Digital Twins for Next-Generation Networks Forecasting Traffic and Re",
+    "original_file": "docs/arxiv/AI-Enabled Digital Twins for Next-Generation Networks Forecasting Traffic and Re.pdf",
+    "date": "2025-10-24T21:40:16.696350",
+    "author": ""
+  },
+  "2506.00054v1.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2506.00054v1.html",
+    "date": "2025-10-24T21:40:30.496349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-intro.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "Trapping manipulating and probing ultracold atoms a quantum technologies tutoria.txt": {
+    "source_url": "https://arxiv.org/abs/Trapping manipulating and probing ultracold atoms a quantum technologies tutoria",
+    "original_file": "docs/arxiv/Trapping manipulating and probing ultracold atoms a quantum technologies tutoria.pdf",
+    "date": "2025-10-24T21:40:26.256350",
+    "author": ""
+  },
+  "rag_evaluation.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/rag_evaluation.html",
+    "date": "2025-10-24T21:40:29.166349",
+    "author": ""
+  },
+  "advanced-rag-techniques.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/rag.html",
+    "date": "2025-10-24T21:40:30.646349",
+    "author": ""
+  },
+  "2410.10926.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2410.10926.html",
+    "date": "2025-10-24T21:40:30.236349",
+    "author": ""
+  },
+  "A Classification of Long-Refinement Graphs for Colour Refinement.txt": {
+    "source_url": "https://arxiv.org/abs/A Classification of Long-Refinement Graphs for Colour Refinement",
+    "original_file": "docs/arxiv/A Classification of Long-Refinement Graphs for Colour Refinement.pdf",
+    "date": "2025-10-24T21:40:09.296350",
+    "author": ""
+  },
+  "rag.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/rag.html",
+    "date": "2025-10-24T21:40:29.416349",
+    "author": ""
+  },
+  "2308.10792v9.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2308.10792v9.html",
+    "date": "2025-10-24T21:40:30.216349",
+    "author": ""
+  },
+  "Testing the AGN Paradigm Part I a generic SED for Seyfert 1 galaxies.txt": {
+    "source_url": "https://arxiv.org/abs/Testing the AGN Paradigm Part I a generic SED for Seyfert 1 galaxies",
+    "original_file": "docs/arxiv/Testing the AGN Paradigm Part I a generic SED for Seyfert 1 galaxies.pdf",
+    "date": "2025-10-24T21:40:28.726349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-adversarial.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-miscellaneous.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  },
+  "2506.14641v1.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/2506.14641v1.html",
+    "date": "2025-10-24T21:40:30.036349",
+    "author": ""
+  },
+  "Prompt-Engineering-Guide_guides_prompts-applications.md.txt": {
+    "source_url": "",
+    "original_file": "docs/downloads/Prompt-Engineering-Guide.html",
+    "date": "2025-10-24T21:40:30.656349",
+    "author": ""
+  }
+}

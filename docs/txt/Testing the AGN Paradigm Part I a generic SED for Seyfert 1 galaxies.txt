@@ -1,0 +1,906 @@
+MNRAS000,000–000(0000) PreprintOctober24,2025 CompiledusingMNRASLATEXstylefilev3.3
+Testing the AGN Paradigm, Part I: a generic SED for Seyfert 1 galaxies.
+PaulinaAlejandraRoco-Avilez,1★ RogerCoziol,1 JuanPabloTorres-Papaqui1,KarlaAlejandraCutiva-Alvarez1,
+MaríaFernandaLaRotta-Wilches1,CésarDavidAguirre-Gutiérrez1 andAngélicaGabrielaSandoval-Esparza1
+1DepartamentodeAstronomía,UniversidaddeGuanajuato,CallejóndeJaliscoS/N;Valenciana;C.P.36240;Guanajuato,Gto.México.
+October24,2025
+ABSTRACT
+This article presents the first part of a study aimed at testing the unification paradigm for AGN (UPAGN) using the SED
+reconstructioncodeX-CIGALE.OurmethodconsistsinobtainingagenericSEDforalargesampleofSeyfert1(Sy1;part1),
+then applying this SED to Seyfert 2 (Sy2; Part II), expecting that the only difference will be the line-of-sight (LOS) angle,𝑖,
+relativetothepolaraxisofthetorusofgasanddustobscuringthebroadlineregions(BLRs).Oursampleiscomposedof3,896
+Type1,Sy1atlowredshifts,𝑧 <0.4,separatedintofourspectralsubgroupsdependingonthepresenceorabsenceintheirspectra
+ofnarrowemissionlines,Sy1N/Sy1B,andAGNwind,Sy1BwandSy1Nw.ThegenericSEDproducedbyX-CIGALEapplies
+to90%oftheSy1inoursample.ItincludesaclumpytoruswithanAGNengineseenface-on(𝑖 ∼ 10◦±5◦).Ouranalysisnot
+onlysupportstheexistenceofatorusinSy1,ingoodagreementwithUPAGN,butalsorevealsnewfactsabouttheaccretionof
+matterandAGNwind:1-asuddenaccretionofmatterfromtheBLRtotheaccretiondisktriggeredthewind,2-matterfrom
+thewindreplenishesthetorus,consistentwithagradualformationofthisstructurebyrecurrentAGNwinds,and3-Sy1Bwand
+Sy1NweventuallyevolveasAGNwithoutwind,leavingbehindatorusasevidenceofahigherAGNactivityintheirpast.
+Keywords: galaxies:Seyfert–galaxies:nuclei–galaxies:formation–galaxies:starformation
+1 INTRODUCTION Type1theengineisviewface-onwhileinType2itisviewededge-
+on,suchthatassumingmatterdistributedalongtheLOScanabsorb
+AftertheconfirmationbytheEventHorizonTelescope(EHT)thata
+the emission produced by the engine, a Type 2 AGN would suffer
+super-massiveblackhole(SMBH)withamass4×106 M⊙ laysat
+higherextinctionthanaType1.InthecaseofSeyfertgalaxies(Sy1
+thecentreoftheMilkyWay(EventHorizonTelescopeCollaboration
+vs.Sy2),whichareAGNinspiralgalaxiesatlowredshifts(Seyfert
+etal.2022)—a SMBHwhichisstillactively accretingmatterina
+1943;Osterbrock1991),theobscuringmatterwouldhavetheform
+chaotic way (Yusef-Zadeh et al. 2025) and was more active in the
+ofatorusofgasanddustsurroundingtheengine,explainingwhya
+recentpast(Suetal.2010;Heywoodetal.2019;Pontietal.2019)—
+Sy2observededge-on(LOSangle𝑖 =90◦relativetothepolaraxis
+theideathattheformationofanymassivegalaxymustnecessarily
+ofthetorus)showsonlynarrowemissionlines,whileaSy1shows
+pass by the formation of such object at their centre turned out to
+broadandnarrowemissionlines.Consequently,intermediateLOS
+be reinforced if not vindicated. This concept is as the core of the
+angles might also be expected to explain the various intermediate
+standard model of AGN (Active Galactic Nuclei) which stipulates
+Seyferttypes:Sy1.5,Sy1.8andSy1.9(Osterbrock&Dahari1983).
+thatall thedifferent kindsof AGNobserved, fromquasar orQSO
+In1983,UPAGNgainedenormoussupportduetotheimportant
+(theirradioquietcounterpart,quasistellarobject)toSeyfert,LINER
+discoverymadebyMillerandAntonucciofbroademissionlinesap-
+andradiogalaxies(RGs),withvariouslevelsofemissioninoptical,
+pearinginspectropolarimetryintheprototypeSy2galaxyNGC1068
+radio and X-rays, can be explained following the same scheme, a
+(Miller&Antonucci1983).ExtendingthestudiestomoreSy2galax-
+SMBHat thecentreof galaxies,accretingmatterat differentrates
+ies(e.g.,Tranetal.1992),itwasthendeterminedthatthepolarized
+(Heckman&Best2014).Althoughthelinkintermsofformationand
+broad line components were most probably produced by electrons
+evolutionbetweentheSMBHsandtheirgalaxyhostsisstillmissing,
+scatteredbytheinnerwallofthetorus,assumedtobeamonolithic
+asaparadigm,thestandardmodelservedasafundamentalworking
+structure where gas and dust is distributed homogeneously (Tran
+hypothesesthatcanbefalsifiedbyobservations.
+etal.1992).TheexistenceofsuchtorusinNGC1068wasthencor-
+Asanextensionofthestandardmodel,theUnificationModelof
+roboratedbyGallimoreetal.(1997),whosuggestedtheparsec-scale
+AGN(orUnificationParadigm,UPAGN)proposesthatphenomeno-
+structurecouldbeanextensionoftheaccretiondisk,explainingthe
+logically one can explain the two different spectral types of AGN,
+dependence on the LOS angle (e.g., Tristram et al. 2007; Bisogni
+Type1,withbroademissionlines,andType2,withnarrowemission
+etal.2017).
+lines, solely based on the orientation of the line of sight (LOS) of
+RevisingtheliteratureontheUnificationModelinADS,1itisnot
+theobservertowardtheengine(theSMBHanditsaccretiondisk):in
+★ E-mail:p.rocoavilez@ugto.mx 1 The SAO Astrophysics Data System, which is operated by the Smith-
+©0000TheAuthors
+5202
+tcO
+32
+]AG.hp-ortsa[
+1v60802.0152:viXra
+
+--- Page Suivante ---
+
+2 Roco-Avilezetal.
+difficulttofindmanyobservationsinIR,opticalandX-raysingood a difference of morphology and SFR could engender differences
+agreementwiththisparadigm(seereviewbyNetzer2015).However, in torus covering factor and/or optical depth (Mateos et al. 2016;
+as the number of observations increased, it was realized that the Audibertetal.2017),orconsideringthesmallsizesofthetori(afew
+interpretationintermsofLOSorientationwaspossiblyinsufficient parsecs),therecouldalsoexistaconnectionbetweenthesestructures
+toexplainthevariousdifferencesincharacteristicsbetweenType1 andoutflows(OFsorAGNwinds;e.g.,Elitzur2006;Wada2012).
+andType2AGN.First,Kay(1994)noticedthattheratioofthestellar Moreover,anOFstructureinsteadofaclumpytoruswouldpossibly
+continuumtotheAGNcontinuumisnotcorrelatedwithpolarimetry bemoreadequatetoexplainobservationsofpolaremissioninAGN
+inSy2,inapparentcontradictionwithUPAGN.Then,Tran(2001) (Schartmann et al. 2014; Hönig 2016; Wada et al. 2016; Stalevski
+foundthatmanysupposedlyobscuredSy2s(assumedalltohavelarge et al. 2017; Leftley et al. 2018; Williamson et al. 2020). Finding
+LOSangles)simplydonotshowbroadlinesinspectropolarimetry. anyphysicalconnectionbetweenOFsandtoriwouldhaveamajor
+ThisledhimtosuggestthattherecouldbetwopopulationsofSy2, impact on our understanding of AGN winds and their roles in the
+onewithhiddenbroadlines(HBL),theotherwithoutHBL,which formation/evolutionofgalaxies.Moreconcretely,iftheaccretionof
+he called “pure” Sy2 (Tran 2003; Tran et al. 2011). Alternatively, matter at low luminosity switches from radiative with OF to radio
+some authors proposed that instead of a monolithic structure the JetwithoutOF,astheADAFhypothesissuggests,thenBLRscould
+toruscouldbeclumpyorporous,formedbymanyclouds(Nenkova be expected to eventually disappear as the AGN luminosity goes
+etal.2002;Tristrametal.2007;Bisognietal.2017).Accordingto down (Elitzur & Shlosman 2006), leading to a possible evolution
+RamosAlmeidaetal.(2011),inSy2thetorusisbroaderthaninSy1 fromunobscuredType1toobscuredType2,andmaybethereafter
+andhasmoreclumpswithloweropticaldepthbuthighercovering toLINER-likeornormal-likespiralgalaxieswithstarvingSMBHs
+factors, which implies that it is the variance in covering factor in attheircentre(DiPompeoetal.2018;Riccietal.2022).
+eachtypethatexplainswhysomeobscuredSy2sdonotshowHBL In our previous study of a large sample of AGN with different
+(RamosAlmeida2015). spectralclassifications(Torres-Papaquietal.2024),wedidreporta
+However,otherauthorsfoundcharacteristicsinType2AGNthat decreaseinthefrequencydetectionofOFinlow-luminosityAGN
+aremoredifficulttoreconcilewithinUPAGN.Mostspecifically,it (RG-AGN/LINER/Sy2) compared to high-luminosity AGN (Sy1),
+wasfoundthattheEddingtonratio,N𝐸𝑑𝑑 =L𝑏𝑜𝑙/L𝐸𝑑𝑑,tendtobe whichapparentlycouldbeconsistentwithdifferentaccretioncharac-
+lower in Type 2 than in Type 1 AGN, suggesting that the former teristics(ADAFinthefirstgroupandradiativeinthesecondgroup).
+couldhaveintrinsicallyloweraccretionratesthanthelatter,possibly However, comparing Sy1 with Sy2 after correcting for the higher
+explaining the absence of broad lines in the pure Sy2 (Nicastro stellar contribution in the continuum of the latter, we did not dis-
+et al. 2003; Panessa et al. 2009; Marinucci et al. 2012; Petrov & cern a difference in AGN power law, suggesting that the accretion
+Yankulova2012;Ohetal.2015;Pons&Watson2016;Zhaoetal. processinthesetwotypesaresimilar,moreprecisely,bothareina
+2020). This has led Laor (2003) to propose that because the line radiative mode, just accreting at different rates due to a difference
+width in emission we observed in Type 1 AGN have a maximum, in BH mass. Consistent with this interpretation, we also found no
+𝛿𝑣 𝑚𝑎𝑥 =25,000kms−1,theremustbeaphysicallimitinaccretion, difference in AGN wind intensity between the two Seyfert types,
+corresponding to a luminosity L𝑙𝑖𝑚, which is required in AGN to except, in general (not only in the Seyfert galaxies), in any AGN
+formaBLR.Consequently,Type2AGNcannotformBLRssimply detectedinradio,whereOFsaresystematicallymoreintense,sug-
+because L < L𝑙𝑖𝑚. Following a similar idea, Trump et al. (2011) gestingthatbothradiativeandjetmodeinthesegalaxiescouldbe
+suggested that in Type 2 AGN the accretion process is radiative simultaneously active. In conclusion, the only differences we ob-
+inefficient(RIAF,forradiativeineficientaccretionflow;alsoknown servedbetweenSeyfertgalaxieswithandwithoutOFaredifferences
+asADAF,foradvectiondominatedaccretionflow,seeNarayan2005; inmorphology,accretionrate(orAGNluminosity)andSFR:Seyfert
+Heckman&Best2014). with OF are in later-type galaxies, with higher accretion rates and
+Moreover, because by definition N𝐸𝑑𝑑 ∝ 𝜂𝑚(cid:164)𝑐2/M𝐵𝐻, i.e., the star formation rate (SFR). Since no evolution from Sy1 to Sy2 is
+Eddington ratio depends on the ratio of the accretion rate to the possible,becauseoftheirdifferencesinmorphologyandBHmass,
+massoftheBH,adifferenceinmassoftheSMBHconnectedwitha this must imply that these two types of AGN must have followed
+differenceingalaxymorphologyshouldalsoplayaroleindefining differentevolutionarypathsrelatedtodifferentformationprocesses,
+the AGN types (Zhang & Wang 2006; Onori et al. 2017; Torres- where an OF characteristically appear at an earliest phase of their
+Papaquietal.2020;Zhang2022).Suchdifferencesweredefinitely evolution,whenthegalaxiesarericheringas.
+observedinTorres-Papaquietal.(2024),comparingthesampleof Ontheotherhand,ourtwopreviousstudiesofOFinAGNrevealed
+18,585Sy2galaxieswith4,000Sy1inTorres-Papaquietal.(2020): almostnothingaboutthetorusandconsequentlycannotallowusto
+SMBHs in Sy2 are less massive than in Sy1, in good agreement establish whether the differences we observed are consistent with
+withthelowerstellarmassesoftheirhostgalaxies,andtendtohave UPAGN. To explore this question further, we decided to apply the
+later-typemorphologiesandhigherSFRsthantheSy1hostgalaxies. spectralenergydistribution(SED)reconstructioncodeX-CIGALE
+However,despitetheirlowerBHmasses,Torres-Papaquietal.(2020) (Boquien et al. 2019; Yang et al. 2022) on our large samples of
+confirmedthatN𝐸𝑑𝑑 isloweronaverageby0.8dexinSy2thanin Sy1 and Sy2 to test if the conditions of UPAGN are verified. In
+Sy1,which,coupledtoanaveragelowerAGNluminosity,implythey thisfirstpaperweconcentrateontheSy1testingthefollowingtwo
+aredefinitelyaccretingmatteratlowerrates. hypotheses:1-theSEDisgeneric,applyingtoallthegalaxiesinour
+Howbeit,findingsuchphysicaldifferencesbetweenSy1andSy2is sample,and2-theLOSanglerelativetothepolaraxisofthetorus
+possiblynotenoughtofalsifyUPAGN,sincethesedifferencesmight issmall,consistentwithanunobstructedviewoftheengine.
+eitherbeconsistentwithdifferencesinthetoristructuresorrelated
+tosomekindofevolutionbetweenthetwotypes.Morespecifically,
+2 SAMPLEANDDATA
+sonian Astrophysical Observatory under NASA Cooperative Agreement Thesampleof3,896Sy1weareusinginthisstudycomesfromthe
+80NSSC21M0056. sample of Sloan digital sky survey (SDSS) galaxies with redshift
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 3
+samewayasinthetotalsample(TP20;comparingthepercentages
+Table1.Numberofgalaxiesineachspectralsubgroupinthetwosamples,
+SWandSW2M;thepercentagesarerelativetothetotalineachcolumn,while ineachcolumn).
+inthelastline,thepercentagesarerelativetothetotalincolumnTP20from
+datain(Torres-Papaquietal.2020).
+2.1 Transformationofmagnitudesintofluxes
+Thenextstepinourpreparationofthedataconsistsintransforming
+Samples TP20 SW SW2M
+themagnitudesinfluxes.ForSDSS,weusedEquation1,whichis
+Sy1N 1534(40%) 1126(37%) 833(37%) thehyperbolicmagnitudedefinedbyLuptonetal.(1999),where 𝑓
+0
+Sy1Nw 974(25%) 780(26%) 551(25%) isthefluxofanobjectwithconventionalmagnitudezero,and𝑏 is
+Sy1B 905(23%) 701(23%) 503(22%) asofteningparametertypicalof1𝜎noiselevelfortheseeinginan
+Sy1Bw 483(12%) 431(14%) 350(16%) aperturewithPSFof1arcsec.Thevaluesof𝑏and 𝑓 ineachband
+0
+Total 3896 3038(78%) 2237(57%) ofSDSSfilterscanbefoundinoneofthewebpagesofSDSSDR6
+(2012).
+𝑧 < 0.4 defined by Torres-Papaqui et al. (2020) for their study of 𝑓(𝐽𝑦)=2𝑏𝑓 sinh
+(cid:18)𝑚ln(10)
+−ln(𝑏)
+(cid:19)
+(1)
+OF in AGN. The sample is divided into four spectral subgroups:
+0 −2.5
+Sy1N, where both narrow and broad line components of H𝛽 ap- The uncertainty on the fluxes are calculated by applying Equa-
+pear in the spectra, Sy1B, where only a broad component appear, tion2,wheredmistheuncertaintyonthemagnitude.
+and Sy1Nw/Sy1Bw, where OFs are detected in the narrow line
+[OIII]𝜆5007.InTable1,thenumberofgalaxiesineachofthefour 𝑑𝑓(𝐽𝑦)=
+(cid:12)
+(cid:12) (cid:12)
+(𝑓𝑑𝑚/[−2.5/ln(10)]) (cid:12)
+(cid:12) (cid:12) (2)
+spectralsubgroupsisshown.Comparingthevaluesinthefirstcol-
+(cid:12)tanh({𝑚/[−2.5/ln(10)]}−ln(𝑏))(cid:12)
+umn(TP20),onecanseethatthenumberofgalaxiesdecreasesalong TotransformthemagnitudesintheWISEcatalogs,weusedEqua-
+thesequenceSy1N→Sy1Nw→Sy1B→Sy1Bw.Therefore,twocom- tion 3, where 𝐹 𝜈 ∗ is the zero magnitude flux density derived for
+ponentsinemissionisthenorminSy1,andinbothspectralsubtypes sourceswithapo 0 wer-lawspectra,𝐹 𝜈 ∝𝜈−𝛼,and 𝑓 𝑐 isacolorcor-
+AGNwindsareequallyfrequent—OFsbeingverycommoninSy1 rection.
+(Torres-Papaquietal.2020).
+To construct the SED of these AGN using X-CIGALE, what is 𝑓(𝐽𝑦)=(𝐹 𝜈 ∗ /𝑓 𝑐)×10(−𝑚/2.5) (3)
+0
+neededisphotometricdataofhighqualitycoveringthelargestrange InWrightetal.(2010)onecanfindthepossiblevaluesfordifferent
+ofwavelengthspossible.Forouranalysis,allthedatawereobtained exponent 𝛼 in Table 1 and typical colors they produce in Table 2,
+by cross-correlating the list of Sy1 in Torres-Papaqui et al. (2020) afterapplyingthecorrespondingcolorcorrection.Aftercomparing
+withentriesindifferentcataloguesavailableinVIZIER2 usingthe thecolorsoftheSy1inourSWsamplewiththoseinTable2,we
+option“MATCHES”inTOPCAT.3 FromSDSS,weretrievedpho- optedtousethepowerlaw 𝐹 𝜈 ∝𝜈−1,where 𝑓 𝑐 isequalto0.9921,
+tometricdataintheopticalforall3,896galaxiesatfivewavelengths, 0.9943, 0.9373 and 0.9926, for the band W1, W2, W3, and W4,
+354nm(u),476nm(g),628nm(r),769nm(i)and925nm(z). respectively.
+From WISE, we retrieved another four photometric data in Equation4wasusedfor2MASS,where𝐹 𝜈 isthezeromagnitude
+MIR/FIRfor3,038galaxies,centredat3.4µm(W1),4.6µm(W2),
+ineachbandaslistedinTable2ofCoheneta
+0
+l.(2003).
+12 µm (W3) and 22 µm (W4). In the WISE catalogue the quality
+ofeachfluxisindicatedbyaflag,qph,takingfourvalues,A,B,C, 𝑓(𝐽𝑦)=𝐹 𝜈 ×10(−𝑚/2.5) (4)
+0
+andU:flagAcorrespondstoasignaltonoiseratioS/N<10,flagB
+TheuncertaintiesfortheWISEand2MASSfluxeswereestimated
+to the range 3 ≤ S/N ≤ 10, flag C to 2 ≤ S/N ≤ 3, while flag U
+bydeterminingthedifferencesbetweenthefluxescalculatedandthe
+indicates S/N < 2. Without applying any pre-selection criterion in fluxesincremented𝑚±𝑑𝑚,where𝑑𝑚correspondtotheuncertainties
+photometry,98%ofthegalaxiesinoursampleinthebandsW1and
+inmagnitudeforeachmeasuredasreportedinthecataloguesofeach
+W2 have flag A while the rest have flag B. For the bands W3 and
+survey.
+W2,theflagsareeitherB(inmajority)orA,withonlyafewC(no
+morethan18%).
+Finally,for2MASSwecouldfindthreephotometricdatainNIR 2.2 Peculiardistributioninredshift
+for2,237galaxies,withwavelengthscentredat1.235µm(J),1.662
+InFigure1,wepresentinthetwosamplesofSy1,SWandSW2M,
+µm (H) and 2.159 µm (K𝑠). Since adding new wavelength bands
+the density plots for the distributions in redshift (𝑧) in each of the
+reducesthenumberofobjects(fromSDSStoWISEto2MASS),we
+spectralsubgroup.Ineachsample,Sy1Btendtobefoundathigher𝑧
+decidedtostudytheSy1byformingtwosamples:onecontainingonly
+thanSy1NandSy1withAGNwindtendtobelocatedathigher𝑧than
+SDSS-WISEdata(SW)thesecondwithSDSS-WISE-2MASSdata
+theircounterpartswithoutwind(Torres-Papaquietal.2020,2024).
+(SW2M).Thiswasdonewiththeideaofdetermininghowadding
+InTable2weshowtheresultsofapplyingaKruskal–Wallis,non-
+dataindifferentbandsaffectstheSEDobtainedbyX-CIGALE.
+parametric,ANOVAtest,withDunn’smultiplecomparisonstests,to
+InTable1,wecanverifythataftercross-correlationsthenumber
+comparethedata.Adetaileddescriptionofthesetestscanbefound
+ofSDSSgalaxiesdecreasesto78%intheSWand57%intheSW2M,
+inpage4and5ofTorres-Papaquietal.(2020),togetherthedescrip-
+whiletherelativefrequenciesofeachspectralsubgroupdecreasethe
+tionofthedifferentlevelsofsignificanceintheirTable1.Thesetests
+confirmatthehighestlevelofsignificancethedifferencesobserved
+2 athttps://vizier.cds.unistra.fr/viz-bin/VizieR inredshift(exceptbetweentheSy1BandSy1Nw).
+3 TOPCAT is an interactive graphical viewer and editor for tabular data Sinceitisslightlyeasiertodetectbroademissionlinesathigher
+capableofhandlinglargeandsparsedatasetswithcorrelationfunctionality; redshifts,onemightsuggestthatthehighernumberofSy1Bathigh
+https://www.star.bris.ac.uk/mbt/topcat/ 𝑧inoursamplesisduetoanobservationalbias.However,thiswould
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+4 Roco-Avilezetal.
+Figure1.Densitydistributionsin𝑧inthefourspectralsubgroupsinthetwosamplesSWandSW2M.
+thedifferencesinredshiftsbetweenRG/Sy1(high𝑧)andLINER/Sy2
+Table2.SummariesofDunn’sMultiplecomparisons
+testforthedensitydistributionin𝑧. (low 𝑧),aregenuine,andcanbeexplainedbyalludingtodifferent
+statesofformation/evolutionofthegalaxyhostsandtheirSMBHs.
+Pairscompared SW SW2M higher𝑧 Ifthisisthecase,differencesinthetoriofSy1BandSy1Nmight
+alsobeexpected,whichwouldallow,possibly,tobetterunderstand
+Sy1B-Sy1N **** **** Sy1B thephenomenologicaloriginofUPAGN.
+Sy1B-Sy1Bw *** **** Sy1Bw
+Sy1N-Sy1Nw **** **** Sy1Nw
+Sy1Bw-Sy1Nw **** **** Sy1Bw
+Sy1Bw-Sy1N **** **** Sy1Bw 3 METHODOFANALYSIS
+Sy1B-Sy1Nw 𝑛𝑠 𝑛𝑠 𝑛𝑠
+According to UPAGN, the only difference expected between Sy1
+Notes:Testsperformedonspectralsubgroupswith and Sy2 is the LOS angle, 𝑖, relative to the tori of gas and dust
+lastcolumnidentifyingwhichsubgroupofthepair surroundingtheengine.InSy1,theengineisexpectedtobedirectly
+isathigher𝑧;levelsofsignificane,(∗∗∗∗, 𝑝 < visible,whichimpliesthat𝑖mustbesmall,closeto0◦,relativetothe
+0.0001),(∗∗∗,𝑝<0.001),(∗∗,𝑝<0.01),(∗,𝑝<
+polaraxisofthetorus.AsacorollaryfortheSy1,theengineisalso
+0.05),(𝑛𝑠,𝑝≥0.05),whichisnonsignificative.
+expectedtobethesameinthespectralsubgroups,and,therefore,to
+all have the same SED. Consequently, our method to test UPAGN
+not explain the apparent deficit of Sy1B at low 𝑧. Consequently, in Sy1 using X-CIGALE (Boquien et al. 2019; Yang et al. 2022)
+thedifferenceinredshiftismostprobablygenuine,althoughitisnot isrelativelystraightforward(Gaskell2009):itconsistsin1-testing
+clearwhatthiscouldmeanphysicallyorhowthiscouldbeinterpreted whethertheSEDisgeneric,thatis,onemodelappliestoalltheSy1,
+withinUPAGN.Ontheotherhand,noobservationalbiasisexpected and2-verifyingthattheLOSangle𝑖isrelativelysmall,closeto0◦.
+toaffectthedetectionofOF,sincetheseparationinspectralsubgroup InX-CIGALE,theSEDisconstructedbydeterminingthephysi-
+is based on H𝛽 lines, while the detection of OF is based on the calparametersdefiningtheAGNanditstorus,emittinginUV/Opt
+detectionofablueshiftcomponentofthenarrowline[OIII]𝜆5007, andMIR,andofthestellarpopulationswhichcontributemostlyin
+twodifferent,unreated. Opt/NIR,withpossiblecontributionsinUVandFIRdependingupon
+Beside, there are other physical differences between the Sy1 in thelevelofstarformation(characterizedbythestarformationrate,
+thedifferentspectralsubgroupsthatcouldexplainwhatweobserve. SFR), with reemission by dust in MIR/FIR and dust extinction in
+Forexample,adifferenceinmorphologyofthehostgalaxies:since UV/Opt.ThedifferentmodulesweusedinX-CIGALEtoconstruct
+Sy1B/Sy1Bw tend to be in earlier type spirals than Sy1N/Sy1Nw aSEDaregiveninTable3,togetherwiththefinalvaluesthatwere
+(Torres-Papaqui et al. 2020), a more massive and luminous bulge adoptedtobetestedforthegenericSED.
+mightmakethemeasiertodetectthemathigh𝑧.Ontheotherhand, The first module characterizes the star formation history (SFH).
+duetothedownsizingphenomenon(massivegalaxiesformingbefore BecauseSeyfertgalaxiesarespirals,wefirststartedwiththeexpo-
+lessmassivegalaxies),Sy1BhavingmoremassiveBHsthanSy1N, nential function, sfh2exp, varying the e-folding time, 𝜏 𝑚𝑎𝑖𝑛, from
+early-typeSy1Bwouldnaturallybeexpectedtobeathigher𝑧than short,burst-likeepisodes,favouringarapidformationofthebulge,
+late-typeSy1N.InTorres-Papaquietal.(2024)itwasconcludedthat tolonglastingepisodes,consistentwithconstantstarformation(SF)
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 5
+Table3.SummaryofinputsusedinX-CIGALEforultimaterunofSy1genericSEDmodelwithpolaremission.
+Parameters Values Descriptions
+sfhdelayed
+𝜏 𝑚𝑎𝑖𝑛 7000 e-foldingtimeinMyr.
+𝑎𝑔𝑒 𝑚𝑎𝑖𝑛 7000 Ageoftheoldeststars(Myr).
+SSP:bc03
+𝑍 0.02 Metallicity.
+SeparationAge 10 Agedifferencebetweentheyoungest
+andtheoldeststellarpopulations(Myr).
+Nebularemission.
+𝑙𝑜𝑔𝑈 -2.5 ionizationparameter.
+𝑧 𝑔𝑎𝑠 0.02,0.03 Metallicityofthegas.
+𝑛 𝑒 1000 Electrondensity.
+𝑙𝑖𝑛𝑒𝑠 𝑤𝑖𝑑𝑡ℎ 3000 Linewidth(km/s).
+Dustatt_modified_CF00
+𝐴𝑣 𝐼𝑆𝑀 1.0 AttenuationoftheVbandintheinterstellarmedium.
+𝑠𝑙𝑜𝑝𝑒 𝐼𝑆𝑀 -0.7 SlopeofthepowerlawofattenuationintheISM.
+SKIRTOR
+𝑝𝑙 1.0 Powerlawexponentthatestablishes
+theradialgradientofthedustdensity.
+𝑅 𝑚𝑎𝑥/𝑅 𝑚𝑖𝑛 30 Relationshipbetweenthemaximum
+andminimumradiiofthedusttorus.
+oa 30,40,50,60,70,80 Openingangle.
+i 0,10,20 Viewingangle.
+𝑓 𝐴𝐺𝑁 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9 FractionofAGNcontributiontotheIRluminosity.
+Polaremission
+E(B-V) 0.1,0.3,0.5 Extinctioninthepolardirectioninmagnitudes.
+temperature 100,200 PolardusttemperatureinK.
+in the disks. However, since Sy1 galaxies tend to be in early-type
+spirals, we also tried a SFH described by the sfhdelayed function
+withvarious𝜏 𝑚𝑎𝑖𝑛(shortandlong).
+Totestthedifferentsolutions,weusedtwocriteria,the 𝜒2ofthe
+bestfits,whichshouldbeasclosetooneaspossible,andtheBayesian
+InformationCriterion(BIC),BIC= 𝜒2+𝑘ln(𝑛),whichalsotakeinto
+account the number of free parameters in the modules that can be
+fitted, 𝑘, and the sum of the photometric bands in the samples, 𝑛;
+where𝑛=9inSWand𝑛=12inSW2M.Comparingdifferentfits,
+themodelwithsmallestBICisacceptedasthebestone.
+Applyingthesetwocriteria,thebestmodelforthegenericSED
+turned out to be described by the sfhdelayed function with a rela-
+tivelylonge-foldingtime,𝜏 𝑚𝑎𝑖𝑛 = 7,000Myr,andrelativelyhigh
+(starburst-like) SFR. This solution seems to be in good agreement Figure2.IllustrationoftheanglesasdefinedinX-CIGALE:𝑖=LOSangle
+with a scenario of early-type spiral galaxies (with massive bulges)
+(when𝑖=0,torusviewedface-on)and𝑜𝑎=half-openingangle.InStalevski
+that are still actively forming stars in their disks; incidentally, the
+etal.(2012),𝑖=𝜃,𝑜𝑎=Θ/2.TorusandBLRnottoscale.
+SFRsproducedbysfhdelayed werefoundtobeslightlylowerthan
+when sfh2exp was used. The age of the oldest stellar populations,
+varying from young (1,000 Myr) to old (10,000 Myr), was found densitytotypicalvaluesinstarformingregions(Osterbrock&Fer-
+to converge to 7,000 Myr in the generic SED, consistent with an land 2006). However, we did put the maximum FWHM available,
+epochofformationat 𝑧≥1.Forthestellarpopulations,theSimple 3,000kms−1,whichismoretypicalofAGNthanofSFregions.
+StellarPopulation(SSP)modelofBruzual&Charlot(2003,bc03) Note that we did not experiment exhaustively with the modules
+wasemployed,adoptingasolarmetallicityandasmalldifferencein ofstellarpopulation,dustextinctionandnebularemission,because
+agebetweentheoldandyoungstellarpopulations,consistentwith our main goal, testing UPAGN, suggested we concentrate on the
+continuous SF. For the stellar attenuation (extinction) by dust, the parameters that could have a critical impact, which are the AGN
+moduledustatt_modified_CF00whichisbasedonthestudyofChar- contribution to the SED and its relation with the torus. This was
+lot & Fall (2000) was utilized. The nebular emission module was done using the module SKIRTOR, which is a model of a clumpy
+alsoactivated,butsincetheversionofX-CIGALEweuseddidnot torus including the AGN contribution (Stalevski et al. 2016).The
+includeAGNemission,wefixedtheionizationfactorandelectron geometryofthetorusisshowninFigure2.Afterfixingthevaluesof
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+6 Roco-Avilezetal.
+Table4.RedshiftintervalsforanalysiswithX-CIGALE,countinggalaxies
+ineachbinintheSWandSW2Msamples.
+#ofgalaxiesinSW/SW2M
+Δ𝑧 Sy1B Sy1Bw Sy1N Sy1Nw
+[0−0.05) 6/6 4/3 18/17 10/10
+[0.05−0.10) 35/35 13/13 124/120 55/54
+[0.10−0.15) 101/98 34/34 211/197 106/99
+[0.15−0.20) 112/102 67/64 223/179 124/105
+[0.20−0.25) 146/107 90/83 233/151 167/118
+[0.25−0.30) 143/80 103/87 168/112 113/73
+[0.30−0.35) 99/56 75/46 86/39 144/68
+[0.35−0.40) 59/19 45/20 63/18 61/24
+thegradientindustdensityandtheratioofmaximumandminimum
+radii of the torus according to Fritz et al. (2006), we first ran X-
+CIGALEusingsmallvaluesof𝑖leaving𝑜𝑎andthefractionofAGN,
+𝑓 𝐴𝐺𝑁, to vary over the largest range possible. The best fit SEDs
+rapidlyconvergedtosmallanglevaluesinthemajorityoftheSy1
+galaxiesinthetwosamples.Todoublecheckthisresult,wealsotried
+differentrunswithonlylarger𝑖.InSKIRTOR,𝑖 canvaryfrom0◦
+(face-onfornoHBL)to90◦edge-on(forHBL),however,wecould
+verifyusingthe 𝜒2andBICthatthebestfitsforthelargestnumber
+ofgalaxiesinoursampleswerealwaysfavouringlow𝑖.Asafinal
+test,wereducedtherangeofvaluesof𝑖asshowninTable3,andran
+X-CIGALEalasttimeincludingpolaremission.
+3.1 ApplyingX-CIGALEindetail:testingtheSy1genericSED
+TodeterminethevaluesoftheSFHandSKIRTORmodulesforthe
+genericSED,wefirstseparatedthefourspectralsubgroupsofSy1
+inheightredshiftbins,then,selectedineachbinonegalaxywiththe
+highest quality fluxes in WISE as representative of the whole bin. Figure 3. Box-whisker plots of 𝜒2 applying the generic SED for Sy1 on
+Thenumberofgalaxiesineachbin,inbothsamples,arereportedin galaxiesinthesamplesSW(upperpanel)andSW2M(lowerpanel).Thesizes
+oftheboxesaredeterminedbythequartiles,Q1,Q2andQ3,respectively,
+Table4.AdoptingtheSy1Bspectralsubgroupasprototypeforthe
+genericSED,weranX-CIGALEoneachrepresentativegalaxiesin
+𝑞 𝑛(0.25),𝑞 𝑛(0.50)and𝑞 𝑛(0.75),thewhiskersbeingat±1.5×𝐼𝑅𝑄,where
+𝐼𝑅𝑄=𝑄3−𝑄1,theinterquartilerange.Alldatawithvalueslower/higher
+thebins.WestartedwiththeSFHsfh2expwithsmalle-foldingtime,
+thatthewhiskersareconsideredoutliers.
+𝜏 𝑚𝑎𝑖𝑛,usinglimitedrangesofi,butleavingtheotherparameters,𝑜𝑎
+and 𝑓 𝐴𝐺𝑁,tovaryoverthelargestrangeofvaluespossible,andeach
+timetesting,comparingthebestfits.
+Table5.Comparingthemedians 𝜒2 ofthebestfitsintheSWandSW2M
+X-CIGALE provides two output values: the first is identified as
+samples.
+"best",whichcorrespondstothemodelwiththebestfit,i.e.,theone
+with the lowest 𝜒2 value, and the second is "bayes," which takes
+Subgroups (SW) (SW2M)
+into account the weights of all models. In addition, the program
+𝜒2 𝜒2
+generatesaplotofthebestfitswithresidual,allowingforadirect
+examinationoftheresultingSEDs.Obtaininghighvaluesof𝜒2and Sy1B 1.67 2.01
+BIC were interpreted as indicating we need to adjust the module Sy1Bw 1.50 1.71
+values or change the ranges of these values, determining by eye Sy1N 1.74 2.86
+examinationofthebestfitSEDsandresidualwhichparametersin Sy1Nw 1.45 2.09
+eachmoduleneededtobemodified.Thisishowwedeterminedthat
+thesfhdelayedfunctionwithlong𝜏 𝑚𝑎𝑖𝑛yieldsbetterresultsthanthe
+sfh2exp(withany𝜏 𝑚𝑎𝑖𝑛).Wealsodeterminedthatthebestvaluefor marginals,aftercomparingvisuallytheSEDswithandwithoutpolar
+theLOSanglewascloseto𝑖=10◦.Constantcomparisonofthebest dustitwasdeterminedthatpolaremissiononaverageimprovesthe
+fitSEDsrevealedthat 𝑓 𝐴𝐺𝑁 increasesusingsfhdelayedascompared fitsintheIRrange(w4ofWISE).Thisiswhywedecidedtoinclude
+tosfh2exp,whileSFRsimultaneouslydecreases. this component in our generic SED for Sy1. However, we do not
+Finally,wetriedasolutionwithpolardust,whichinX-CIGALE claimthisresultisadefinitivesupportforpolardustinSy1galaxies.
+(Yangetal.2022)ismodelizebyaddingdustextinctionwithinthe ThesameprocedureasdescribedabovefortheSy1Bwasappliedto
+apertureofthetorus(withangle1−𝑜𝑎)undertheformofacolor theSy1NandtheSy1withAGNwind,concludingthattheparameters
+excessE(B-V)anddusttemperature.Thefinalvaluestestedarethose inTable3canbeappliedtoallthesegalaxies.Asafinaltest,weran
+indicatedinTable3.Althoughthedifferencesin 𝜒2 andBICwere X-CIGALEontheensembleofgalaxiesinthesampleSW.InFigure3
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 7
+Table6.MedianvaluesproducedbytheSy1genericSEDongalaxiesinthe
+sampleSW.
+Subgroup log(SFR) 𝑓 AGN i oa
+(M⊙yr−1) (deg.) (deg.)
+Sy1B 1.17 0.44 9.76 39.72
+Sy1Bw 1.21 0.51 9.66 40.71
+Sy1N 1.25 0.20 9.78 35.19
+Sy1Nw 1.27 0.30 9.72 39.96
+Table7.SummariesofDunn’sMultipleComparisonsTestforspectralsub-
+groupsinthesampleSW.LevelsofsignificanceasexplainedinTable2.
+Pairs SFR 𝑓 AGN i oa
+Sy1B-Sy1Bw * ** ns ***
+Sy1B-Sy1N **** **** ns *
+Figure4.Box-whiskerplotsforiasproducedbytheSy1genericSEDon
+Sy1B-Sy1Nw **** **** ns *
+galaxiesinthesampleSW.
+Sy1Bw-Sy1N ns **** ns ****
+Sy1Bw-Sy1Nw ** **** ns ns
+Sy1N-Sy1Nw * **** ns ****
+wepresenttheboxplotsofthe 𝜒2 forthebestSEDfits,including
+outliers.IntheupperpanelforSW,wecount52outof701(7.2%)
+outliers in the Sy1B and 121 out of 1126 (10.7%) in the Sy1N. unattenuated stellar populations (blue line), 3- stellar populations
+Although there is a slight increase in the proportion of outliers in attenuatedbydustextinction(yellowline),and4-nebularemission
+Sy1N,thisdifferenceseemsinsignificantgiventhatthenumberof lines (green line). The sum of the components is the continuous
+galaxies in this subgroup is larger. For the Sy1 with AGN winds, black line. Also shown are the fluxes from the model (red dots)
+the numbers of outliers are very similar: 34 out of 431 (7.8%) in and the observed fluxes (open circles). The goodness of the fits
+theSy1Bwand109outof780(13.9%)intheSy1Nw.Eliminating can be appreciated directly by visual inspection of the SEDs and
+theoutliers,themediansforthe 𝜒2 forthewholesampleofSy1as fromtheresidualstracedbeloweachofthem.Themostintriguing
+reportedinTable5showvalueswellbelowtwo. feature of theses SEDs is that, in any spectral subgroup, with or
+InFigure4,wealsopresentthebox-whiskerplotsfortheiBayes without AGN wind, the AGN component is only dominant in the
+values.FromthemediansinTable6,weconcludethatistayscloseto IR. According to X-CIGALE, even after attenuation by dust, the
+9.7◦/9.8◦inthefourspectralsubgroups.ApplyingaKruskal-Wallis
+stellarpopulationsformedinmajorityofmassiveyoungstars—the
+testyieldsap-valueequalto0.95,implyingthatthereisnosignificant blue component having the flat continuum shape typical of active
+differenceinibetweentheSy1subgroups.Inotherwords,inallthese starformingregions—dominatestheUV-opticalrangeoftheSED.
+Sy1galaxiesthetorusisseenface-on,leavinganunobstructedview Consequently,starformationinthesegalaxiesisveryactive,infact,
+of the engine. In general, therefore, we conclude that the solution muchmoreactivethanpreviouslyestimatedbyTorres-Papaquietal.
+wehavedeterminedusingX-CIGALEcanbeacceptedasageneric (2020).
+SED consistent with UPAGN for the whole ensemble of Sy1 with InFigure7,wecomparethebetsfitSFRsforthewholesamplewith
+andwithoutAGNwind. the reciprocal SFRs produced by the mock catalogues. The option
+Encouraged bythese results,we appliedthe genericSED tothe to produce a mock catalogue in X-CIGALE is used to verify the
+ensembleofSy1intheSW2Msample.Themedians𝑖valuesreported
+robustnessofthebestfits:usingtheoutputvaluesasinitialinputs,the
+inTable8aresimilartowhatwasobtainedintheSWsampleand programrepeatthefittingprocessvaryingtheparameters,allowing
+theresultsofDunns’posttestsinTable9confirmthat𝑖isthesame
+toestimatewetherthesolutionsconvergeornottothebestfitvalues.
+inallthespectralsubgroups.Theboxplotsforthe 𝜒2 withoutliers ComparingtheSFRsinFigure7,one-to-onerelationsareobtained
+areshowninthebottompanelofFigure3.Theoutlierpercentages showingthatthesolutionsinallthespectralsubgroupsconverge.In
+are10.5%intheSy1B,10%intheSy1Bw,5.6%intheSy1N,and Figure7,thered-dashlinesarelinearregressionswithslopesclose
+7.8%intheSy1Nw.ComparinginTable5themediansforthe 𝜒2 tooneandcoefficientsofcorrelation0.92fortheSy1B/Sy1Bwand
+in the SW2M and SW samples, a weak trend for a slightly higher 0.96fortheSy1N/Sy1Nw,implyingthattheSFRsproducedbyX-
+valuesisdetectedintheSW2Msample,whichsuggeststhatadding CIGALEarerobust.Thisresultsupportstheconclusionthatinall
+MIRphotometricdatamightintroducesomeslightdifferencesinthe these spiral galaxies, independently of their spectral subgroup and
+parametersofthegenericSEDrelativetothetorus(𝑓 𝐴𝐺𝑁,𝑜𝑎 and onthepresenceornotofAGNwind,starformationisveryactive.
+SFR).Consequently,wewillpresenttheresultsseparatelyinthenext Howintenseisthestarformationcanbebetterestimatedbytrac-
+section. ingthebox-plotsfortheSFRsinthefourspectralsubgroups.This
+isdoneinFigure8,where,judgedfromthefirstandthirdquartiles,
+the SFRs are shown to vary between 10 and 32 M⊙ yr−1. This is
+compatibleeitherwithnormalstarformationinlate-typespiralsor
+4 RESULTS
+instarburstgalaxies(Kennicutt&Evans2012).However,sincethe
+In Figure 5 we compare the SEDs obtained using the Sy1 generic hostgalaxiesoftheSy1tendtobeearly-typespirals(Torres-Papaqui
+SED model on the galaxies in the sample SW at lower z. Each etal.2020),thestarburstinterpretationmightbeclosertoreality.In
+SED is composed of four components: 1- AGN (orange line), 2- Figure8wealsodetectatrendforSFRinSy1NandSy1Nwtobe
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+8 Roco-Avilezetal.
+Figure5.ComparingresultsproducedbyX-CIGALEforthebestSEDsintheSWsampleatlower𝑧(bin1,Δ𝑧=[0.05−0.10)):Upperpanels,left=Sy1B,
+right=Sy1N,lowerpanels,left=Sy1Bw,right=Sy1Nw.
+Figure6.ComparingthebestSy1SEDsintheSWsampleathigherz(bin7,Δ𝑧=[0.35−0.40)):Upperpanels,left=Sy1B,right=Sy1N,lowerpanels,left
+=Sy1Bw,right=Sy1Nw.
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 9
+Figure7.ComparingtheSFRsfromthebestfitSEDswiththeSFRsfromthemockcatalogues;thereddashlinesarelinearregressions,withslopescloseto
+oneandcoefficientofcorrelationof0.92fortheSy1Band0.96fortheSy1N.
+Figure8.Box-whiskerplotsfortheSFRsproducedbytheSy1genericSED Figure9.Box-whiskerplotsforthefractionofAGN, 𝑓 𝐴𝐺𝑁,asproducedby
+intheSWsample. theSy1genericmodelforthegalaxiesintheSWsample.
+higherthaninSy1BandSyBw.ThistrendalsoappearedinTable6 thesignificanceislowercomparingSy1withandwithoutAGNwind
+comparingthemedians.Notethatallthestatisticswerecalculated withinthesamespectralsubgroup.Consequently,wedistinguishtwo
+aftereliminatingtheoutliersidentifiedinFigure3.Toverifiedthesta- originsforthedifferencesinSFR,themostimportantbeingadif-
+tisticalsignificanceofthesedifferences,weapplyaKruskal–Wallis ferencerelatedtothespectralgroup,SFRbeinghigherinNthanB
+test,whichdetectsignificantdifferencesatalevelofconfidenceof subgroup,thenSy1withAGNwindhavingslightlyhigherSFRthan
+95%.InTable7theresultsfortheDunn’spost-testconfirmsatthe Sy1withoutwind.
+highestlevelofsignificancethatSy1NhavehigherSFRthanSy1B. InFigure6wecomparethebestfitsasgeneratedbytheSy1generic
+ThisdifferencealsoappliescomparingSy1NwwithSy1Bw,while SEDathigher𝑧(bin7inTable4).Themostobviousdifferenceinthe
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+10 Roco-Avilezetal.
+Table 8. Median values from the generic SED for the Sy1 in the SW2M
+sample.
+Subgroup log(SFR) 𝑓 AGN i oa
+(M⊙yr−1) (degree) (degree)
+Sy1B 1.17 0.43 9.63 39.94
+Sy1Bw 1.19 0.52 9.79 40.11
+Sy1N 1.19 0.22 9.53 36.81
+Sy1Nw 1.27 0.30 9.74 39.07
+thetorus,thedifferencebetweenSy1withandwithoutwindseems
+obvious. Referring to Figure 6 in Gaskell (2009), when a wind is
+present,X-CIGALEmightinterpretthewindaspartofthetorus,ex-
+plainingwhythecoveringfactoroaincreases.However,inthecase
+ofthedifferencesbetweentheSy1NandSy1B,theinterpretationin
+termsofthetorusislessclear.
+Figure10.Box-whiskerplotsfortheopeningangle,oa,asproducedbythe
+Sy1genericmodelforthegalaxiesintheSWsample.
+4.1 ResultsfortheSy1intheSW2Msample
+ApplyingthegenericSEDtothegalaxiesinthesampleSW2M,we
+SEDappearstobeanincreaseoftheAGNcomponentinUV/Opt, comparethebestfitsinFigure11andFigure12atlowerandhigher
+the AGN continuum dominating the attenuated SF component, in 𝑧respectively.Notethatbasedontheresidualsthethreefluxesfrom
+partintheSy1withoutwindandcompletelyinSy1withwind. 2MASSarerelativelywellfittedinallthebestSEDs.Ingeneral,we
+In Figure 9, we compare the box-whisker plots for the fraction observethesamebehaviourthanwhatweobservedbeforefortheSy1
+of AGN, 𝑓 AGN , which in X-CIGALE is calculated over the whole in the SW sample: at low 𝑧, the AGN component is not dominant
+SED.Thereareobviousdifferencesbetweenthespectralsubgroups, in the UV/Opt, except maybe in the Sy1Nw, then becoming fully
+clearlyappearingalsointhemediansreportedinTable6:Sy1Bhave dominantathigh𝑧intheSy1B/Sy1Bwbutonlypartiallydominant
+higher 𝑓 AGN than Sy1N and Sy1 with wind have higher 𝑓 AGN than intheSy1N/Sy1Nw.
+Sy1withoutwind.TheresultsofDunn’spost-testreportedinTable7 The box-whisker plots for 𝑓 𝐴𝐺𝑁, oa and SFR are presented in
+confirmthedifferencesbetweenallthepairs. Figure 13, the medians are reported in Table 8 and the results for
+Surelythemostconsequentialpointaboutthedifferencesin 𝑓 𝐴𝐺𝑁 the Dunn’s post-test can be found in Table 9. For 𝑓 𝐴𝐺𝑁 the box-
+is that they are similar to those obtained by Torres-Papaqui et al. whiskerplotsaresimilartothoseobtainedforthesampleSW.More
+(2020)forthedifferencesinAGNluminosities,L𝐴𝐺𝑁.Thisimplies specifically,theyshowthesamedifferencefor 𝑓 𝐴𝐺𝑁 tobehigherin
+thatthereisadirectconnectionbetween 𝑓 inthegenericSEDof Sy1BthaninSy1NandtobehigherinSy1withwindthanintheir
+AGN
+theSy1asproducedbyX-CIGALEandL𝐴𝐺𝑁 asdeduceddirectly counterpartswithoutwind.Allthesedifferencesareconfirmedatthe
+from their SDSS spectra. This is one important argument in favor highestlevelofsignificanceinTable9,andbythemedianvaluesof
+ofthegenericSEDmodel,implyingthatthisSED(althoughbased 𝑓 𝐴𝐺𝑁 inTable8,whicharealmostthesamethanintheSWsample.
+onaroughapproximationofthetorusstructure)canreproducean Thisimpliesthattheadditionofthreedatafrom2MASSinNIRhad
+important physical characteristics of AGN related to the accretion no effect on the fits of this parameter. These differences in 𝑓 𝐴𝐺𝑁
+rateofmatterbytheSMBH. characterizethedifferentspectralsubgroups.
+Asweexplainedinourintroduction,anotheradvantageofusing LikeinthesampleSW,thebox-whiskerplotsforoainFigure13
+X-CIGALEisthatweshouldgetsomeinformationaboutthetorus showthesametrends:𝑜𝑎islowerinSy1NthaninSy1B,andhigherin
+itselfand,morespecifically,howitobstructsthecentralengine.In Sy1withwindthanwithoutwind.However,inTable9,thedifferences
+particular,oneofourinitialhypothesestoexplaintheSy1Nspectral arelesspronouncedintheSW2MthanintheSWsample.Thisalso
+subgroup was that narrow lines appear in these AGN because we appearsinthemedianvaluesreportedinTable8.
+seethematintermediateLOSanglesrelativetothetori.However, ComparingFigure13withFigure8wedonotdistinguishmuch
+sinceiissmallinthegenericmodel,anddoesnotseemtovaryin differenceandcomparingTable6withTable8themediansforSFR
+thespectralsubgroups,thishypothesisseemsnowdefinitelyfalsified. in the Sy1B and Sy1Nw are exactly the same in the two samples,
+Therefore,anothercharacteristicmustbeinvolved,eitherofthetorus althoughlowerfortheSy1BwandSy1NintheSW2Msample.In
+orofthebroadlineregion(BLR)fillingmattertotheaccretiondisk. Table9,thedifferencebetweenSy1NandSy1Nwincreases,while
+Inthegenericmodel,thesecondparametersthatweallowedtovary foranyotherpairstheresultsarethesameasbefore.
+wasthehalf-openingangle,oa,whichyieldsinformationaboutthe Althoughonemightbetemptedtoattributethecauseofthelower
+coveringfactorofthetorus, 𝑓 𝑐𝑜𝑣,thatis,thepartthatisilluminated significanceofthestatisticalteststopossiblephysicaldifferencesin
+bytheAGN.Assumingthecoveringfactorofthetorusisthesame the SEDs, due to an addition of data in NIR, a comparison of the
+asthecoveringfactoroftheBLRs(Gaskell2009),onecanthusget datainthetwosamplesinFigure16oftheAppendixrathersuggests
+informationonbothstructuresatthesametime. it is caused by a change in the dispersions of the data due to the
+InFigure10wecomparethebox-whiskerplotsofoainthediffer- reductionofthenumberofdatacloseto30%intheSW2Msample
+entspectralsubgroupsandreportthemediansinTable6.Itseems (seeTable1).Thiscanbebetterappreciatedfor 𝑓 𝐴𝐺𝑁 inFigure16,
+clearthatthereisatrendforSy1BtohavelargeroathanSy1Nand whereonecanclearlydistinguishanaccumulationofpointsatlow
+forSy1withwindtohavelargeroathantheircounterpartswithout values in the Sy1N and Sy1Nw compared to Sy1B and Sy1Bw.
+wind(nodifferenceappearbetweenSy1NwandSy1Bw).Intermsof Thisaccumulationofpointsiswhatthestatisticaltestsinterpretasa
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 11
+Figure11.ComparingresultsproducedbyX-CIGALEforthebestSEDsintheSW2Msampleatlower𝑧(bin1,Δ𝑧 = [0.05−0.10)):Upperpanels,left=
+Sy1B,right=Sy1N,lowerpanels,left=Sy1Bw,right=Sy1Nw.
+Figure12.ComparingthebestSy1SEDsintheSW2Msampleathigherz(bin7,Δ𝑧=[0.35−0.40)):Upperpanels,left=Sy1B,right=Sy1N,lowerpanels,
+left=Sy1Bw,right=Sy1Nw.
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+12 Roco-Avilezetal.
+Figure13.Box-whiskerplotsfor 𝑓 AGN,oa,SFRfortheSy1intheSW2Msample.
+inSFRbeingthesameasbeforeintheSy1BandSy1Nw,butde-
+Table 9. Summaries of Dunn’s Multiple Compar-
+isonsTestfortheSy1subgroupsintheSW2Msam- creasingintheSy1NandSy1Bw,thesequenceinSFRwouldhave
+ple.LevelsofsignificanceasexplainedinTable2. changed to Sy1Nw→Sy1N/Sy1Bw→Sy1,due only to a change in
+dispersionofSFRsintheintermediateSy1NandSy1Bw.Thissug-
+Pairs SFR 𝑓 AGN i oa geststhatthetrendforSy1NtohavehigherSFRthanSy1Bisvalid
+inbothsamples.Moreover,consideringthatthedifferenceinSFRis
+Sy1B-Sy1Bw ns **** ns *
+lowerbetweentheSy1NwandSy1BwthanbetweentheSy1Nwand
+Sy1B-Sy1N ns **** ns *
+the two other Sy1 without wind, then we could also conclude that
+Sy1B-Sy1Nw **** **** ns ns
+thetrendforSy1withwindtohavehigherSFRthanthosewithout
+Sy1Bw-Sy1N ns **** * **
+wind,asconfirmedintheSWsample,isstillobservedintheSW2M
+Sy1Bw-Sy1Nw ** **** ns ns
+Sy1N-Sy1Nw **** **** ns * sample.
+Ingeneral,therefore,weconcludethataddingthethreefluxesof
+Notes:LevelsofsignificanceasexplainedinTa- 2MASSinX-CIGALEdidnotaffecttheresultsobtainedusingonly
+ble2. theWISEfluxes,andthatthemainreasonwhythedifferencesin𝑜𝑎
+andSFRarelessstatisticallysignificantintheSW2Msampleissolely
+duetothereductionbyalmost30%ofthedataintheSW2Msample,
+Subgroup Parameter Corr.coef. Slope Intercept
+whichmakesthedetectionofaccumulationsatsomecharacteristics
+𝑓 𝐴𝐺𝑁 0.93 0.85 0.09 valuesconsistentwithdifferencesinparametersbetweenthespectral
+Sy1B 𝑜𝑎 0.89 0.88 4.37 subgroupslessobvious.
+log(SFR) 0.87 0.83 0.15 WethereforeacceptasrobusttheresultsforX-CIGALEanalysis
+𝑓 𝐴𝐺𝑁 0.92 0.83 0.11 that suggests 1- 𝑖 is small, consistent with UPAGN, 2- 𝑓 𝐴𝐺𝑁 is a
+Sy1Bw 𝑜𝑎 0.91 0.87 4.48 characteristicoftheSEDthatexplainsinpartthespectralsubgroups,
+log(SFR) 0.83 0.74 0.26 3- the covering factor, 𝑜𝑎, is larger in Sy1 with wind than in Sy1
+withoutwind,andpossiblyalsolargerinSy1BthaninSy1N,and4-
+𝑓 𝐴𝐺𝑁 0.90 0.88 0.08
+SFR is starburst like, and possibly higher in Sy1N/Sy1Nw than in
+Sy1N 𝑜𝑎 0.87 0.83 6.79
+Sy1B/Sy1Bw.
+log(SFR) 0.89 0.86 0.08
+𝑓 𝐴𝐺𝑁 0.92 0.87 0.08
+Sy1Nw 𝑜𝑎 0.89 0.85 5.81
+log(SFR) 0.86 0.80 0.19
+5 DISCUSSION
+Table10.Linearregressionsforeachspectralsubgroupandparameter. ThegenericSEDconsistentwithUPAGNimpliesthatalltheSy1in
+oursamplehaveasmallLOSangle,𝑖,closeto10◦,whichmeansthat
+wehaveadirectviewofthebroadlineregion(BLR)andaccretion
+significantdifference.Whatismeaningfulisnottheindividualvalues disk(althoughthisdiskisnotresolved).However,atthesametime,
+buttheirdistributionswhicharecharacterizedbytheirranks. thisresulteliminatestheintermediateanglehypothesis:theappear-
+AsjudgedbythecoefficientsofcorrelationreportedinTable10 ance of narrow lines in the spectra of the Sy1N is not due to an
+forthelinearregressionscomparingthedatainSWwithSW2Min intermediateLOSanglerelativetothetorus.Toexplainthespectral
+Figure16,onecanseethatthevariances(adivergenceofresultsin subgroups we see now only two alternatives, which are that either
+theSEDs)isnotthecauseoftheloweringofsignificancelevelsof Sy1BandSy1NhavedifferenttoriortheirBLRsaredifferent.
+thestatisticaltestsintheSW2Msample.ExceptfortheSy1Bw,the ThenextbesthypothesisconsistentwithUPAGNisadifferencein
+linearfitsarequitesimilarinallthespectralsubgroups,withhigh thelevelof“clumpiness”ofthetorus(Nenkovaetal.2002;Tristram
+correlationcoefficientsandonlyslightlyflatterslopes.Theseslopes et al. 2007; Ramos Almeida et al. 2011; Ramos Almeida 2015;
+areconsistentwiththegeneraltrendnotedbeforeforthevaluesin Mateosetal.2016;Bisognietal.2017;Audibertetal.2017).More
+SW2M to be slightly higher than in SW. These higher values are specifically, a torus punctured by a higher number of holes allows
+consistentwithanobservationalbiasaffecting2MASSdata. morelightfromtheAGNtoreachthedisk,excitingthegasinthe
+In the SW sample the SFR was found to decrease along the se- NLR.Inthemodeloftorusweused(Stalevskietal.2012),thehalf-
+quenceSy1Nw→Sy1N→Sy1Bw→Sy1B.IntheSW2Mthemedians openingangle,𝑜𝑎,isequaltothecoveringfactorintheoptical, 𝑓 𝑐𝑜𝑣.
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 13
+Consequently, lower 𝑜𝑎 means smaller 𝑓 𝑐𝑜𝑣 consistent with more Theyareoutflow(OF)componentsinthe[OIII]lineat5007Å,at
+clumpytorus.However,thisexplanationwouldalsoneedtopointto kpcfromthecentralengine,whilethefountainmodelcoversonlya
+acriticallevelofclumpinessabovewhichnolightcanpassthrough few10sofpc,whichisthescaleofthetorus.Consequently,although
+thetorusintheSy1B,and,hopefullyalso,revealsevidencewhythe itiseasytoimaginematterejectedbyAGNwindfromthetorusto
+toriaredifferent. fallbackontheBLR(asub-pcstructure),itismuchmoredifficult
+To explore this question using X-CIGALE, we added four more toimaginematterfromtheNLRtofirstfallbackonthetorus,then
+freeparametersinthemodelofthetorusthatmightaffectit.These fromthetorustotheBLRandfinallyontheaccretiondisk.However,
+are, 𝑡, the edge-on optical depth at 9.7 𝜇m, 𝑝𝑙, a power law for beforereachingtheNLR,thewindmustdefinitelypassbytheregion
+theradialdustdensity,𝑞,adensitygradientvaryingwiththepolar ofthetorusandthusitishighlyconceivabletoassumethatpartof
+angle, and 𝑅, the ratio of outer to inner radius of the torus. To the matter from the wind replenishes the torus (Williamson et al.
+distinguishwhichoftheSEDmodelsisbetter,weusedtheBIC.All 2020;Wadaetal.2016)makingtheprocessrecurrent(forevidence
+themodifiedSEDmodelsproducesignificantlyhigherBICthanthe ofrecurrenceinAGNseeLyuetal.2025,andreferencetherein).
+genericmodel,clearlyfavouringthelatter.Moreover,allthemodified Theseconddifficultyisthatassumingrecurrenceonecouldhave
+SEDmodelspredictdifferencesinSFR, 𝑓 𝐴𝐺𝑁 and𝑖,exactlyasin expectedtofindevidenceofpreviouswindeventsintheNLRofAGN
+thegenericmodel,exceptfor𝑜𝑎,wherenodifferencesisdetected. withoutwind,whichisnotthecaseofSy1wherenoOFisdetected
+However,noneofthenewtorusparametersinthesemodelsseemto (Sy1BandSy1N).Thismightbebecauseevidenceofpreviouswind
+yieldanyclueaboutwhythiscouldbehappening.Consequently,we eventinthediskofAGNhostsmightnotlivelong,especiallyifthe
+feelsafeinrejectingthehypothesisthatadifferenceintoriexplains wind has a positive feedback effect, like triggering star formation.
+thespectralsubgroups. However,inourstudy,enhancedstarformationinSy1withwindonly
+The second alternative, the BLRs in the spectra subgroups are appears as weak trends in Table 7, the significant difference being
+different,looksmoreprobable.Morespecifically,aricher(moreex- higherSFRinSy1NthaninSy1B.Moreover,inTorres-Papaquietal.
+tendedormassive)BLRinSy1BthanSy1Nproducesmoreintense (2020)nocorrelationwasfoundbetweentheparametersrelatedto
+broademissionlines,hidinganynarrowlinesintheirspectra.As- theSMBHorthewindwiththeSFR.Ontheotherhand,ifrecurrent
+sumingmatterintheBLRfeedstheaccretiondisk(Gaskell2009), AGNwindsareresponsibleinbuildingthetorus,thisstructureitself
+thishypothesiswouldagreewithalltheotherdifferencesobserved couldbetakenasevidenceofpastwindeventsinSy1nowwithout
+betweenthesubgroups(seeTable4inTorres-Papaquietal.2020): wind.
+Sy1Bhavehigherbolometricluminosities,steeperpowerlawsinop-
+tical,anddespitehavingmoremassiveBHs,higherEddingtonratios
+(L𝑏𝑜𝑙 ⁄M𝐵𝐻)thanSy1N.Thismayalsoexplainthedifferencein𝑜𝑎:
+5.1 ConnectingUPAGNtotheformationofgalaxies
+according to the model of Gaskell (2009), based on reverberation
+analyses,theBLRhasthesame 𝑓 𝑐𝑜𝑣 asthetorus(seeFigure2)and InSy1(Torres-Papaquietal.2020)andinotherAGNtypes(Torres-
+thus Sy1N having less massive or extended BLR than Sy1B must Papaquietal.2024)noevidencewasfoundofAGNwindsquenching
+alsohavelower 𝑓 𝑐𝑜𝑣,i.g.,lower𝑜𝑎. starformation.Infact,thesetwoanalysesrevealednothingaboutthe
+AdoptingthemodelofGaskell(2009),anotherobservationmade possibleeffectAGNwindshaveorhavehadontheirhostgalaxies.
+byTorres-Papaquietal.(2020)canbeexplained,whichisthefact ThankstoX-CIGALE,wenowhaveadditionalinformationconsis-
+thatH𝛽FWHMinSy1withwindissystematicallysmallerthanin tentwithUPAGNabouttheputativetorusinSy1whichcouldshed
+Sy1 without wind. If the gas from the BLR replenishes the accre- newlightonthiscrucialquestion:whatroledoesAGNwindsplay
+tiondisk,asuddenincreaseinaccretioninSy1withwind–infact, intheformationofgalaxies?
+triggeringthewind–depletestheBLRingas,explainingthesmaller Two"new"aspectsoftheaccretionprocessinSy1seemstoappear
+FWHMs. This explanation also agrees with the observational evi- inourpresentstudy:1-AGNwindistriggeredbyasuddenaccretion
+dence of higher accretion rates (Torres-Papaqui et al. 2020): Sy1 ofmatterfromtheBLR,and2-AGNwindhasadirectimpactonthe
+withwindhavehigherbolometricluminositiesandEddingtonratios torus,replenishingitinmatter;thenmatterfromthetoruscanfall
+thantheircounterpartswithoutwind. backontheBLRGandeventuallyontheaccretiondisk,makingthe
+According to the generic SED model, therefore, a difference in phenomenonrecurrent.However,sofar,nothinginouranalysistells
+BLRseemstobethecauseofthespectralsubgroups.Butthegeneric uswhyonlyafractionoftheSy1BandSy1Nareseentodevelopa
+modelalsosuggests𝑜𝑎issystematicallylargerinSy1withwindthan windinthefirstplace.
+in their counterparts without wind. When we started our analysis, Onepossibleanswerisevolution:AGNwithwindareatanearlier
+we thought this could be an artifact of X-CIGALE, the program phaseofformationthantheircounterpartswithoutwind.InTorres-
+confoundingthewindwiththetorus.However,anothermodelbased Papaquietal.(2024),ascenariowasproposedbasedonthespecific
+onhydrodynamicsimulationswassuggestedtousbythereviewerthat diagnosticdiagram,comparingthespecificaccretionrate(sBHAR;
+canbetterexplainthisresult.Thisisthefountainmodelasproposed the accretion rate divided by the BH mass) with the specific star
+by Wada (2012, 2015). According to this model, matter from the formationrate(sSFR;thestarformationrateddividedbythegalaxy
+wind replenishes the torus, explaining the larger 𝑜𝑎. The fountain hostmass),wheretheevolutionisthesameinallAGN,independently
+modelalsopredictsthewindphenomenonisrecurrent(Schartmann of their activity types (RG, LINER, Sy2 or Sy1), and where AGN
+et al. 2014), matter from the torus eventually falling back to the with wind only evolve into AGN of the same type without wind,
+accretiondisk,triggeringnewwindevents.Thismodelalsosuggests becausetheAGNtypescorrespondtodifferentformationprocesses
+something even more important, which is that AGN winds might ofthehostgalaxies(seeexplanationsinTorres-Papaquietal.2024).
+havebuiltthetorus(foranalternativeseeHopkinsetal.2012,and Assuming AGN winds are ubiquitous (Torres-Papaqui et al. 2020)
+referencestherein). andareresponsibleinformingthetori(Wada2012),thisevolution
+However, we see two possible difficulties with the fountain hy- wouldrightawayagreeswithUPAGN,sincewithinthisparadigmall
+pothesis as applied to the Sy1. The first is that the winds detected AGNmusthavesuchastructure.Thisalsostraightforwardlysolves
+by Torres-Papaqui et al. (2020) are structures located in the NLR. theproblemoffindingevidencefortheeffectofAGNwind(Torres-
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+14 Roco-Avilezetal.
+Figure14.ComparingthemassofSy1galaxyhostswithandwithoutwindinfourintervalsofredshiftbins:circle,𝑧from(0,0.1],square,(0.1,0.2],lozenge,
+(0.2,0.3]andtriangle,(0.3,0.4].IneachfigurethepointsarethemediansandthebarsarethequartilesQ1andQ3.Ontheleftpanel,Sy1B(redopensymbol)
+andSy1Bw(bluefilledsymbol),ontheright,Sy1N(greenopensymbol)andSy1Nw(magentafilledsymbol).
+Figure15.SpecificdiagnosticdiagramsfortheSy1BontheleftandSy1Nontheright.Thepoints,barsandcolorsareasinFigure14.Theblackdashed
+diagonallineistheone-to-onerelation,whereagalaxyanditsSMBHgrowinmassatthesamerate;thefarthertotheleftofthediagonalthefastertheBH
+growcomparedtothegalaxy.TheyellowhorizontaldashedlineistheEddingtonlimitinspecificaccretionontotheBH.
+Papaquietal.2020,2024),sincethemerepresenceofatorusissuch thaninanyotherAGNtype),anddistinguishingbetweenSy1Nand
+evidence. Sy1Bweseethecontraryinthe secondbins.Thisispossiblydue
+Therefore,thenextnaturalstepinouranalysisconsistsincompar- todownsizing,becausethemassesoftheSMBH(andhostgalaxy)
+ingthelocusoftheSy1subgroupsinthespecificdiagnosticdiagram increaseswiththeredshiftandSy1withwindareusuallyatslightly
+toverifyhowwelltheycouldfittheevolutionhypothesis.BecauseX- higherredshiftsthantheircounterpartswithoutwind(cf.Figure1).
+CIGALEproduceshigherSFRsthanpreviouslyestimatedinTorres- The most relevant differences between AGN with and without
+Papaquietal.(2020,2024)weneedfirsttorecalculatesSFR.Whatis windreallyappearinthespecificdiagram,wheresSFRandsBHAR
+missingtodothisisthestellarmasses,𝑀∗,ofthehostgalaxies.We are significantly higher in the former than in the latter; this is a
+didnotusethemassesproducedbyX-CIGALEbecausealthoughthe commontraitofallAGNwithwind(Torres-Papaquietal.2024).This
+rangein 𝑀∗ arecomparabletowhatwasestimatedintheprevious particularityofSy1withwindiseasilydistinguishableinFigure15
+two studies, the values do not yield a relation with the BH mass, comparingthedifferentspectralsubgroupsindifferentredshiftbins.
+M𝐵𝐻–M∗,andallthestudiesintheliteraturepredictssucharelation Because SFRs estimated using X-CIGALE are higher than in the
+(ex.Häring&Rix2004;Reines&Volonteri2015;Ramsdenetal. previousstudies,Sy1arenowclosertotheone-to-onerelation,which
+2022).Aftercomparingthesedifferentrelationswechosetheonede- isthelocuswherethehostgalaxiesaregrowinginmassatalmost
+terminedbyHäring&Rix(2004),whichseemstoyieldintermediate the same rate as their SMBHs. This implies that we observe all
+valuescomparedtoReines&Volonteri(2015)andTorres-Papaqui thesegalaxiesduringanimportantphaseoftheirformation,where,
+etal.(2024). becausetheyaremoreactive,Sy1withwindarelessevolvedthan
+InFigure14,M∗ iscomparedwithM𝐵𝐻,separatingthesample theircounterpartswithoutwind.
+infourredshiftbins.Ingeneral,Sy1withwindseemstohavelower WithintheevolutionaryscenariofortheSy1withwind,wewould
+massesthanSy1withoutwind.ThisisatrendobservedinallAGN, naturallyexpecttoseesSFRandsBHARdecreasingwithtime,as
+independentlyoftheirclassificationinactivitytypes(Torres-Papaqui moregasfromthediskdisappearintostarsandlessgasfallsfrom
+etal.2024).However,thetrendinSy1isparticularlyweak(weaker thetorustotheBLR,andfromtheBLRtotheaccretiondisk,the
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 15
+conditionsfortheformationofwindbecominglessfavourable.With oursamplehaveasmallLOSangle,𝑖∼10◦,consistentwithadirect
+time,therefore,Sy1withwindswouldbecomesimilartoSy1without andopenviewofthecentralengine.
+wind, leaving behind massive tori as evidence of the higher AGN Thisresulthastwoimmediateconsequences:1-theSy1Nspectral
+activityintheirpast. subgroupscannotbeexplainedbythetorusbeingseenatintermediate
+InFigure15,wealsodistinguishadecreaseofsSFRassBHAR LOSangles,and2)thedetectionbyX-CIGALEofatorusintheSED
+increasesathigherredshifts.Thiscouldbeanotherevidenceofdown- ofSy1,wherenoevidenceofobscurationexists,isanotherevidence
+sizing:moremassivegalaxiesathighredshiftsaccretingmorematter infavourofUPAGN,accordingtowhichallAGNmustformsucha
+ontotheirSMBHs(highersBHAR)andformingmorestarsrapidly structure.
+(havinglowersSFR),losingtheirgasmorerapidly,tendtobefarther Our analysis with X-CIGALE also suggests two important new
+fromtheone-to-onerelationathigherredshifts.Becausethesame factsabouttherelationofthetoruswiththeactivityoftheSMBH:1-
+behaviourisobservedinallAGNatlowredshiftsindependentlyof followingGaskell(2009),themassofgasinthetorusfallsbackon
+their activity type (Torres-Papaqui et al. 2024), this suggests that, theBLR,andfromtheretotheaccretiondisk,producingasudden
+exceptfordownsizingeffect,theformationprocessesandevolution increaseinaccretionresponsibleintriggeringthewind,2)follow-
+ofallthesegalaxieswerefundamentallythesame. ingWada(2012),matterejectedbythewindreplenishesthetorus,
+Because SFRs in Sy1 are starburst-like, as in QSOs (Cutiva- makingtheproductionofAGNwindarecurrentevent.
+Alvarezetal.2023),andbecauseSy1galaxiesarefrequentlycon- CombiningthetwomodelswearrivedtotheconclusionthatSy1
+sideredtobethelowluminosityequivalentofQSOsatlowredshifts withwindareatanearlierphaseofevolution,eventuallytransforming
+(Osterbrock&Ferland2006),onemighthaveexpectedtoobservethe intoSy1withoutwindwithinthesamespectralsubgroups,sincethe
+samepatternofevolutionforbothobjectsinthespecificdiagnostic originofthesesubgroupsisrelatedtodifferentformationprocesses
+diagram.However,thisisnotthecase,sincethespecificdiagnostic oftheirhostgalaxies(Torres-Papaquietal.2024).Duringthisphase,
+diagram of QSOs (Figure 14 in Cutiva-Alvarez et al. 2023) shows AGNwindsbuildthetorus,thisstructureremainingasevidenceof
+that over a large range in 𝑧, from 𝑧 ∼ 0.25 to 𝑧 ∼ 4, both sSFR previoushigherlevelofactivityinSy1withoutwind.
+andsBHARdecreasewiththeredshift,tracingasequenceparallelto According to our study, what we observe in Sy1 is common to
+theone-to-onerelation,whileinSy1thesSFRincreasesassBHAR allAGNgalaxies,irrespectiveoftheiractivitytypes(Torres-Papaqui
+decreaseswiththeredshift(thesequencebeingalmostperpendicular etal.2024).ThisisanotherargumentinfavourofUPAGN.Asafinal
+totheone-to-onerelation). test,therefore,wewilldoasimilaranalysisinPartIIbyapplyingthe
+This difference can be explained assuming galaxies at high 𝑧 genericmodeltoalargesampleofSy2(18,585galaxies).
+(QSOs)formindenserenvironmentsthangalaxiesatlow𝑧(Sy1)in
+lowerdensityenvironments.Morespecifically,thishastodowiththe
+rapiditywithwhichtheSMBHformathighredshifts:athigh𝑧more
+ACKNOWLEDGEMENTS
+gasisfallingontheSMBHofQSOsthanatlow 𝑧 intheSy1,and
+themoremassivetheSMBH,thefastertheformationofthegalaxy R-A.P.A., C.R. and T-P.J.P. would like to thanks the reviewer, Dr.
+hosts(formingmassivebulges),andthusthefasterthedepletionof KeiichiWadaforsuggestingthatourresultscouldbeconsistentwith
+gas,movingthesSFRinthespecificdiagnosticdiagramfartherfrom the fountain model and the formation of the torus by AGN winds,
+theone-to-onerelation.TheparallelsequenceofQSOs,therefore,is and for the multiple comments that allowed us to make our study
+solelyduetodownsizing. clearer and to the point. R-A.P.A. acknowledges SECIHTI for its
+The differences in locus of the QSOs and Sy1 in the specific supportthroughgrantCVU1245642.Forhispart,T-P.J.P.andC.R.
+diagramwouldthusbeduetodifferenttime-scalesintheprocesses acknowledgeDAIP-UGTO(Mexico)forgrantsupport0077/2021.
+of galaxy host formations in different environments, the formation This research has used the VizieR catalogue access tool, CDS,
+ofSMBHandtheirhostgalaxiesbeingmuchlessrapidinthelatter Strasbourg, France (DOI : 10.26093/cds/vizier). The original de-
+(spiralgalaxiesinthefield)thanintheformer(galaxiesinrichgroups scriptionoftheVizieRservicewaspublishedin2000,A&AS143,
+orclusters). 23.FundingforSDSS-IIIhasbeenprovidedbytheAlfredP.Sloan
+ArapiddepletionofgasduetoarapidformationoftheSMBHs Foundation,theParticipatingInstitutions,theNationalScienceFoun-
+and galaxy hosts at high redshifts also explains why in AGN star dation,andtheU.S.DepartmentofEnergyOfficeofScience.The
+formation seemed to be quenched. In all our studies of AGN with SDSS-IIIwebsiteishttp://www.sdss3.org/.
+OF, we saw no evidence of quenching by the wind, which unique
+role, at least in Sy1 (and possibly Sy2), is to gradually build the
+torus,allowingmasstoeventuallyfallsbackontheBLR,prolonging
+DATAAVAILABILITY
+theAGNactivitylifetime.Atveryhighredshifts,therapidformation
+of SMBH pushed to the extreme might explain why we see very Thedataunderlyingthisarticlewillbesharedonreasonablerequest
+massiveSMBHsinapparentlyunusuallylightweighthostgalaxies, tothecorrespondingauthor.
+the formation of the bulge being extremely fast and very early on
+mostofthemassendsintotheSMBH(Boylan-Kolchin2023;Labbé
+etal.2023;Chworowskyetal.2024;Tripodietal.2024).
+References
+AudibertA.,RiffelR.,SalesD.A.,PastorizaM.G.,Ruschel-DutraD.,2017,
+MonthlyNoticesoftheRoyalAstronomicalSociety,464,2139
+BisogniS.,MarconiA.,RisalitiG.,LussoE.,2017,FrontiersinAstronomy
+6 CONCLUSIONS andSpaceSciences,4,48
+BoquienM.,BurgarellaD.,RoehllyY.,BuatV.,CieslaL.,CorreD.,Inoue
+OuranalysiswithX-CIGALEshowsthatitispossibletoconstruct A.K.,SalasH.,2019,A&A,622,A103
+a generic SED for Sy1 galaxies that is fully consistent with the Boylan-KolchinM.,2023,NatureAstronomy,7,731
+unificationparadigmofAGN(UPAGN):90%oftheSy1galaxiesin BruzualG.,CharlotS.,2003,MNRAS,344,1000
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+16 Roco-Avilezetal.
+CharlotS.,FallS.M.,2000,ApJ,539,718 StalevskiM.,RicciC.,UedaY.,LiraP.,FritzJ.,BaesM.,2016,MNRAS,
+ChworowskyK.,etal.,2024,AJ,168,113 458,2288
+CohenM.,WheatonW.A.,MegeathS.T.,2003,AJ,126,1090 StalevskiM.,AsmusD.,TristramK.R.W.,2017,MonthlyNoticesofthe
+Cutiva-AlvarezK.A.,CoziolR.,Torres-PapaquiJ.P.,2023,MNRAS,521, RoyalAstronomicalSociety,472,3854
+3058 SuM.,SlatyerT.R.,FinkbeinerD.P.,2010,TheAstrophysicalJournal,724,
+DiPompeoM.A.,HickoxR.C.,CarrollC.M.,RunnoeJ.C.,MullaneyJ.R., 1044
+FischerT.C.,2018,TheAstrophysicalJournal,856,76 Torres-PapaquiJ.P.,etal.,2020,AJ,160,176
+ElitzurM.,2006,NewAstronomyReviews,50,728 Torres-PapaquiJ.P.,CoziolR.,Robleto-OrúsA.C.,Cutiva-AlvarezK.A.,
+ElitzurM.,ShlosmanI.,2006,TheAstrophysicalJournal,648,L101 Roco-AvilezP.,2024,AJ,168,37
+EventHorizonTelescopeCollaborationetal.,2022,TheAstrophysicalJour- TranH.D.,2001,TheAstrophysicalJournal,554,L19
+nal,930,L14 TranH.D.,2003,TheAstrophysicalJournal,583,632
+FritzJ.,FranceschiniA.,HatziminaoglouE.,2006,MNRAS,366,767 TranH.D.,MillerJ.S.,KayL.E.,1992,TheAstrophysicalJournal,397,452
+GallimoreJ.F.,BaumS.A.,O’DeaC.P.,1997,Nature,388,852 TranH.D.,LykeJ.E.,MaderJ.A.,2011,TheAstrophysicalJournal,726,
+GaskellC.M.,2009,NewAstron.Rev.,53,140 L21
+HäringN.,RixH.-W.,2004,ApJ,604,L89 TripodiR.,etal.,2024,arXive-prints,p.arXiv:2412.04983
+HeckmanT.M.,BestP.N.,2014,AnnualReviewofAstronomyandAstro- TristramK.R.W.,etal.,2007,AstronomyandAstrophysics,474,837
+physics,52,589 TrumpJ.R.,etal.,2011,TheAstrophysicalJournal,733,60
+HeywoodI.,etal.,2019,Nature,573,235 WadaK.,2012,ApJ,758,66
+HönigS.F.,2016,inBoffinH.M.J.,HussainG.,BergerJ.-P.,Schmidtobreick WadaK.,2015,ApJ,812,82
+L.,eds,AstrophysicsandSpaceScienceLibraryVol.439,Astronomyat WadaK.,SchartmannM.,MeijerinkR.,2016,ApJ,828,L19
+HighAngularResolution.p.95,doi:10.1007/978-3-319-39739-9_6 WilliamsonD.,HönigS.,VenanziM.,2020,ApJ,897,26
+HopkinsP.F.,HaywardC.C.,NarayananD.,HernquistL.,2012,MNRAS, WrightE.L.,etal.,2010,AJ,140,1868
+420,320 YangG.,etal.,2022,ApJ,927,192
+KayL.E.,1994,TheAstrophysicalJournal,430,196 Yusef-ZadehF.,BushouseH.,ArendtR.G.,WardleM.,MichailJ.M.,Chan-
+KennicuttR.C.,EvansN.J.,2012,ARA&A,50,531 dlerC.J.,2025,ApJ,980,L35
+LabbéI.,etal.,2023,Nature,616,266 ZhangX.,2022,TheAstrophysicalJournalSupplementSeries,261,23
+LaorA.,2003,TheAstrophysicalJournal,590,86 ZhangE.-P.,WangJ.-M.,2006,TheAstrophysicalJournal,653,137
+Leftley J. H., Tristram K. R. W., Hönig S. F., Kishimoto M., Asmus D., ZhaoX.,MarchesiS.,AjelloM.,BalokovićM.,FischerT.,2020,TheAstro-
+GandhiP.,2018,TheAstrophysicalJournal,862,17 physicalJournal,894,71
+LuptonR.H.,GunnJ.E.,SzalayA.S.,1999,TheAstronomicalJournal,118,
+1406
+LyuB.,etal.,2025,A&A,693,A173 Appendices
+MarinucciA.,BianchiS.,NicastroF.,MattG.,GouldingA.D.,2012,The
+AstrophysicalJournal,748,130
+A COMPARISONOFTHERESULTSFORTHESAMPLE
+MateosS.,etal.,2016,TheAstrophysicalJournal,819,166
+MillerJ.S.,AntonucciR.R.J.,1983,TheAstrophysicalJournal,271,L7 SWWITHTHOSEFORTHESAMPLESW2M
+NarayanR.,2005,AstrophysicsandSpaceScience,300,177
+In Figure 16 we compare the results for 𝑓 𝐴𝐺𝑁, 𝑜𝑎 and SFR as
+NenkovaM.,IvezićŽ.,ElitzurM.,2002,TheAstrophysicalJournal,570,L9
+obtainedusingtheSy1genericmodelonthedataintheSW2Mand
+NetzerH.,2015,AnnualReviewofAstronomyandAstrophysics,53,365
+SWsamples.Ineachpanel,aone-to-onerelationistracedasablack
+NicastroF.,MartocchiaA.,MattG.,2003,TheAstrophysicalJournal,589,
+L13 continuousline,andalinearregressionasabluedashedline.The
+OhK.,YiS.K.,SchawinskiK.,KossM.,TrakhtenbrotB.,SotoK.,2015, parametersoftheregressionsarereportedinTable10anddiscussed
+TheAstrophysicalJournalSupplementSeries,219,1 inthetextinSection4.
+OnoriF.,etal.,2017,MonthlyNoticesoftheRoyalAstronomicalSociety,
+468,L97
+OsterbrockD.E.,1991,ReportsonProgressinPhysics,54,579
+OsterbrockD.E.,DahariO.,1983,TheAstrophysicalJournal,273,478
+OsterbrockD.E.,FerlandG.J.,2006,Astrophysicsofgaseousnebulaeand
+activegalacticnuclei.UniversityScienceBooks
+PanessaF.,etal.,2009,MonthlyNoticesoftheRoyalAstronomicalSociety,
+398,1951
+PetrovG.P.,YankulovaI.M.,2012,NewAstronomy,17,137
+PonsE.,WatsonM.G.,2016,AstronomyandAstrophysics,594,A72
+PontiG.,etal.,2019,Nature,567,347
+Ramos Almeida C., 2015, in Cenarro A. J., Figueras F., Hernández-
+Monteagudo C., Trujillo Bueno J., Valdivielso L., eds, Highlights of
+SpanishAstrophysicsVIII.pp132–141
+RamosAlmeidaC.,etal.,2011,TheAstrophysicalJournal,731,92
+RamsdenP.,LanningD.,NichollM.,McGeeS.L.,2022,MNRAS,515,1146
+ReinesA.E.,VolonteriM.,2015,ApJ,813,82
+RicciC.,etal.,2022,TheAstrophysicalJournal,938,67
+SDSSDR62012,MeasuresofSDSSflux,magnitudes,anddiameters,https:
+//ned.ipac.caltech.edu/help/sdss/dr6/photometry.html
+SchartmannM.,WadaK.,PrietoM.A.,BurkertA.,TristramK.R.W.,2014,
+MNRAS,445,3878
+SeyfertC.K.,1943,ApJ,97,28
+StalevskiM.,FritzJ.,BaesM.,NakosT.,PopovićL.Č.,2012,MNRAS,420,
+2756
+MNRAS000,000–000(0000)
+
+--- Page Suivante ---
+
+TestingtheAGNUnificationParadigm 17
+Figure16.Comparingtheparameters 𝑓 𝐴𝐺𝑁,𝑜𝑎andSFR,intheSW2MandSWsamples.Aone-to-onerelationistraced(continuousblackline)whilethe
+dashedbluelinesarelinearregressions.
+MNRAS000,000–000(0000)

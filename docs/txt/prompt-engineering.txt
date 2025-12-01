@@ -1,0 +1,470 @@
+Prompt engineering for GitHub Copilot Chat - GitHub Docs
+Skip to main content
+GitHub Docs
+Version:
+Free, Pro, & Team
+Search or ask Copilot
+Search or ask
+Copilot
+Select language: current language is English
+Search or ask Copilot
+Search or ask
+Copilot
+Open menu
+Open Sidebar
+GitHub Copilot
+/
+Concepts
+/
+Prompting
+/
+Prompt engineering
+Home
+GitHub Copilot
+Get started
+Quickstart
+What is GitHub Copilot?
+Plans
+Features
+Best practices
+Choose enterprise plan
+Achieve company goals
+Concepts
+AI tools
+Completions
+Code suggestions
+Text completion
+Code referencing
+Chat
+Agents
+Coding agent
+About coding agent
+Managing access
+MCP and coding agent
+Code review
+Copilot CLI
+Spark
+Prompting
+Prompt engineering
+Response customization
+Context
+MCP
+Spaces
+Repository indexing
+Content exclusion
+Knowledge bases
+Copilot extensions
+Auto model selection
+Rate limits
+Billing
+Copilot requests
+Individual plans
+Billing for individuals
+Organizations and enterprises
+Policies
+Network settings
+Extensions
+Build extensions
+Agents
+Skillsets
+OpenID Connect
+How-tos
+Set up
+Set up for self
+Set up for organization
+Set up for enterprise
+Install Copilot extension
+Install Copilot CLI
+Get code suggestions
+Get IDE code suggestions
+Write PR descriptions
+Find matching code
+Chat with Copilot
+Get started with Chat
+Chat in IDE
+Chat in Windows Terminal
+Chat in GitHub
+Chat in Mobile
+Use Copilot agents
+Coding agent
+Create a PR
+Track Copilot sessions
+Review Copilot PRs
+Extend coding agent with MCP
+Integrate coding agent with Teams
+Customize the agent environment
+Customize the agent firewall
+Troubleshoot coding agent
+Request a code review
+Use code review
+Configure automatic review
+Use Copilot CLI
+Use AI models
+Configure access to AI models
+Change the chat model
+Change the completion model
+Create a custom model
+Provide context
+Use Copilot Spaces
+Create Copilot Spaces
+Use Copilot Spaces
+Collaborate with your team
+Use MCP
+Extend Copilot Chat with MCP
+Set up the GitHub MCP Server
+Use the GitHub MCP Server
+Create knowledge bases
+Install Copilot Extensions
+Use Copilot Extensions
+Install personal extensions
+Install extensions
+Configure custom instructions
+Add personal instructions
+Add repository instructions
+Add organization instructions
+Configure content exclusion
+Exclude content from Copilot
+Review changes
+Use Copilot for common tasks
+Use Copilot to create issues
+Create a PR summary
+Use Copilot in the CLI
+Configure personal settings
+Configure network settings
+Configure in IDE
+Authenticate to GHE.com
+Manage and track spending
+Monitor premium requests
+Manage request allowances
+Manage company spending
+Manage your account
+Get started with a Copilot plan
+Get free access to Copilot Pro
+View and change your Copilot plan
+Disable Copilot Free
+Manage policies
+Administer Copilot
+Manage for organization
+Manage plan
+Subscribe
+Cancel
+Manage access
+Grant access
+Manage requests for access
+Revoke access
+Manage network access
+Manage policies
+Add Copilot coding agent
+Set extension permissions
+Review activity
+Review user activity data
+Review audit logs
+Manage for enterprise
+Manage plan
+Subscribe
+Cancel plan
+Upgrade plan
+Downgrade subscription
+Manage access
+Grant access
+Disable for organizations
+View license usage
+Manage network access
+Manage enterprise policies
+Manage Copilot coding agent
+Manage Copilot code review
+Manage Spark
+Download activity report
+Configure MCP server access
+Troubleshoot Copilot
+Troubleshoot common issues
+View logs
+Troubleshoot firewall settings
+Troubleshoot network errors
+Troubleshoot Spark
+Build Copilot Extensions
+Set up Copilot Extensions
+Create a Copilot Extension
+Host your extension
+Create GitHub App
+Configure App for extension
+Build a Copilot agent
+Communicate with Copilot platform
+Communicate with GitHub
+Use context passing
+Use Copilot's LLM
+Build Copilot skillsets
+Set up OIDC
+Debug Copilot Extension
+Manage Extension availability
+Reference
+Cheat sheet
+AI models
+Supported models
+Model comparison
+Model hosting
+Keyboard shortcuts
+Policy conflicts
+Allowlist reference
+Metrics data
+Copilot billing
+Billing cycle
+Seat assignment
+License changes
+Azure billing
+Extensions glossary
+Tutorials
+All tutorials
+GitHub Copilot Chat Cookbook
+All prompts
+Communicate effectively
+Create templates
+Extract information
+Synthesize research
+Create diagrams
+Generate tables
+Debug errors
+Debug invalid JSON
+Handle API rate limits
+Analyze functionality
+Explore implementations
+Analyze feedback
+Refactor code
+Improve code readability
+Fix lint errors
+Refactor for optimization
+Refactor design patterns
+Refactor data access layers
+Decouple business logic
+Handle cross-cutting
+Simplify inheritance hierarchies
+Fix database deadlocks
+Translate code
+Document code
+Create issues
+Document legacy code
+Explain legacy code
+Explain complex logic
+Sync documentation
+Write discussions or blog posts
+Testing code
+Generate unit tests
+Create mock objects
+Create end-to-end tests
+Analyze security
+Secure your repository
+Manage dependency updates
+Find vulnerabilities
+Customization library
+All customizations
+Custom instructions
+Your first custom instructions
+Concept explainer
+Debugging tutor
+Code reviewer
+GitHub Actions helper
+Pull request assistant
+Issue manager
+Accessibility auditor
+Testing automation
+Prompt files
+Your first prompt file
+Create README
+Onboarding plan
+Document API
+Review code
+Generate unit tests
+Coding agent
+Get the best results
+Pilot coding agent
+Spark
+Your first spark
+Prompt tips
+Build and deploy apps
+Enhance agent mode with MCP
+Compare AI models
+Speed up development work
+Roll out at scale
+Assign licenses
+Set up self-serve licenses
+Remind inactive users
+Enable developers
+Drive adoption
+Integrate AI agents
+Measure adoption
+Analyze usage over time
+Drive downstream impact
+Increase test coverage
+Accelerate pull requests
+Reduce security debt
+Explore a codebase
+Explore issues and discussions
+Explore pull requests
+Write tests
+Refactor code
+Review AI code
+Learn a new language
+Modernize legacy code
+Migrate a project
+Plan a project
+Upgrade projects
+Try Extensions
+Responsible use
+Copilot code completion
+Chat in your IDE
+Chat in GitHub
+Chat in GitHub Mobile
+Copilot CLI
+Copilot in Windows Terminal
+Copilot in GitHub Desktop
+Pull request summaries
+Copilot text completion
+Commit message generation
+Code review
+Copilot coding agent
+Spark
+Copilot Spaces
+GitHub Copilot
+/
+Concepts
+/
+Prompting
+/
+Prompt engineering
+Prompt engineering for GitHub Copilot Chat
+Follow these strategies to improve your Copilot results.
+In this article
+Start general, then get specific
+Give examples
+Break complex tasks into simpler tasks
+Avoid ambiguity
+Indicate relevant code
+Experiment and iterate
+Keep history relevant
+Follow good coding practices
+Further reading
+A prompt is a request that you make to GitHub Copilot. For example, a question that you ask Copilot Chat, or a code snippet that you ask Copilot to complete. In addition to your prompt, Copilot uses additional context, like the code in your current file and the chat history, to generate a response.
+Follow the tips in this article to write prompts that generate better responses from Copilot.
+Start general, then get specific
+When writing a prompt for Copilot, first give Copilot a broad description of the goal or scenario. Then list any specific requirements.
+For example:
+Copilot Chat prompt
+Write a JavaScript function that tells me if a number is prime
+
+The function should take an integer and return true if the integer is prime
+
+The function should error if the input is not a positive integer
+Write a JavaScript function that tells me if a number is prime
+
+The function should take an integer and return true if the integer is prime
+
+The function should error if the input is not a positive integer
+Give examples
+Use examples to help Copilot understand what you want. You can provide example input data, example outputs, and example implementations.
+For example:
+Copilot Chat prompt
+Write a Go function that finds all dates in a string and returns them in an array. Dates can be formatted like:
+
+* 05/02/24
+* 05/02/2024
+* 5/2/24
+* 5/2/2024
+* 05-02-24
+* 05-02-2024
+* 5-2-24
+* 5-2-2024
+
+Example:
+
+findDates("I have a dentist appointment on 11/14/2023 and book club on 12-1-23")
+
+Returns: ["11/14/2023", "12-1-23"]
+Write a Go function that finds all dates in a string and returns them in an array. Dates can be formatted like:
+
+* 05/02/24
+* 05/02/2024
+* 5/2/24
+* 5/2/2024
+* 05-02-24
+* 05-02-2024
+* 5-2-24
+* 5-2-2024
+
+Example:
+
+findDates("I have a dentist appointment on 11/14/2023 and book club on 12-1-23")
+
+Returns: ["11/14/2023", "12-1-23"]
+Unit tests can also serve as examples. Before writing your function, you can use Copilot to write unit tests for the function. Then, you can ask Copilot to write a function described by those unit tests.
+Break complex tasks into simpler tasks
+If you want Copilot to complete a complex or large task, break the task into multiple simple, small tasks.
+For example, instead of asking Copilot to generate a word search puzzle, break the process down into smaller tasks, and ask Copilot to accomplish them one by one:
+Write a function to generate a 10 by 10 grid of letters.
+Write a function to find all words in a grid of letters, given a list of valid words.
+Write a function that uses the previous functions to generate a 10 by 10 grid of letters that contains at least 10 words.
+Update the previous function to print the grid of letters and 10 random words from the grid.
+Avoid ambiguity
+Avoid ambiguous terms. For example, don’t ask "what does this do" if "this" could be the current file, the last Copilot response, or a specific code block. Instead, be specific:
+What does the
+createUser
+function do?
+What does the code in your last response do?
+Ambiguity can also apply to libraries:
+If you are using an uncommon library, describe what the library does.
+If you want to use a specific library, set the import statements at the top of the file or specify what library you want to use.
+Indicate relevant code
+If you are using Copilot in your IDE to get suggestions as you code, open any relevant files and close irrelevant files. Copilot will use the open files to understand your request.
+If you are using Copilot Chat in your IDE, open the file or highlight the code that you want Copilot to reference. You can also use keywords to manually supply context to Copilot Chat. For example, you can add the
+@workspace
+chat participant in VS Code, or
+@project
+in JetBrains IDEs. See
+GitHub Copilot Chat cheat sheet
+.
+Experiment and iterate
+If you don’t get the result that you want, iterate on your prompt and try again.
+If you are using Copilot to get suggestions as you code, you can delete the suggestion entirely and start over. Or you can keep the suggestion and request modifications.
+If you are using Copilot Chat, you can reference the previous response in your next request. Or, you can delete the previous response and start over.
+Keep history relevant
+Copilot Chat uses the chat history to get context about your request. To give Copilot only the relevant history:
+Use threads to start a new conversation for a new task
+Delete requests that are no longer relevant or that didn’t give you the desired result
+Follow good coding practices
+If you aren't getting the responses you want when you ask Copilot for suggestions or explanations in your codebase, make sure that your existing code follows best practices and is easy to read. For example:
+Use a consistent code style and patterns
+Use descriptive names for variables and functions
+Comment your code
+Structure your code into modular, scoped components
+Include unit tests
+Use Copilot to help your code follow best practices. For example, ask Copilot to add comments or to break a large function into smaller functions.
+Further reading
+How to use GitHub Copilot: Prompts, tips, and use cases
+in the GitHub blog
+Using GitHub Copilot in your IDE: Tips, tricks, and best practices
+in the GitHub blog
+A developer’s guide to prompt engineering and LLMs
+in the GitHub blog
+Prompting GitHub Copilot Chat to become your personal AI assistant for accessibility
+in the GitHub blog
+Help and support
+Did you find what you needed?
+Yes
+No
+Privacy policy
+Help us make these docs great!
+All GitHub docs are open source. See something that's wrong or unclear? Submit a pull request.
+Make a contribution
+Learn how to contribute
+Still need help?
+Ask the GitHub community
+Contact support
+Legal
+©
+2025
+GitHub, Inc.
+Terms
+Privacy
+Status
+Pricing
+Expert services
+Blog

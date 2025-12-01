@@ -1,0 +1,680 @@
+Prompt Engineering
+A lecture by DAIR.AI
+Elvis Saravia
+
+--- Page Suivante ---
+
+Prerequisites & Objectives
+• Prerequisites:
+•
+Python
+•
+Knowledge of language models
+•
+Basic understanding of deep learning / ML concepts
+• Objectives
+•
+Present an introduction to prompt engineering
+•
+Present an overview of the latest prompting techniques
+•
+Provide demonstrations and exercises to practice different
+prompting techniques
+
+--- Page Suivante ---
+
+Agenda
+• Introduction to Prompt Engineering
+• Advanced Techniques for Prompt Engineering
+• Applications & Tools
+• Conclusion & Future Directions
+
+--- Page Suivante ---
+
+Part 1
+Introduction to Prompt Engineering
+
+--- Page Suivante ---
+
+What are prompts?
+• Prompts involve instructions and context passed to a
+language model to achieve a desired task
+• Prompt engineering is the practice of developing and
+optimizing prompts to efficiently use language models
+(LMs) for a variety of applications
+•
+Prompt engineering is a useful skill for AI engineers and
+researchers to improve and efficiently use language models
+What is prompt engineering?
+Prompt engineering is a process of creating a set of prompts,
+or questions, that are used to guide the user toward a desired
+outcome. It is an effective tool for designers to create user
+experiences that are easy to use and intuitive. This method is
+often used in interactive design and software development, as
+it allows users to easily understand how to interact with a
+system or product..
+
+--- Page Suivante ---
+
+Why Prompt Engineering?
+• Why learn prompt engineering?
+•
+Important for research, discoveries, and advancement
+•
+Helps to test and evaluate the limitations of LLMs
+•
+Enables all kinds of innovative applications on top of LLMs
+Source: https://jobs.lever.co/Anthropic/e3cde481-d446-460f-b576-93cab67bd1ed
+
+--- Page Suivante ---
+
+First Basic Prompt
+Instruction
+The sky is
+blue
+The sky is a beautiful blue color during the day. The
+blue of the sky is created by the Earth’s atmosphere
+scattering the sun’s light. The blue is a result of the
+air molecules in the atmosphere reflecting the shorter
+wavelength of blue light back to our eyes.
+Model: “text-davinci-003”
+temperature: 0.7
+top-p: 1
+esnopseR
+
+--- Page Suivante ---
+
+Elements of a Prompt
+• A prompt is composed with the following components:
+•
+Instructions
+•
+Context
+•
+Input data
+•
+Output indicator
+Classify the text into neutral, negative or positive
+Text: I think the food was okay.
+Sentiment:
+
+--- Page Suivante ---
+
+Settings to keep in mind
+• When prompting a language model you should keep in
+mind a few settings
+• You can get very different results with prompts when using
+different settings
+• One important setting is controlling how deterministic the
+model is when generating completion for prompts
+•
+Temperature and top_p are two important parameters to keep
+in mind
+•
+Generally, keep these low if you are looking for exact answers
+•
+…keep them high if you are looking for more diverse responses
+
+--- Page Suivante ---
+
+Designing Prompts for Different Tasks
+• In the next few slides, we will cover a few examples of
+common tasks using different prompts
+• Tasks covered:
+•
+Text Summarization
+•
+Question Answering
+•
+Text Classification
+•
+Role Playing
+•
+Code Generation
+•
+Reasoning
+
+--- Page Suivante ---
+
+Text Summarization
+Antibiotics are a type of medication used to treat
+bacterial infections. They work by either killing the
+bacteria or preventing them from reproducing, allowing
+the body’s immune system to fight off the infection.
+Antibiotics are usually taken orally in the form of
+pills, capsules, or liquid solutions, or sometimes
+administered intravenously. They are not effective
+against viral infections, and using them inappropriately
+can lead to antibiotic resistance.
+Explain the above in one sentence:
+Antibiotics are medications used to treat bacterial
+infections by either killing the bacteria or stopping
+them from reproducing, but they are not effective against
+viruses and overuse can lead to antibiotic resistance.
+txetnoC
+noitcurtsnI
+
+--- Page Suivante ---
+
+Question Answering
+Answer the question based on the context below. Keep the
+answer short and concise. Respond "Unsure about answer"
+if not sure about the answer.
+Context: Teplizumab traces its roots to a New Jersey drug
+company called Ortho Pharmaceutical. There, scientists
+generated an early version of the antibody, dubbed OKT3.
+Originally sourced from mice, the molecule was able to
+bind to the surface of T cells and limit their cell-
+killing potential. In 1986, it was approved to help
+prevent organ rejection after kidney transplants, making
+it the first therapeutic antibody allowed for human use.
+Question: What was OKT3 originally sourced from?
+Answer: Mice.
+Context obtained from: https://www.nature.com/articles/d41586-023-00400-x
+
+--- Page Suivante ---
+
+Text Classification
+Classify the text into neutral, negative or positive.
+Text: I think the food was okay.
+Sentiment: Neutral
+
+--- Page Suivante ---
+
+Role Playing
+The following is a conversation with an AI research
+assistant. The assistant tone is technical and
+scientific.
+Human: Hello, who are you?
+AI: Greeting! I am an AI research assistant. How can I
+help you today?
+Human: Can you tell me about the creation of blackholes?
+AI: Sure! Black holes are regions of spacetime where the
+gravitational force is so strong that nothing, not even
+light, can escape from it. They are created when a very
+massive star dies and its core collapses in on itself,
+forming a singularity of infinite density. The intense
+gravity of the singularity pulls in all the matter and
+radiation around it, creating the black hole.
+
+--- Page Suivante ---
+
+Code Generation
+“””
+Table departments, columns = [DepartmentId,
+DepartmentName]
+Table students, columns = [DepartmentId, StudentId,
+StudentName]
+Create a MySQL query for all students in the Computer
+Science Department
+“””
+SELECT StudentId, StudentName
+FROM students
+WHERE DepartmentId IN (SELECT DepartmentId FROM
+departments WHERE DepartmentName = 'Computer Science');
+
+--- Page Suivante ---
+
+Reasoning
+The odd numbers in this group add up to an even number: 15,
+32, 5, 13, 82, 7, 1.
+Solve by breaking the problem into steps. First, identify
+the odd numbers, add them, and indicate whether the result
+is odd or even.
+Odd numbers: 15, 5, 13, 7, 1
+Sum: 41
+41 is an odd number.
+
+--- Page Suivante ---
+
+Introduction to Prompt Engineering
+Demo
+
+--- Page Suivante ---
+
+Part 2
+Advanced Techniques for Prompt Engineering
+
+--- Page Suivante ---
+
+Prompt Engineering Techniques
+• Many advanced prompting techniques have been
+designed to improve performance on complex tasks
+•
+Few-shot prompts
+•
+Chain-of-thought (CoT) prompting
+•
+Self-Consistency
+•
+Knowledge Generation Prompting
+•
+ReAct
+
+--- Page Suivante ---
+
+Few-shot Prompts
+• Few-shot prompting allows us to provide exemplars in
+prompts to steer the model towards better performance
+The odd numbers in this group add up to an even number: 4,
+8, 9, 15, 12, 2, 1.
+A: The answer is False.
+The odd numbers in this group add up to an even number: 17,
+10, 19, 4, 8, 12, 24.
+A: The answer is True.
+The odd numbers in this group add up to an even number: 16,
+11, 14, 4, 8, 13, 24.
+A: The answer is True.
+The odd numbers in this group add up to an even number: 17,
+9, 10, 12, 13, 4, 2.
+A: The answer is False.
+The odd numbers in this group add up to an even number: 15,
+32, 5, 13, 82, 7, 1.
+A: The answer is True.
+
+--- Page Suivante ---
+
+Chain-of-Thought (CoT) Prompting
+• Prompting can be further improved by instructing the
+model to reason about the task when responding
+•
+This is very useful for tasks that requiring reasoning
+•
+You can combine it with few-shot prompting to get better results
+•
+You can also do zero-shot CoT where exemplars are not
+available
+The odd numbers in this group add up to an even number: 4,
+8, 9, 15, 12, 2, 1.
+A: Adding all the odd numbers (9, 15, 1) gives 25. The
+answer is False.
+The odd numbers in this group add up to an even number: 15,
+32, 5, 13, 82, 7, 1.
+A: Adding all the odd numbers (15, 5, 13, 7, 1) gives 41.
+The answer is False.
+Source: Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+
+--- Page Suivante ---
+
+Zero-Shot CoT
+• Involves adding "Let's think step by step" to the original
+prompt
+I went to the market and bought 10 apples. I gave 2 apples
+to the neighbor and 2 to the repairman. I then went and
+bought 5 more apples and ate 1. How many apples did I
+remain with?
+11 apples
+I went to the market and bought 10 apples. I gave 2 apples
+to the neighbor and 2 to the repairman. I then went and
+bought 5 more apples and ate 1. How many apples did I
+remain with?
+Let's think step by step.
+First, you started with 10 apples.
+You gave away 2 apples to the neighbor and 2 to the
+repairman, so you had 6 apples left.
+Then you bought 5 more apples, so now you had 11 apples.
+Finally, you ate 1 apple, so you would remain with 10
+apples.
+Source: Large Language Models are Zero-Shot Reasoners
+
+--- Page Suivante ---
+
+Self-Consistency
+• Self-Consistency aims to improve on the naive greedy
+decoding used in chain-of-thought prompting
+• The idea is to sample multiple, diverse reasoning paths
+through few-shot CoT, and use the generations to select
+the most consistent answer.
+• This helps to boost the performance of CoT prompting on
+tasks involving arithmetic and commonsense reasoning
+When I was 6 my sister was half my age. Now
+I’m 70 how old is my sister?
+35
+Many examples were generated but the
+model kept responding 35 as the answer
+Source: Self-Consistency Improves Chain of Thought Reasoning in Language Models
+
+--- Page Suivante ---
+
+Self-Consistency Example
+Q: There are 15 trees in the grove. Grove workers will plant trees in the
+grove today. After they are done, there will be 21 trees. How many trees did
+the grove workers plant today?
+A: We start with 15 trees. Later we have 21 trees. The difference must be the
+number of trees they planted. So, they must have planted 21 - 15 = 6 trees.
+The answer is 6.
+Q: If there are 3 cars in the parking lot and 2 more cars arrive, how many
+cars are in the parking lot?
+A: There are 3 cars in the parking lot already. 2 more arrive. Now there are
+3 + 2 = 5 cars. The answer is 5.
+...
+Q: Olivia has $23. She bought five bagels for $3 each. How much money does
+she have left?
+A: She bought 5 bagels for $3 each. This means she spent 5
+Q: When I was 6 my sister was half my age. Now I’m 70 how old is my sister?
+A:
+When I was 6 my sister was half my age, so she was 3. Now I am 70, so she
+is 70 - 3 = 67. The answer is 67.
+When the narrator was 6, his sister was half his age, which is 3. Now
+that the narrator is 70, his sister would be 70 - 3 = 67 years old. The
+answer is 67.
+When the narrator was 6, his sister was half his age, which is 3. Now
+that the narrator is 70, his sister would be 70 - 3 = 67 years old. The
+answer is 67.
+1
+tuptuO
+2
+tuptuO
+3
+tuptuO
+
+--- Page Suivante ---
+
+Generate Knowledge Prompting
+• This technique involves using additional knowledge
+provided as part of the context to improve results on
+complex tasks such as commonsense reasoning
+• The knowledge used in the context is generated by a
+model and used in the prompt to make a prediction
+•
+Highest-confidence prediction is used
+Source: Generated Knowledge Prompting for Commonsense Reasoning
+
+--- Page Suivante ---
+
+Generate Knowledge Prompting Example
+• The first step is to generate knowledge. Below is an
+example of how to generate the knowledge samples
+Input: Greece is larger than mexico.
+Knowledge: Greece is approximately 131,957 sq km, while Mexico is
+approximately 1,964,375 sq km, making Mexico 1,389% larger than Greece.
+...
+Input: A rock is the same size as a pebble.
+Knowledge: A pebble is a clast of rock with a particle size of 4 to 64
+millimetres based on the Udden-Wentworth scale of sedimentology. Pebbles
+are generally considered larger than granules (2 to 4 millimetres
+diameter) and smaller than cobbles (64 to 256 millimetres diameter).
+Input: Part of golf is trying to get a higher point total than others.
+Knowledge:
+The objective of golf is to play a set of holes in the least number of strokes. A
+round of golf typically consists of 18 holes. Each hole is played once in the
+round on a standard golf course. Each stroke is counted as one point, and the
+total number of strokes is used to determine the winner of the game.
+Golf is a precision club-and-ball sport in which competing players (or golfers)
+use many types of clubs to hit balls into a series of holes on a course using the
+fewest number of strokes. The goal is to complete the course with the lowest
+score, which is calculated by adding up the total number of strokes taken on each
+hole. The player with the lowest score wins the game.
+1
+egdelwonK
+2
+egdelwonK
+
+--- Page Suivante ---
+
+Generate Knowledge Prompting Example
+• The knowledge samples are then used to generate
+knowledge augmented questions to get answer proposals
+•
+The highest-confidence response is selected as final answer
+Question: Part of golf is trying to get a higher point total than others.
+Yes or No?
+Knowledge: The objective of golf is...
+Explain and Answer: No, the objective of golf is not to get a higher
+point total than others. Rather, the objective is to play a set of holes
+in the least number of strokes. The total number of strokes is used to
+determine the winner of the game, not the total number of points.
+High-confidence prediction
+Question: Part of golf is trying to get a higher point total than others.
+Yes or No?
+Knowledge: Golf is a precision club-and-ball sport in which competing
+players (or golfers) use many types of clubs to hit balls into...
+Explain and Answer: Yes, part of golf is trying to get a higher point
+total than others. Each player tries to complete the course with the
+lowest score, which is calculated by adding up the total number of
+strokes taken on each hole. The player with the lowest score wins the
+game.
+Low-confidence prediction
+
+--- Page Suivante ---
+
+Program-aided Language Model (PAL)
+• Chain-of-thought prompting is a good example of how to
+steer models to perform better at complex reasoning tasks
+•
+However, sometimes CoT is not enough as it depends only on
+the generated text from the model
+• Program-aided language models (PAL) uses an LLM to
+read problems and generate programs as the intermediate
+reasoning steps
+•
+It offloads the solution step to a runtime such as Python
+interpreter
+
+--- Page Suivante ---
+
+PAL
+Source: PAL: Program-aided Language Models
+
+--- Page Suivante ---
+
+ReAct
+• ReAct is a framework where LLMs are used to generate
+both reasoning traces and task-specific actions in an
+interleaved manner
+•
+Generating reasoning traces allow the model to induce, track,
+and update action plans, and even handle exceptions
+•
+The action step allows to interface with and gather information
+from external sources such as knowledge bases or
+environments.
+• ReAct allows LLMs to interact with external tools to
+retrieve additional information that leads to more reliable
+and factual responses
+
+--- Page Suivante ---
+
+ReAct
+Source: ReAct: Synergizing Reasoning and Acting in Language Models
+
+--- Page Suivante ---
+
+Advanced Techniques for Prompt Engineering
+Demo
+
+--- Page Suivante ---
+
+Part 3
+Tools and Applications
+
+--- Page Suivante ---
+
+Tools & IDEs
+• There are many tools, libraries, and platforms with
+different capabilities and functionalities
+• Capabilities include:
+•
+Developing and experimenting with prompts
+•
+Evaluating prompts
+•
+Versioning and deploying prompts
+More tools here: https://github.com/dair-ai/Prompt-Engineering-Guide#tools--libraries
+
+--- Page Suivante ---
+
+Applications
+• Advanced prompting techniques are now allowing all sorts
+of advanced applications with LLMs
+•
+LLMs and external tools/APIs
+•
+Data-augmented Generation
+•
+QA with sources
+•
+Summarization using sources
+
+--- Page Suivante ---
+
+LLMs with External Tools
+• The generative capabilities of LLMs can be combined with
+an external tool to solve complex problems.
+• The components you need:
+•
+An agent powered by LLM to determine which actions to take
+•
+A tool used by the agent to interact with the world (e.g., search
+API, Wolfram, Python REPL, database lookup)
+•
+The LLM that will power the agent
+
+--- Page Suivante ---
+
+Data-Augmented Generation
+• For many real-world applications there is a need to
+augment the generation of a model by incorporating
+external data
+• Steps involved:
+•
+Fetching relevant data
+•
+Augmenting prompts with the retrieved data as context
+• External data can include:
+•
+Document stores
+•
+APIs
+•
+Databases
+•
+User provided data
+•
+…
+
+--- Page Suivante ---
+
+Tools and Applications
+Demo
+
+--- Page Suivante ---
+
+Part 4
+Conclusion and Future Directions
+
+--- Page Suivante ---
+
+Opportunities and Future Directions
+• In this section, we discuss the following:
+•
+Model safety
+•
+Prompt Injection
+•
+RLHF
+•
+Future directions
+
+--- Page Suivante ---
+
+Model Safety
+• Prompt engineering can be used not only to improve
+performance but also the reliability of response from a
+safety perspective
+•
+Prompt engineering can help identify risky behaviours of LLMs
+which can help to reduce harmful behaviours and risks that may
+arise from language models
+•
+There is also a part of the community performing prompt
+injection to understand the vulnerability of LLMs
+
+--- Page Suivante ---
+
+Prompt Injections
+• It turns out that building with LLMs, like any other systems,
+comes with challenges that includes safety considerations.
+• Prompt injections aim to find vulnerabilities in LLMs
+• Some common issues include:
+•
+Prompt Injection
+•
+Prompt Leaking
+•
+Jailbreaking
+
+--- Page Suivante ---
+
+Prompt Injection
+• Prompt injection is used to hijack an LM’s output by
+injecting an untrusted command that overrides instruction
+of a prompt
+• This could easily happen if you just concatenate your
+prompt with another user generated prompt
+
+--- Page Suivante ---
+
+Prompt Leaking
+• Prompt leaking aims to force the model to spit out
+information about its own prompt.
+• This can lead to leaking of either sensitive, private or
+information that’s confidential
+
+--- Page Suivante ---
+
+Jailbreaking
+• Jailbreaking is another form of prompt injection where the
+goal is to bypass safety and moderation features
+• LLMs provided via APIs might be coupled with safety
+features or content moderation which can be bypassed
+with harmful prompts/attacks
+• This might sound like a difficult task but it’s not because
+the model is usually served static and might have these
+vulnerabilities due to many factors such as the data it was
+trained on, etc.
+
+--- Page Suivante ---
+
+Jailbreaking examples
+
+--- Page Suivante ---
+
+RLHF
+• Reinforcement Learning from Human Feedback (RLHF) is
+now being used to train LLMs that fit human preference
+• RLHF involves collecting high-quality prompt datasets
+• Popular examples:
+•
+Claude (Anthropic)
+•
+ChatGPT (OpenAI)
+Source: ChatGPT: Optimizing Language Models for Dialogue
+
+--- Page Suivante ---
+
+Future Directions
+• Augmented LMs
+• Emergent ability of LMs
+• Acting / Planning - Reinforcement Learning
+• Multimodal Prompting
+• Graph Prompting
+
+--- Page Suivante ---
+
+What’s next?
+• This is the first lecture in a series of lectures
+• Subscribe to the channel
+• Follow us on Twitter (@dair_ai and @omarsar0) for
+announcements on upcoming special lectures covering a
+variety of topics in language models
+• The lectures, guides, notebooks, and other prompt
+engineering content will live on the Prompt Engineering
+Guide:
+•
+https://github.com/dair-ai/Prompt-Engineering-Guide
+
+--- Page Suivante ---
+
+Prompt Engineering Guide
+https://github.com/dair-ai/Prompt-Engineering-Guide

@@ -1,0 +1,1200 @@
+Bayesian Inference of Primordial Magnetic Field Parameters from CMB with
+Spherical Graph Neural Networks
+Juan Alejandro Pinto Castro1, H´ector J. Hortu´a1,2, Jorge Enrique Garc´ıa-Farieta1, and Roger Anderson Hurtado3
+1Laboratorio de Inteligencia Artificial (SavIA Lab), Grupo Signos,
+Departamento de Matema´ticas, Universidad El Bosque, Bogot´a, Colombia
+2Instituto de Neurociencias, Universidad El Bosque, Bogota´, Colombia and
+3Observatorio Astron´omico Nacional, Universidad Nacional de Colombia, Bogota´, Colombia
+Deeplearninghasemergedasatransformativemethodologyinmoderncosmology,providingpow-
+erful tools to extract meaningful physical information from complex astronomical datasets. This
+paper implements a novel Bayesian graph deep learning framework for estimating key cosmolog-
+ical parameters in a primordial magnetic field (PMF) cosmology directly from simulated Cosmic
+Microwave Background (CMB) maps. Our methodology utilizes DeepSphere, a spherical convolu-
+tional neural network architecture specifically designed to respect the spherical geometry of CMB
+datathroughHEALPixpixelization. Toadvancebeyonddeterministicpointestimatesandenablero-
+bustuncertaintyquantification,weintegrateBayesianNeuralNetworks(BNNs)intotheframework,
+capturing aleatoric and epistemic uncertainties that reflect the model confidence in its predictions.
+The proposed approach demonstrates exceptional performance, achieving R2 scores exceeding 0.89
+for the magnetic parameter estimation. We further obtain well-calibrated uncertainty estimates
+through post-hoc training techniques including Variance Scaling and GPNormal. This integrated
+DeepSphere-BNNsframeworknotonlydeliversaccurateparameterestimationfromCMBmapswith
+PMF contributions but also provides reliable uncertainty quantification, providing the necessary
+tools for robust cosmological inference in the era of precision cosmology §.
+I. INTRODUCTION
+Cosmic Microwave Background (CMB) radiation is a cornerstone of modern cosmology as it provides a snapshot
+of the physics of the early Universe. The CMB is sensitive to physical densities because the evolution of acoustic
+oscillations in the primordial plasma depends on them directly, not just on their fractional contribution to the total
+energy density [1]. Precise estimation of key cosmological parameters such as the physical baryon density ω , cold
+b
+dark matter density ω , reionization optical depth τ, scalar spectral index n , the amplitude of the primordial power
+c s
+spectrumA ,andHubbleparameterH ,isessentialforunderstandingthecompositionandevolutionoftheUniverse.
+s 0
+In particular, the Hubble parameter, which describes the expansion rate of the Universe, has garnered significant
+attentionduetotheso-calledHubbletension. Thistermreferstoapersistentandstatisticallysignificantdiscrepancy
+between the values derived from independent cosmological measurements of the early Universe and those obtained
+from local data. Primordial Magnetic Fields (PMFs) offer a potential solution to the Hubble tension that is not
+inherently fine-tuned for that purpose. Previous studies such as [2–4] have shown that PMFs can induce baryon in-
+homogeneities, which accelerate the recombination process and consequently increase the CMB-inferred value of H ,
+0
+bringing it into closer agreement with local measurements. The PMF scenario is particularly compelling because it is
+grounded in well-established theoretical frameworks that predate the Hubble tension, having long been investigated
+as a possible origin of the large-scale magnetic fields observed in galaxies and clusters; see e.g. [5–7].
+Beyond their potential role in addressing cosmological tensions, PMFs serve as valuable probes of early-universe
+physics. They are motivated by high-energy processes, such as inflationary magnetogenesis and cosmological phase
+transitions. As such, constraints on PMFs derived from CMB observations offer a promising avenue for investigating
+the origin and evolution of cosmic magnetism, while also providing natural predictions in certain extensions of the
+Standard Model [8]. Furthermore, PMFs imprint distinct signatures on the CMB by sourcing scalar, vector, and ten-
+sor perturbations, thereby modifying both temperature and polarization anisotropies [9]. PMFs can generate vector
+modes and B-mode polarization patterns that are absent in the standard ΛCDM model, as well as induce Faraday
+rotation of the CMB’s polarization plane [10], producing a frequency-dependent signal that upcoming experiments,
+such as the Simons Observatory, LiteBIRD, and CMB-S4, aim to detect [11].
+On the other hand, the choice of inference methodology and statistical framework is a critical determinant of the
+precision and reliability of any constraints on cosmological parameters or PMF models [12]. Robust bounds depend
+on the accurate modeling of the likelihood, thorough treatment of systematics, well-motivated priors, and a careful
+handling of parameter degeneracies. In addition, traditional techniques applied to the power spectrum are computa-
+tionally expensive and may not fully exploit the non-Gaussian information present in the CMB maps. This creates
+a compelling opportunity for deep learning techniques to provide faster and potentially more accurate estimates by
+learning directly from high-resolution maps [13].
+AprimarychallengeinapplyingstandarddeeplearningarchitecturestoCMBanalysisisthedata’sinherentspherical
+5202
+tcO
+32
+]OC.hp-ortsa[
+1v59702.0152:viXra
+
+--- Page Suivante ---
+
+2
+geometry. Conventional convolutional neural networks, designed for flat grids, introduce distortions and are ill-suited
+for processing data on the sphere. From that perspective, this work is intended to address this issue using the Spher-
+ical convolutional neural network DeepSphere [14]. DeepSphere uses a pixelation scheme to represent spherical data,
+called HEALPix, which divides the sphere into pixels of equal area in a hierarchical way, allowing the neural network
+to efficiently perform convolutions and analysis of the celestial sphere [15].
+Beyond geometric challenges, robust inference requires not only accurate predictions but also reliable uncertainty
+quantification. Standard deep learning models provide deterministic point estimates, failing to capture the epistemic
+uncertainty associated with limited data or model limitations. To this end, we integrate Bayesian Neural Networks
+(BNNs) into our architecture. BNNs learn a probability distribution over the model weights, naturally quantifying
+predictive uncertainty.
+This work is organized as follows: Section II provides background on Graph Neural Networks, DeepSphere, and
+Bayesian Neural Networks. Section III details our methods, including the simulation pipeline, data validation, net-
+work architecture, and training procedure. Section IV presents the results and analysis of the model’s performance
+and uncertainty calibration. Finally, Sections V and VI conclude the paper and discuss future research directions.
+II. NEURAL NETWORKS
+Deep learning has become an essential tool in modern cosmology, transcending the limitations of traditional statis-
+ticalmethodstoaddressthechallengesposedbythemassive, complex, andhigh-dimensionalnatureofCMB[16–18].
+This research leverages convolutional operations extended to graph neural networks to predict cosmological parame-
+ters, specifically, we use the DeepSphere framework [14]. DeepSphere offers an efficient implementation of spherical
+convolutions by representing the celestial sphere as a graph and performing spectral or spatial graph convolutions,
+thuspreservingtheglobalgeometryoftheCMBdata. Furthermore, weincorporateBayesianNeuralNetworkswhich
+learn the mean and variance to define a probability distribution over the weights. This approach explicitly quantifies
+epistemic uncertainty, reflecting the model’s confidence in its predictions arising from limited data or inherent model
+limitations [19, 20].
+A. Graph Neural Networks and DeepSphere
+Graph neural networks (GNNs) are a class of supervised Deep learning model [21] which can learn functions over
+graphs and are a leading approach for building predictive models on graph-structured data G(V,E) [22], where nodes
+V are objects interconnected by edges E which are relationships [23]. GNNs represent a formidable progression in
+deep learning designed to process data structures in non-Euclidean domains where Convolutional Neural Networks
+(CNNs) have limitations [24, 25]. The success of GNNs in handling arbitrary relational data has led to the broader
+field of geometric graphs, which aims to generalize deep learning operations to diverse non-Euclidean manifolds [26].
+In some domains, the nodes in the graph are embedded in the 3D space, coordinates could be used as features of the
+nodes [22]. In cosmology, objects like dark matter halos and galaxy clusters are represented as nodes connected by
+edges that trace cosmic filaments and spatial proximity [21]. When working with geometrical graphs, it is important
+to consider the symmetry of the task with respect to translations and rotations of the frame of reference [22], and
+generalizethedatadefinedonacurvedsurface,suchasCMBmapswithPMFsandweaklensing,thisisthechallenge,
+a method that respect spherical symmetry [16]. This challenge drives the development of Spherical Convolutional
+Neural Networks (SCNNs) such as DeepSphere, which is computationally efficient and well adapted to the spherical
+geometry of the CMB. This adaptation is essential because the CMB is naturally represented on the two-sphere S2
+and is typically pixelized using the HEALPix scheme [27]. The HEALPix pixels are treated as nodes of a graph, and
+local neighborhoods are exploited through spherical convolutions defined directly on the pixelization. Many of the
+standard CNN operations, such as convolutions and pooling, with filters restricted to being radial, DeepSphere can
+be made it invariant or equivariant to rotation. This ensures that the extracted features are independent of the
+map’s orientation, a necessary constraint for robust inference. DeepSphere has been shown to be computationally
+more efficient than harmonic-based methods and yields superior performance in tasks such as cosmological model
+discrimination, particularly in scenarios involving high noise levels or partial sky coverage, confirming its utility for
+next-generation surveys [14].
+
+--- Page Suivante ---
+
+3
+B. Bayesian Neural Networks
+Standarddeeplearningmodelsarecharacterizedbytheirdeterministicnature,learningsingle-pointestimatesforall
+modelparameters. Whileitiseffectiveforprediction,thosemodelsfailtoquantifytheepistemicuncertaintyinherent
+inthedataandpredictionprocess,acriticalrequirementforrobustscientificinference[28]. BayesianNeuralNetworks
+offer a principled approach to quantifying uncertainty in deep learning models. They treat the model parameters as
+random variables governed by probability distributions, thereby capturing epistemic uncertainty [29]. Inference in
+BNNs involves computing the posterior distribution, p(w|D) over the weights, w, given the training data D. This
+is commonly achieved via scalable methods such as Variance Inference or Monte Carlo Dropout [19, 20]. Variance
+inference is the preferred and scalable method for training BNNs, which finds a distribution q(w|θ) that minimizes the
+difference to the true posterior p(w|D) [29] as well as a prior distribution on the weights p(w). This step is reached
+by minimizing the KullBack-Leibler (KL) divergence between the two distributions, and is equivalent to maximizing
+the evidence lower bound (ELBO) [19], that includes a term associated with the negative log-likelihood (NLL), as [17]
+ELBO∼ KL−NLL=KL(q(w|θ)||p(w))− (cid:0)1 log|Σ|+ 1 (y−µ)TΣ−1(y−µ) (cid:1) , (1)
+2 2
+whereΣisthepredictedcovariancematrix,yistheobserveddataandµisthepredictedmeanvectorfromthemodel.
+The application of BNNs to cosmological parameters estimation has been investigated in recent works [17, 18]. The
+combinationof GNNsand BNNsresultsinapowerfulframework, whichnotonlyachieveshighpredictiveaccuracy, but
+crucially reliable estimates of epistemic uncertainty.
+III. METHODS
+To analyze the simulated CMB with PMF maps and extract cosmological information, we employed DeepSphere,
+a graph-based convolutional neural network architecture specifically designed for spherical data [14]. Specifically, we
+make use of the HealpyPseudoConv layers, which implement convolution operations on the sphere by aggregating
+information from neighboring pixels according to the hierarchical structure of HEALPix. In addition, we employ
+HealpyPooling layers, which perform a coarsening of the sphere by reducing the resolution defined by nside. This
+combination of spherical convolution and pooling layers allows the network to efficiently capture both large-scale
+and small-scale anisotropy patterns of the CMB, while remaining computationally feasible for high-resolution data.
+Compared to planar projections, the spherical approach has the advantage of avoiding distortions and preserving the
+isotropy of the signal, which is crucial for cosmological inference tasks [27]. In cosmological applications, DeepSphere
+has been applied to tasks such as weak lensing map classification, cosmological parameter estimation, and non-
+Gaussianity detection [14]. In our study, we extend its use to the problem of predicting five cosmological parameters
+— the cold matter density ω , the baryon density ω , the amplitude A , the amplitude of the PMF B , and the
+c b s 1Mpc
+magnetic damping scale relation β =log (τ /τ ), including PMF contributions directly from simulated CMB maps.
+10 ν B
+A. Simulation of CMB maps with PMF
+We generated CMB temperature anisotropy maps using a modified pipeline based on CAMB [30, 31], the patch for
+CAMB that computes CMB sourced by PMFs [12], and Healpy [27]. This framework incorporates standard ΛCDM
+physics and assumes a flat universe. It is restricted to three massless neutrinos and passive, compensated magnetic
+modes that are mutually uncorrelated [12]. The total theoretical angular power spectrum is given by
+Ctheor =Cprim+Cpass+Ccomp, (2)
+l l l l
+which comprises three main components: the primordial (non-magnetic) spectrum from standard cosmological per-
+turbations Cprim, the passive magnetic contribution Cpass and the compensated magnetic contribution Ccomp. Scalar
+l l l
+perturbations are presented in both, the compensated and passive modes, vector perturbation are included in the
+compensated contribution and tensor perturbation are included in the passive contribution. In this paper, we adopt
+the following notation: full to refer to the dataset including scalar, vector and passive magnetic contributions, and
+prim-vp to refer to the dataset excluding the scalar compensated mode. Two independent datasets were constructed
+each with 1000 power spectra and 5 realizations, each dataset full and prim-vp contains 5000 maps. The cosmolog-
+ical parameters were set to Planck besfit cosmology [32], with the Hubble constant H as 0.67556, the scalar spectral
+0
+index n as 0.9665 and the magnetic spectral index n as −2.9. Table I summarizes the ranges of cosmological and
+s B
+
+--- Page Suivante ---
+
+4
+primordial magnetic field (PMF) parameters employed in the generation of the datasets used in this study. These
+parameters span values chosen to cover the relevant physical scenarios considered in our analysis.
+Parameter Min Max
+ω 0.05 0.50
+c
+ω 0.005 0.05
+b
+A 1.015×10−9 4.015×10−9
+s
+B 5 15
+1Mpc
+β =log (τ /τ ) 5 20
+10 ν B
+TABLEI:RangesofcosmologicalandPMFparametersusedfordatasetgeneration. Here,ω andω representthecold
+c b
+dark matter and baryon density parameters, respectively, both dimensionless. A is the amplitude of the primordial
+s
+scalarperturbationsgiveninMpc−3. B denotesthemagneticfieldstrengthsmoothedover1Mpcscale,expressed
+1Mpc
+in nanogauss (nG). β =log (τ /τ ) is the logarithmic ratio of the magnetic damping scale, representing the ratio of
+10 ν B
+the time τ of neutrino decoupling to the time τ at which the magnetic field was generated in the early universe, a
+ν B
+dimensionless parameter.
+B. Dataset and Validation
+TheCMBismodeledasaGaussianrandomfield,meaningthatitisnotauniquedeterministicskybutastatistical
+ensemble of possible realizations, all characterized by the same angular power spectra C . While most values in these
+l
+realizations cluster near the mean, a finite number of modes on the sky, especially at large angular scales where
+cosmic variance is high inevitably, leads to extreme fluctuations. These statistically plausible outliers are a natural
+consequence of cosmic variance [32]. The broad parameter ranges chosen for dataset generation (see Table I) were
+adoptedfollowingtheanalysisin[12]wheretheyinvestigatedconstraintsonPMFfromPlanckmissionandSouthPole
+Telescopedata. Theirchoiceofrangesismotivatedbybothobservationalandtheoreticalconsiderations. Thedamping
+scale ratio (β = log (τ /τ )) for instance, can capture a variety of physically plausible PMF generation scenarios,
+10 ν B
+including inflationary and phase-transition models. Standard cosmological parameters such as ω , ω and A were
+c b s
+also varied within extended ranges compared to Planck priors. This approach is essential for exploring degeneracies
+betweenPMFeffectsandbaselinecosmology. Furthermore,weimplementedadata-cleaningproceduretoremovemaps
+with pixel values outside physically reasonable limits. The minimum and maximum pixel values of each image were
+examined, and a per-pixel threshold criterion was applied to flag anomalous maps. Maps exceeding these thresholds
+were classified as outliers and excluded from the dataset. Similar pre-processing and anomaly-rejection strategies
+have been employed in recent works applying deep learning to CMB data to ensure robust inference of cosmological
+parameters [33]. We found extreme outliers in some maps with magnitudes up to 1030, which are effectively removed
+after thresholding, resulting in a clean and coherent data range below 106 (more details in Appendix VIB). From
+the initial 5000 CMB maps generated with CAMB, full reaches 67 anomalous maps discarded, leaving 4933 valid
+maps,andprim-vpreaches83anomalousmapsdiscarded,leaving4917validmaps. Thecleaneddatasetwasrandomly
+partitionedintotraining,validation,andtestsubsetsusingatwo-stepprocedure. First,70%ofthedatawasallocated
+to the training set, while the remaining 30% was reserved for further splitting. This reserved portion was then
+evenly divided into validation and test sets, each comprising 15% of the original dataset. In addition, we generated
+an independent dataset consisting of 400 simulated CMB maps with one realization, which serves as an external
+validation set for the model. This dataset was built under the same physical assumptions as the training data but
+withadistinctrandomseed. Themainpurposeofthisexternaldatasetistoevaluatethegeneralizationcapacitywhen
+exposed to unseen data distributions [34]. With this, the test dataset measures the model’s generalization during
+training, the validation dataset monitors overfitting and manages hyperparameter tuning, while external dataset
+assesses generalization to unseen data.
+C. Architecture
+The network architecture was inspired by the DeepSphere global regression design [14] and implemented using
+TensorFlow with HealpyGCNN layers. It was designed to combine spherical convolutional feature extraction with
+Bayesiandenselayersforprobabilisticregression. Theoverallarchitectureconsistsofthreemainstages: normalization
+layer, hierarchical spherical convolution and pooling layers, and Bayesian dense layers for regression.
+
+--- Page Suivante ---
+
+5
+First Block Second Block Third Block Bayesian Layers
+Normalization
+Layer HealpyConv (64) - BN HealpyConv (128) - BN HealpyConv (256) - BN Three DenseFlipOut layers
+- ReLu - HealpyPooling - ReLu - HealpyPooling - ReLu - GlobalPooling - MultivariateNormalTriL output layer
+c
+b
+A
+Input data s
+nside (1024) B 1Mpc
+Sampling order = 2
+FIG. 1: Representation of the neural network architecture used for cosmological parameter inference. The input
+consistsoffull-skysphericalmapsatresolutionnside = 1024,whicharefirstnormalizedusinganormalizationlayer.
+The architecture includes three convolutional blocks with HealpyConv layers, each followed by batch normalization
+(BN),ReLUactivation,andaverageHealpyPoolinglayers. ThethirdblockhasGlobalPooling. Theextractedfeatures
+are passed to Bayesian dense layers, implemented using DenseFlipOut, followed by a MultivariateNormalTriL
+output layer that predicts the posterior distribution of the target parameters: cold dark matter density ω , baryon
+c
+density ω , scalar amplitude A , magnetic field strength B , and damping scale ratio β =log (τ /τ ).
+b s 1Mpc 10 ν B
+The input consists of full-sky spherical maps at resolution nside = 1024 and then, we create samples by dividing
+the complete spheres in patches (based on healpix sampling of order=2). We applied an input normalization layer
+(N) based on the mean and variance of the training dataset by iterating over all input maps. These statistics were
+stored and later used to initialize the Normalization layer in Keras that standardizes the inputs. We employed
+a sequence of HealpyPseudoConv and HealpyPool layers. These layers exploit the hierarchical structure of the
+HEALPix pixelization. Each block contains a HealpyPseudoConv layer (GC) with p=1 and an increasing number of
+output channels (F =64,128,256), a batch normalization layer (Bn), and a ReLU activation. Between blocks, we
+out
+introducedsphericalpoolinglayers(HealpyPooling,P)withaveragereductionoftheresolution(nside). Theoutputs
+of the last spherical convolutional block are aggregated using a global average pooling layer. This reduces the feature
+maps to a compact vector representation that can be passed to fully connected layers. To incorporate predictive
+uncertainty, we employed three DenseFlipout layers [35] from TensorFlow Probability with 256, 128, and 64 units,
+eachusingaReLUactivation. TheBayesiantreatmentisachievedthroughvariationalinference: weightsaremodeled
+as distributions with a posterior approximated by the Flipout estimator. The final regression layer is a Bayesian
+multivariatedistribution. Specifically,weusedDenseFlipouttooutputtheparametersofaMultivariateNormalTriL
+distribution [36] of dimension five (corresponding to ω , ω , A , B , and β =log (τ /τ )).
+c b s 1Mpc 10 ν B
+D. Training
+The regression network was trained to predict the five cosmological parameters from simulated CMB maps using a
+probabilisticapproach. Theinputshapewasdefinedas(32,N ,3), where32isthenumberofsamples, N denotes
+pix pix
+the number of padded pixels per map and the factor of three corresponds to the channels of the simulation. The
+modelwascompiledwiththeAdamoptimizer,usingalearningrateof1×10−4,andthenegativelog-likelihood(NLL)
+along with the (KL) was employed as the loss function. In addition, mean squared error (mse) and mean absolute
+error (MAE) were monitored as complementary metrics.
+Regarding the callbacks, three training callbacks were included: (1) EarlyStopping with a patience of 25 and
+automatic restoration of the best weights, (2) ModelCheckpoint for saving the optimal weights during training, and
+(3) ReduceLROnPlateau, which decreased the learning rate by a factor of 0.6 after five consecutive non-improving
+validationsteps,withafloorof10−6. Thesestrategieshavebeenwidelyadoptedindeeplearningtopreventoverfitting
+and to stabilize optimization in non-convex loss landscapes [37]. Training was performed for 300 epochs with a batch
+sizeof32. Thetotalnumberoftrainableparametersamountedtoapproximately3.8×105. Thearchitecturecombined
+Healpy-based convolutional layers for feature extraction with Bayesian dense layers for uncertainty-aware regression,
+resulting in an end-to-end model capable of mapping spherical CMB realizations to cosmological parameters.
+
+--- Page Suivante ---
+
+6
+E. Uncertainty Calibration
+Uncertaintyindeepneuralnetworkstendtobe(under)over-confidentintheirpredictions. Thewaystodiagnosethe
+uncertaintyqualityisthroughreliabilityplots[38]. Calibratingneuralnetworksduringtrainingisnotefficientinmost
+casesbecauseitaffectsthemodelperformance. However,aftertrainingmethods,knownasposthocmethods,preserve
+theprecisionachievedduringthetrainingperiod[17]. Hereweleveragepost-hoccalibrationtoimprovethereliability
+of the uncertainty estimates. In the context of Bayesian regression, well calibrated uncertainty estimates are essential
+for ensuring that predictive intervals reflect true empirical coverage. We employed the NetCal calibration framework,
+which has been extended to support probabilistic regression tasks. These techniques aim to adjust the predictive
+distributions outcomes such that the nominal coverage of predictive intervals aligns with their observed coverage. In
+fact, we implemented two post-hoc calibrations methods introduced in [34], the Variance Scaling and GPNormal.
+The VarianceScaling method applies a correction factor, α, to rescale the predictive variance σ2 = α·σ2 and
+cal pred
+re-calibratetheuncertainties. GPNormal,ontheotherhand,usesaGaussianprocesstomapthepredictivemeanand
+variance to calibrated uncertainty estimates, allowing for more flexible non-linear transformation of the uncertainty
+space [34].
+IV. RESULTS
+In this section, we report the results obtained using two simulated datasets that differ in their scalar components:
+fullandprim-vp. Bothdatasetswereusedtotrainandevaluatethesameneuralnetworkmodeldescribedpreviously,
+with the goal of predicting the five cosmological parameters listed in Table I. To assess the model’s performance, we
+evaluated it on the respective test sets and computed two key metrics: mean squared error (MSE), and mean absolute
+error (MAE) along with the loss function described by Eq. 1. Table II summarizes the evaluation results for both
+datasets:
+DB-nmsvp DB-nmvp
+Set
+Loss MSE MAE Loss MSE MAE
+Validation 5250.468 0.055 0.154 5254.806 0.066 0.174
+Test 5250.208 0.050 0.147 5254.857 0.068 0.176
+External 5250.396 0.052 0.151 5255.045 0.068 0.176
+TABLE II: Comparison of performance (Loss, MSE, and MAE) evaluated on the validation, test and external sets of
+both datasets. A lower value indicates better performance.
+We observe that the model reaches comparable training stability across both datasets. However, the full out-
+performed the prim-vp dataset across all three metrics. Since MSE penalizes larger errors more heavily, its lower
+value shows that the model was more effective at suppressing outlier predictions when trained with the full scalar
+input. Theseresultsdemonstratethatthescalarinputinthefulldatasetenhancesthemodel’scapacitytolearnthe
+underlyingmappingbetweenCMBfeaturesandcosmologicalparameters,includingtheeffectsofprimordialmagnetic
+fields.
+Parameter FULL PRIM-VP
+ω 0.773 0.671
+c
+ω 0.985 0.973
+b
+A 0.626 0.562
+s
+B 0.992 0.982
+1Mpc
+β =log (τ /τ ) 0.895 0.856
+10 ν B
+TABLE III: R2 scores on the test set for each predicted cosmological parameter. The models correspond to full
+(and passive components) and prim-vp.
+Table III reports the R2 for each parameter in both experiments. Baryon density and the magnetic field are the
+best-predictedparametersinbothdatasetswithhighprecision,whilethemagneticdampingscaleobtainedthelowest
+
+--- Page Suivante ---
+
+7
+value, especially in the prim-vp case, which lacks the scalar component. Some features useful for predicting β are
+encoded in the scalar contribution of the CMB maps.
+   
+   
+   
+                   
+ * U R X Q G  7 U X W K 
+c
+  G H W F L G H U 3
+c
+ 3 H U I H F W  0 D W F K
+    
+    
+    
+    
+    
+                        
+ * U R X Q G  7 U X W K 
+b
+  G H W F L G H U 3
+b
+ 3 H U I H F W  0 D W F K
+ 
+ 
+ 
+ 
+       
+ * U R X Q G  7 U X W K A   H 
+s
+A  G H W F L G H U 3 s
+  H 
+ 3 H U I H F W  0 D W F K
+    
+    
+    
+   
+   
+                      
+ * U R X Q G  7 U X W K B 1Mpc
+B  G H W F L G H U 3
+cpM1
+ 3 H U I H F W  0 D W F K   
+  
+  
+ 
+          
+ * U R X Q G  7 U X W K  =log10( / B)
+)B
+/
+(01gol=
+  G H W F L G H U 3
+ 3 H U I H F W  0 D W F K
+FIG. 2: Predicted versus ground truth true values for the five cosmological parameters using the full. Each subplot
+corresponds to one parameter, with the black dashed line representing the ideal prediction. Shaded bars denote one
+standard deviation.
+Figure 2 shows the predicted values versus the ground truth for each of the five parameters in the full dataset.
+The red dashed line represents the perfect match. Most predictions align well along this line, especially for B
+1Mpc
+and ω , confirming the strong performance seen in the R2 scores. The error bars represent the predicted standard
+b
+deviation of the output distribution. Parameters with lower R2 tend to have larger uncertainty, indicating the model
+is also less confident when predictions are less accurate. Nevertheless, the resulting uncertainty estimates may still
+be uncalibrated due to the model misspecification or approximation errors [39]. In Fig. 3 we display the reliability
+diagramswhenweuseVarianceScalingandGPNormalcalibrationsforthefiveoutputdimensions. Eachplotcompares
+the expected quantile against the observed frequency.
+
+--- Page Suivante ---
+
+8
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+(a) Uncalibrated
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+(b) Variance Scaling
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+(c) GP Normal
+FIG.3: Uncertaintycalibrationcurves(reliabilitydiagrams)foreachpredictedparameterusingthefulldataset. The
+plots compare predicted Excepted quantile (x-axis) with the observed frequencies (y-axis). Perfect calibration corre-
+spondstothedashedreddiagonal. (a)Uncalibratedmodeloutputs,(b)Post-hoccalibrationusingVarianceScaling.
+(c) Post-hoc calibration using GPNormal.
+
+--- Page Suivante ---
+
+9
+Regarding the uncalibrated curves (see Fig. 3.a), the parameters with the highest R2 scores — ω and B —
+b 1Mpc
+show clear overconfidence from 0.2 to 0.8 in the expected quantile. In B the overconfidence is more remarkable
+1Mpc
+in quantile 0.6. The predicted confidence intervals are too narrow and capture fewer true values than expected,
+even when point predictions are highly accurate, the associated uncertainty estimates can still be miscalibrated. On
+the other hand, the parameters A and β = log (τ /τ ), which have lower R2 scores, show well-calibrated, even
+s 10 ν B
+slightly underconfident behavior of A in quantile 0.5, resulting in curves that lie above the diagonal. After applying
+s
+post-hoc calibration (see Fig. 3.b-c), both VarianceScaling and GPNormal improve the alignment between predicted
+confidencelevelsandempiricalfrequencies,therebyreportingreliableuncertaintiesforourresults. Afterapplyingthe
+calibration procedure, it is important to fine-tune the model incorporating the recalibration adjustments to ensure
+that these corrections are consistent with the learned representations. Otherwise, post-hoc corrections may lead to
+a mismatch between the adjusted uncertainty estimates and the actual error distribution. This principle has been
+discussed in the recent literature, where integrating calibration directly into the training loop has been shown to
+improve both reliability and generalization [40].
+V. DISCUSSION
+We discuss the main experimental and architectural challenges found during the implementation of the Bayesian
+graph neural network. The computational process was executed using two NVIDIA TESLA V100-SXM2 GPUs
+running on the Google Cloud Platform. The initial architecture suggested by the main DeepSphere paper[14] –i.e,
+NN = AV ◦GC ◦σ◦GC ◦P ◦σ◦BN ◦GC proved effective for predicting a single cosmological parameter. The
+normalization layer showed instability and tended toward infinite values because of large outputs in the input data.
+Afterthedatacleaningphasetoremovetheseoutliers,thenormalizationlayerstabilizedandassumedreliablevalues.
+The project initial promising results with the prediction of a single cosmological parameter led to the generation of a
+newdatasetdesignedtopredicttwoparametersbymixingdifferentcomponentsofthePMF,butfailedwhenscaledthe
+architecture to simultaneously predict two or more parameters. To address this issue, the architecture was modified
+by adding a similar block to the original structure, and the number of convolutional filters was increased. Regarding
+thepoolingoperation,experimentingwithbothAverageandMaximumstrategiesrevealedaperformancedependency
+on the output size. The Max pooling yielded better results for predicting a single parameter, whereas AVG pooling
+provided superior performance for the simultaneous prediction of multiple cosmological parameters. Subsequent
+success with two parameters lead to the creation of datasets for three parameters and then four parameters. In this
+scenario, three dense layers were applied instead of two, for better performance. We identified and selected the two
+best performing datasets, full and prim-vp, chosen based on preliminary results that showed the highest R2 scores
+across the four parameters (see table IV of Appendix A) which were then used to generate the final datasets for the
+prediction of the cosmological parameters. The training was conducted using a batch size of 32 and a learning rate of
+1×10−4. The training time was on average 8 second per step for 108 steps per epoch, resulting in approximately 860
+secondsperepoch. Incontrasttothedeterministicmodel,theprobabilisticmodelexhibitedsuperiortrainingstability
+and did not require stabilization techniques such as ReduceLROnPlateau or EarlyStopping to avoid divergence. The
+finalmodelhas382868parameters. WehavepublishedasubsetofthedatasetonZenodoforpublicaccessandfurther
+use, and the scripts used in this analysis are publicly available in the following repository §.
+VI. CONCLUSIONS
+In this work, we have introduced a novel Bayesian graph deep learning framework for estimating key cosmological
+parameters from simulated full-sky CMB maps, explicitly incorporating contributions from PMFs through their
+passiveandvectormodes. ByextendingtheDeepSpheresphericalconvolutionalneuralnetworkwithBayesianneural
+networklayers,ourapproachsimultaneouslyleveragesthegeometryofsphericaldataandprovidesrigorousuncertainty
+quantification. The main conclusions of our study can be summarized as follows:
+(i) High predictive accuracy through integration of physical characteristics. The proposed B-GNN model achieved
+R2 scores close to 0.9 for most of the five cosmological parameters considered: ω , ω , A , B , and β =
+b c s 1Mpc
+log (τ /τ ). We found that the inclusion of PMF-induced passive and vector modes was crucial for improving
+10 ν B
+the model’s representational power. This is clearly reflected in the superior performance of the full dataset
+compared to prim-vp, demonstrating that embedding relevant physical information in the input enhances the
+accuracy and stability of the predictions.
+(ii) Reliable and calibrated uncertainty quantification. A central contribution of this work is the incorporation
+of predictive uncertainty estimates. Although the raw uncertainty outputs of the probabilistic model exhib-
+
+--- Page Suivante ---
+
+10
+ited overconfidence, applying post-hoc calibration methods such as VarianceScaling and GPNormal effectively
+corrected this behavior. The resulting calibrated confidence intervals accurately matched the empirical error
+distribution,therebyincreasingtheinterpretabilityandreliabilityofthemodel’spredictions. Thisisparticularly
+important in cosmology, where well-calibrated uncertainties are essential for meaningful parameter inference.
+(iii) Strong generalization and architectural robustness. The model showed stable performance across independent
+validation datasets, confirming its ability to generalize beyond the training distribution. This robustness is
+the result of a carefully designed training strategy, including regularization, optimal learning rate scheduling,
+and dropout. Importantly, unlike the deterministic baseline, the Bayesian model maintained stability without
+requiring additional early stopping or learning-rate reduction techniques, further supporting its suitability for
+real data applications.
+(iv) Advancement of cosmological parameter inference with Bayesian deep learning. Compared to traditional pa-
+rameter estimation techniques, this framework integrates a spherical CNN architecture with Bayesian inference
+principles,enablingbothaccuratepointpredictionsandprincipleduncertaintyestimationwithinasinglemodel.
+(v) Outlook and implications for future applications. Our results indicate that a well-calibrated Bayesian neural
+network can robustly infer cosmological parameters from complex, high-dimensional CMB data that include
+subtle physical effects such as primordial magnetism. This framework offers a flexible and powerful alternative
+to conventional inference pipelines, providing not only point estimates but also interpretable uncertainty infor-
+mation. These characteristics make it a promising tool for future analyses of real full-sky CMB observations,
+especially in the context of upcoming high-resolution surveys.
+In summary, this study demonstrates that probabilistic deep learning methods, when carefully designed and system-
+atically calibrated, can significantly enhance the precision and reliability of cosmological parameter estimation from
+CMB data. The integration of physical information, spherical geometry, and Bayesian inference principles offers a
+new and powerful pathway to tackle open questions in cosmology and to explore beyond-standard physics.
+ACKNOWLEDGMENTS
+ThispaperisbasedonworksupportedbytheGoogleCloudResearchCreditsprogramwiththeawardGCP19980904
+[1] Scott Dodelson and Fabian Schmidt. Modern Cosmology. 2020. doi:10.1016/C2017-0-01943-2.
+[2] MichaelRashkovetskyi,JulianB.Mun˜oz,DanielJ.Eisenstein,andCoraDvorkin. Small-scaleclumpingatrecombination
+and the Hubble tension. Phys. Rev. D, 104(10):103517, November 2021. doi:10.1103/PhysRevD.104.103517.
+[3] Karsten Jedamzik, Tom Abel, and Yacine Ali-Ha¨ımoud. Cosmic recombination in the presence of primordial magnetic
+fields. J. Cosmology Astropart. Phys., 2025(3):012, March 2025. doi:10.1088/1475-7516/2025/03/012.
+[4] JonathanSchiffandTejaswiVenumadhav.Primordialmagneticfieldsandmodifiedrecombinationhistories.arXive-prints,
+art. arXiv:2506.16517, June 2025. doi:10.48550/arXiv.2506.16517.
+[5] Lawrence M. Widrow. Origin of galactic and extragalactic magnetic fields. Reviews of Modern Physics, 74(3):775–823,
+January 2002. doi:10.1103/RevModPhys.74.775.
+[6] Andrii Neronov and Ievgen Vovk. Evidence for Strong Extragalactic Magnetic Fields from Fermi Observations of TeV
+Blazars. Science, 328(5974):73, April 2010. doi:10.1126/science.1184192.
+[7] Lawrence M. Widrow, Dongsu Ryu, Dominik R. G. Schleicher, Kandaswamy Subramanian, Christos G. Tsagas, and
+Rudolf A. Treumann. The First Magnetic Fields. Space Sci. Rev., 166(1-4):37–70, May 2012. doi:10.1007/s11214-011-
+9833-5.
+[8] Levon Pogosian, Tanmay Vachaspati, and Amit Yadav. Primordial magnetism in CMB B modes1. Canadian Journal of
+Physics, 91(6):451–454, June 2013. doi:10.1139/cjp-2012-0401.
+[9] H´ector Javier Hortu´a and Leonardo Castan˜eda. Reduced bispectrum seeded by helical primordial magnetic fields. J.
+Cosmology Astropart. Phys., 2017(6):020, June 2017. doi:10.1088/1475-7516/2017/06/020.
+[10] Levon Pogosian, Amit P. S. Yadav, Yi-Fung Ng, and Tanmay Vachaspati. Primordial magnetism in the CMB:
+Exact treatment of Faraday rotation and WMAP7 bounds. Phys. Rev. D, 84(4):043530, August 2011. doi:
+10.1103/PhysRevD.84.043530.
+[11] DylanR.Sutton,ChangFeng,andChristianL.Reichardt. CurrentandFutureConstraintsonPrimordialMagneticFields.
+ApJ, 846(2):164, September 2017. doi:10.3847/1538-4357/aa85e2.
+[12] Alex Zucca, Yun Li, and Levon Pogosian. Constraints on primordial magnetic fields from Planck data combined with
+the South Pole Telescope CMB B -mode polarization measurements. Phys. Rev. D, 95(6):063506, March 2017. doi:
+10.1103/PhysRevD.95.063506.
+
+--- Page Suivante ---
+
+11
+[13] HectorJ.Hortua,RiccardoVolpi,DimitriMarinelli,andLuigiMalago. AcceleratingMCMCalgorithmsthroughBayesian
+Deep Networks. arXiv e-prints, art. arXiv:2011.14276, November 2020. doi:10.48550/arXiv.2011.14276.
+[14] N. Perraudin, M. Defferrard, T. Kacprzak, and R. Sgier. DeepSphere: Efficient spherical convolutional neural net-
+work with HEALPix sampling for cosmological applications. Astronomy and Computing, 27:130, April 2019. doi:
+10.1016/j.ascom.2019.03.004.
+[15] N. Krachmalnicoff and M. Tomasi. Convolutional neural networks on the HEALPix sphere: a pixel-based algorithm and
+its application to CMB data analysis. A&A, 628:A129, August 2019. doi:10.1051/0004-6361/201935211.
+[16] Cora Dvorkin, Siddharth Mishra-Sharma, Brian Nord, V. Ashley Villar, Camille Avestruz, Keith Bechtol, Aleksandra
+C´iprijanovi´c, Andrew J. Connolly, Lehman H. Garrison, Gautham Narayan, and Francisco Villaescusa-Navarro. Machine
+Learning and Cosmology. arXiv e-prints, art. arXiv:2203.08056, March 2022. doi:10.48550/arXiv.2203.08056.
+[17] H´ector J. Hortu´a, Riccardo Volpi, Dimitri Marinelli, and Luigi Malago`. Parameter estimation for the cosmic
+microwave background with Bayesian neural networks. Phys. Rev. D, 102(10):103509, November 2020. doi:
+10.1103/PhysRevD.102.103509.
+[18] Jorge Enrique Garc´ıa-Farieta, H´ector J. Hortu´a, and Francisco-Shu Kitaura. Bayesian deep learning for cosmic volumes
+with modified gravity. A&A, 684:A100, April 2024. doi:10.1051/0004-6361/202347929.
+[19] Yarin Gal and Zoubin Ghahramani. Dropout as a bayesian approximation: Representing model uncertainty in deep
+learning. In Maria Florina Balcan and Kilian Q. Weinberger, editors, Proceedings of The 33rd International Conference
+on Machine Learning, volume 48 of Proceedings of Machine Learning Research, pages 1050–1059, New York, New York,
+USA, 20–22 Jun 2016. PMLR. URL https://proceedings.mlr.press/v48/gal16.html.
+[20] Charles Blundell, Julien Cornebise, Koray Kavukcuoglu, and Daan Wierstra. Weight uncertainty in neural network. In
+Francis Bach and David Blei, editors, Proceedings of the 32nd International Conference on Machine Learning, volume 37
+of Proceedings of Machine Learning Research, pages 1613–1622, Lille, France, 07–09 Jul 2015. PMLR. URL https:
+//proceedings.mlr.press/v37/blundell15.html.
+[21] Farida Farsian, Federico Marulli, Lauro Moscardini, and Carlo Giocoli. New Applications of Graph Neural Networks
+in Cosmology: Proceedings of the ML4Astro International Conference 30 May - 1 Jun 2022. 60:35–38, January 2023.
+doi:10.1007/978-3-031-34167-0˙8.
+[22] Gabriele Corso, Hannes Stark, Stefanie Jegelka, Tommi Jaakkola, and Regina Barzilay. Graph neural networks. Nature
+Reviews Methods Primers, 4(1), March 2024. ISSN 2662-8449. doi:10.1038/s43586-024-00294-7. URL http://dx.doi.
+org/10.1038/s43586-024-00294-7.
+[23] Alaa Bessadok, Mohamed Ali Mahjoub, and Islem Rekik. Graph neural networks in network neuroscience. IEEE Trans-
+actions on Pattern Analysis and Machine Intelligence, 45(5):5833–5848, 2023. doi:10.1109/TPAMI.2022.3209686.
+[24] Si Zhang, Hanghang Tong, Jiejun Xu, and Ross Maciejewski. Graph convolutional networks: a comprehensive review.
+Computational Social Networks, 6(1), November 2019. ISSN 2197-4314. doi:10.1186/s40649-019-0069-y. URL http:
+//dx.doi.org/10.1186/s40649-019-0069-y.
+[25] XinzhengXu,XiaoyangZhao,MengWei,andZhongnianLi. Acomprehensivereviewofgraphconvolutionalnetworks: ap-
+proachesandapplications. Electronic Research Archive,31(7):4185–4215,2023. ISSN2688-1594. doi:10.3934/era.2023213.
+URL https://www.aimspress.com/article/doi/10.3934/era.2023213.
+[26] MichaelM.Bronstein,JoanBruna,TacoCohen,andPetarVeliˇckovi´c. GeometricDeepLearning: Grids,Groups,Graphs,
+Geodesics, and Gauges. arXiv e-prints, art. arXiv:2104.13478, April 2021. doi:10.48550/arXiv.2104.13478.
+[27] K. M. Go´rski, E. Hivon, A. J. Banday, B. D. Wandelt, F. K. Hansen, M. Reinecke, and M. Bartelmann. HEALPix: A
+FrameworkforHigh-ResolutionDiscretizationandFastAnalysisofDataDistributedontheSphere. ApJ,622(2):759–771,
+April 2005. doi:10.1086/427976.
+[28] Laurent Valentin Jospin, Wray Buntine, Farid Boussaid, Hamid Laga, and Mohammed Bennamoun. Hands-on Bayesian
+Neural Networks – a Tutorial for Deep Learning Users. arXiv e-prints, art. arXiv:2007.06823, July 2020. doi:
+10.48550/arXiv.2007.06823.
+[29] MartinMagrisandAlexandrosIosifidis.Bayesianlearningforneuralnetworks: analgorithmicsurvey.ArtificialIntelligence
+Review, 56(10):11773–11823, 2023. ISSN 1573-7462. doi:10.1007/s10462-023-10443-1. URL https://doi.org/10.1007/
+s10462-023-10443-1.
+[30] Antony Lewis, Anthony Challinor, and Anthony Lasenby. Efficient Computation of Cosmic Microwave Background
+Anisotropies in Closed Friedmann-Robertson-Walker Models. ApJ, 538(2):473–476, August 2000. doi:10.1086/309179.
+[31] J. Richard Shaw and Antony Lewis. Massive neutrinos and magnetic fields in the early universe. Phys. Rev. D, 81(4):
+043517, February 2010. doi:10.1103/PhysRevD.81.043517.
+[32] Planck Collaboration, N. Aghanim, Y. Akrami, M. Ashdown, J. Aumont, C. Baccigalupi, M. Ballardini, A. J. Banday,
+R. B. Barreiro, N. Bartolo, S. Basak, R. Battye, K. Benabed, J. P. Bernard, M. Bersanelli, P. Bielewicz, J. J. Bock,
+J. R. Bond, J. Borrill, F. R. Bouchet, F. Boulanger, M. Bucher, C. Burigana, R. C. Butler, E. Calabrese, J. F. Cardoso,
+J. Carron, A. Challinor, H. C. Chiang, J. Chluba, L. P. L. Colombo, C. Combet, D. Contreras, B. P. Crill, F. Cuttaia,
+P.deBernardis,G.deZotti,J.Delabrouille,J.M.Delouis,E.DiValentino,J.M.Diego,O.Dor´e,M.Douspis,A.Ducout,
+X. Dupac, S. Dusini, G. Efstathiou, F. Elsner, T. A. Enßlin, H. K. Eriksen, Y. Fantaye, M. Farhang, J. Fergusson,
+R. Fernandez-Cobos, F. Finelli, F. Forastieri, M. Frailis, A. A. Fraisse, E. Franceschi, A. Frolov, S. Galeotta, S. Galli,
+K. Ganga, R. T. G´enova-Santos, M. Gerbino, T. Ghosh, J. Gonza´lez-Nuevo, K. M. Go´rski, S. Gratton, A. Gruppuso,
+J. E. Gudmundsson, J. Hamann, W. Handley, F. K. Hansen, D. Herranz, S. R. Hildebrandt, E. Hivon, Z. Huang, A. H.
+Jaffe, W. C. Jones, A. Karakci, E. Keiha¨nen, R. Keskitalo, K. Kiiveri, J. Kim, T. S. Kisner, L. Knox, N. Krachmalnicoff,
+M.Kunz,H.Kurki-Suonio,G.Lagache,J.M.Lamarre,A.Lasenby,M.Lattanzi,C.R.Lawrence,M.LeJeune,P.Lemos,
+
+--- Page Suivante ---
+
+12
+J.Lesgourgues,F.Levrier,A.Lewis,M.Liguori,P.B.Lilje,M.Lilley,V.Lindholm,M.Lo´pez-Caniego,P.M.Lubin,Y.Z.
+Ma, J. F. Mac´ıas-P´erez, G. Maggio, D. Maino, N. Mandolesi, A. Mangilli, A. Marcos-Caballero, M. Maris, P. G. Martin,
+M.Martinelli,E.Mart´ınez-Gonza´lez,S.Matarrese,N.Mauri,J.D.McEwen,P.R.Meinhold,A.Melchiorri,A.Mennella,
+M. Migliaccio, M. Millea, S. Mitra, M. A. Miville-Deschˆenes, D. Molinari, L. Montier, G. Morgante, A. Moss, P. Natoli,
+H. U. Nørgaard-Nielsen, L. Pagano, D. Paoletti, B. Partridge, G. Patanchon, H. V. Peiris, F. Perrotta, V. Pettorino,
+F. Piacentini, L. Polastri, G. Polenta, J. L. Puget, J. P. Rachen, M. Reinecke, M. Remazeilles, A. Renzi, G. Rocha,
+C. Rosset, G. Roudier, J. A. Rubin˜o-Mart´ın, B. Ruiz-Granados, L. Salvati, M. Sandri, M. Savelainen, D. Scott, E. P. S.
+Shellard, C. Sirignano, G. Sirri, L. D. Spencer, R. Sunyaev, A. S. Suur-Uski, J. A. Tauber, D. Tavagnacco, M. Tenti,
+L.Toffolatti,M.Tomasi,T.Trombetti,L.Valenziano,J.Valiviita,B.VanTent,L.Vibert,P.Vielva,F.Villa,N.Vittorio,
+B.D.Wandelt,I.K.Wehus,M.White,S.D.M.White,A.Zacchei,andA.Zonca. Planck2018results.VI.Cosmological
+parameters. A&A, 641:A6, September 2020. doi:10.1051/0004-6361/201833910.
+[33] J. Caldeira, W. L. K. Wu, B. Nord, C. Avestruz, S. Trivedi, and K. T. Story. DeepCMB: Lensing reconstruction of
+the cosmic microwave background with deep neural networks. Astronomy and Computing, 28:100307, July 2019. doi:
+10.1016/j.ascom.2019.100307.
+[34] Fabian Ku¨ppers, Jonas Schneider, and Anselm Haselhoff. Parametric and Multivariate Uncertainty Calibration for Re-
+gression and Object Detection. arXiv e-prints, art. arXiv:2207.01242, July 2022. doi:10.48550/arXiv.2207.01242.
+[35] Yeming Wen, Paul Vicol, Jimmy Ba, Dustin Tran, and Roger Grosse. Flipout: Efficient Pseudo-Independent Weight
+Perturbations on Mini-Batches. arXiv e-prints, art. arXiv:1803.04386, March 2018. doi:10.48550/arXiv.1803.04386.
+[36] Dustin Tran, Mike Dusenberry, Mark van der Wilk, and Danijar Hafner. Bayesian layers: A module for neural network
+uncertainty. In H. Wallach, H. Larochelle, A. Beygelzimer, F. d'Alch´e-Buc, E. Fox, and R. Garnett, editors, Advances in
+Neural Information Processing Systems, volume 32. Curran Associates, Inc., 2019. URL https://proceedings.neurips.
+cc/paper_files/paper/2019/file/154ff8944e6eac05d0675c95b5b8889d-Paper.pdf.
+[37] IanGoodfellow,YoshuaBengio,andAaronCourville. Deep Learning. MITPress,2016. http://www.deeplearningbook.
+org.
+[38] ChuanGuo,GeoffPleiss,YuSun,andKilianQ.Weinberger. OnCalibrationofModernNeuralNetworks. arXiv e-prints,
+art. arXiv:1706.04599, June 2017. doi:10.48550/arXiv.1706.04599.
+[39] Volodymyr Kuleshov, Nathan Fenner, and Stefano Ermon. Accurate uncertainties for deep learning using calibrated
+regression. In Jennifer Dy and Andreas Krause, editors, Proceedings of the 35th International Conference on Machine
+Learning,volume80ofProceedings of Machine Learning Research,pages2796–2804.PMLR,10–15Jul2018. URLhttps:
+//proceedings.mlr.press/v80/kuleshov18a.html.
+[40] VictorDheurandSouhaibBenTaieb.Probabilisticcalibrationbydesignforneuralnetworkregression.InSanjoyDasgupta,
+StephanMandt,andYingzhenLi,editors,Proceedings of The 27th International Conference on Artificial Intelligence and
+Statistics, volume 238 of Proceedings of Machine Learning Research, pages 3133–3141. PMLR, 02–04 May 2024. URL
+https://proceedings.mlr.press/v238/dheur24a.html.
+APPENDIX
+A. Selection of best results
+We chose these two dataset full and prim-vp due to preliminary results with a deterministic model and 4 cosmo-
+logical predictable parameters:
+
+--- Page Suivante ---
+
+13
+Datasets ⟨R2⟩ ω A B β =log (τ /τ )
+c s 1Mpc 10 ν B
+full 0.894 0.911 0.758 0.993 0.913
+prim-vp 0.880 0.891 0.842 0.923 0.863
+svp 0.860 0.876 0.660 0.992 0.912
+vp 0.800 0.959 0.258 0.996 0.985
+prim-sv 0.783 0.920 0.956 0.977 0.281
+prim-v 0.775 0.951 0.980 0.990 0.179
+sv 0.541 0.955 0.069 0.992 0.148
+prim-s 0.229 0.351 0.888 -0.119 -0.206
+sp 0.209 -0.040 -0.102 0.725 0.251
+prim-sp 0.054 -0.011 0.043 0.181 0.005
+TABLE IV: Coefficient of determination (R2) for the prediction of four cosmological parameters across all simulated
+datasets. Each column corresponds to one target parameter: the cold dark matter density (ω ), the scalar amplitude
+c
+(A ), the magnetic field strength smoothed at 1Mpc (B ), and magnetic damping scale β = log (τ /τ ). The
+s 1Mpc 10 ν B
+first column reports the mean ⟨R2⟩ over all parameters.
+These results helped us to determine the two best datasets for modifying the dense layers with Bayesian layers,
+therebyobtainingmorereliableresultsthankstotheimplementationofuncertaintyquantification. Thedeterministic
+model performed better results of R2 in full and prim-vp, achieving 0.894 and 0.88, respectively. In contrast, the
+remaining datasets show notably lower R2 scores, which suggests that the absence of certain perturbation modes
+limits the model’s ability to recover the full parameter space. This pattern highlights the importance of including
+multiple mode contributions in the simulated CMB maps. In particular, datasets that include the vectorial and
+passive (vp) modes consistently yield the highest correlations, indicating that these components encode essential
+physical information that improves the model’s capacity to recover the cosmological parameters. After selecting the
+two best datasets and configuring the probabilistic model as B-GNN, we generated the corresponding datasets with
+five cosmological parameters to be predicted and applied a data-cleaning procedure.
+B. Data Cleaning
+The data cleaning process corresponds to drop the outliers from the dataset. These outliers have huge values
+compared with the central tendency of the CMB maps. We present the comparison of the dataset before and after the
+cleaning process.
+
+--- Page Suivante ---
+
+14
+5
+4
+3
+2
+1
+0
+5 4 3 2 1 0
+Minimum value per image 1e49
+egami
+rep
+eulav
+mumixaM
+1e49 Before Cleaning (DB-nmsvp)
+1.0
+0.8
+Valid images 0.6
+Outliers
+Min threshold
+Max threshold
+0.4
+0.2
+0.4 0.2 0.0 0.2 0.4 0.6 0.8 1.0
+Minimum value per image 1e6
+egami
+rep
+eulav
+mumixaM
+(FULL) 1e6 After Cleaning ((DFUBL-Ln)msvp)
+Valid images (cleaned)
+Min threshold
+Max threshold
+(a) full
+3.0
+2.5
+2.0
+1.5
+1.0
+0.5
+0.0
+3.0 2.5 2.0 1.5 1.0 0.5 0.0
+Minimum value per image 1e30
+egami
+rep
+eulav
+mumixaM
+1e30 Before Cleaning (DB-nmvp)
+1.0
+0.8
+Valid images 0.6
+Outliers
+Min threshold
+Max threshold
+0.4
+0.2
+0.4 0.2 0.0 0.2 0.4 0.6 0.8 1.0
+Minimum value per image 1e6
+egami
+rep
+eulav
+mumixaM
+(PRIM-VP) 1e6 After Cleaning ((DPBRI-nMm-VvPp))
+Valid images (cleaned)
+Min threshold
+Max threshold
+(b) prim-vp
+FIG. 4: Scatter plots of the minimum vs. maximum pixel values per image before and after outlier removal. The left
+panel shows the raw data, where extreme outliers reach values up to 1×1030. Panels (a) correspond to the full
+dataset, and panels (b) to the prim-vp dataset. The left panels show the distribution of the minimum and maximum
+pixel values per image before cleaning. The right panel displays the cleaned dataset after applying the thresholds
+with value 1×106. Dashed lines indicate the minimum and maximum thresholds used for cleaning.
+The scatter plots in Figure 4 correspond to the data cleaning process in full and prim-vp dataset, illustrating
+the distribution of the minimum and maximum pixel values per image before and after applying the outlier cleaning
+procedure. The data cleaning procedure removes extreme outliers present in the simulation of the CMB maps. These
+anomalies were clearly visible because of the huge difference in scale comparing the left panel (before cleaning) and
+the right panel (after cleaning). The left panels present a scale of 1×1049 while the right panels present a scale
+of 1×106, The presence of these outliers far far away of the main points affected the normalization step, driving
+the feature scaling to divergent values and destabilizing the training process. After removal, both datasets showed
+consistent range, as observed in the right panels. The cleaning step were crucial to guarantee numerical stability and
+
+--- Page Suivante ---
+
+15
+reliable model calibration.
+C. Supplementary prim-vp results
+While the main purpose of this paper focused in full results, an analysis of prim-vp results is presented. We
+report the R2 of the five cosmological parameters.
+   
+   
+   
+   
+                   
+ * U R X Q G  7 U X W K 
+c
+  G H W F L G H U 3
+c
+ 3 H U I H F W  0 D W F K
+    
+    
+    
+    
+    
+                        
+ * U R X Q G  7 U X W K 
+b
+  G H W F L G H U 3
+b
+ 3 H U I H F W  0 D W F K
+ 
+ 
+ 
+ 
+       
+ * U R X Q G  7 U X W K A   H 
+s
+A  G H W F L G H U 3 s
+  H 
+ 3 H U I H F W  0 D W F K
+    
+    
+    
+   
+   
+                      
+ * U R X Q G  7 U X W K B 1Mpc
+B  G H W F L G H U 3
+cpM1
+ 3 H U I H F W  0 D W F K
+  
+  
+  
+ 
+          
+ * U R X Q G  7 U X W K  =log10( / B)
+)B
+/
+(01gol=
+  G H W F L G H U 3
+ 3 H U I H F W  0 D W F K
+FIG. 5: Predicted versus ground truth true values for the five cosmological parameters using the prim-vp. Each
+subplot corresponds to one parameter, with the black dashed line representing the ideal prediction. Shaded bars
+denote one standard deviation.
+Among the parameters, ω and B display the most accurate constrained predictions. In contrast, A and
+b 1,Mpc s
+β show slightly higher scatter and wider uncertainty ranges, these parameters are more degenerated in the input
+features. Nonetheless, the overall alignment between predicted and true values confirms that the probabilistic model
+effectively captures both the mean trends and the associated uncertainties of the cosmological parameters.The large
+standard deviation for certain points out of the diagonal, particularly pronounced in Ω and β = log (τ /τ ), is
+b 10 ν B
+most likely due to these maps lying in marginal regions of the parameter manifold, which results in a wide predictive
+posterior distribution fron the B-GNN due to less training samples.
+Also,weperformedthequalityoftheparameteruncertaintiesandoverallcalibrationoftheresults. Thefigure6dis-
+plays reliability diagrams comparing the observed versus expected frequencies of the predicted uncertainty quantiles,
+allowing assessment of the probabilistic calibration of the model. The red dashed line represents perfect calibration,
+where predicted confidence intervals exactly match the empirical coverage. The model for B and Ω parameters,
+1Mpc c
+in figure 6 (a), are overconfidence and underconfidence, respectively. In the other parameters there is a favorable
+agreement between the predicted and the observed confidence levels. To reduce the miscalibration, we applied Vari-
+anceScaling(figure6(b))andGPNormal(figure6(c)),reflectinganimprovedalignmentbetweenpredictedandobserved
+probabilities. This behavior demonstrates that the post-hoc calibration procedures corrected the mismatch between
+nominal and empirical coverage, leading to well-calibrated predictive distributions.
+
+--- Page Suivante ---
+
+16
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+(a) Uncalibrated
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+(b) Variance Scaling
+  \ F Q H X T H U )  G H Y U H V E 2
+c
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H 
+b
+  \ F Q H X T H U )  G H Y U H V E 2
+b
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H As
+sA  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H B1Mpc
+cpM1B  \ F Q H X T H U )  G H Y U H V E 2  3 H U I H F W  & D O L E U D W L R Q
+   
+   
+   
+   
+   
+   
+                       
+ ( [ S H F W H G  4 X D Q W L O H  =log10( / B)
+)B
+/
+(01gol=
+  \ F Q H X T H U )  G H Y U H V E 2
+ 3 H U I H F W  & D O L E U D W L R Q
+(c) GP Normal
+FIG.6: Uncertaintycalibrationcurves(reliabilitydiagrams)foreachpredictedparameterusingtheprim-vpdataset.
+The plots compare predicted Excepted quantile (x-axis) with the observed frequencies (y-axis). Perfect calibra-
+tion corresponds to the dashed red diagonal. (a) Uncalibrated model outputs, (b) Post-hoc calibration using
+VarianceScaling. (c) Post-hoc calibration using GPNormal.

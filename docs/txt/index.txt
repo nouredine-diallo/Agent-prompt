@@ -1,0 +1,603 @@
+RAG techniques: From naive to advanced - Weights & Biases
+To comply with applicable regulations, starting on September 1st, 2025, our services will no longer be accessible from your location.
+Learn More
+Learn more
+For more information or if you need help
+retrieving your data
+, please contact Weights & Biases Customer Support at
+support@wandb.com
+Skip to content
+Platform
+Close Platform
+Open Platform
+Models
+Experiments
+Track and visualize your experiments
+Sweeps
+Optimize your hyperparameters
+Tables
+Visualize and explore your data
+Reports
+Document and share your AI insights
+Inference
+OpenAI OSS
+GPT OSS 20B, GPT OSS 120B
+Alibaba Qwen3
+235B A22B, 235B Thinking, Coder 480B
+Meta Llama
+Llama 4 Scout, Llama 3.3 70B, Llama 3.1 8B
+MoonshotAI Kimi
+Kimi K2
+Microsoft Phi
+Phi 4 Mini 3.8B
+Hangzhou DeepSeek
+DeepSeek V3.1, V3-0324, R1-0528
+Z.ai
+Z.AI GLM 4.5
+Training
+Serverless RL
+Fine-tune LLMs without managing GPUs
+ART
+Open-source RL framework
+Ruler
+Automated reward function for RL
+Weave
+Traces
+Explore and debug AI applications
+Evaluations
+Rigorous evaluations of AI applications
+Playground
+Explore prompts and models
+Agents
+Observability tools for agentic systems
+Guardrails
+Block prompt attacks and harmful outputs
+Monitors
+Continuously improve in production
+Core
+Registry
+Publish and share your AI models and datasets
+Artifacts
+Version and manage your AI pipelines
+SDK
+Log AI experiments and artifacts at scale
+Automations
+Trigger workflows automatically
+Solutions
+Close Solutions
+Open Solutions
+Use Cases
+Computer vision
+Contact centers
+Evaluations
+Fine-tune LLMs
+RAG
+Train LLMs
+Computer vision
+Contact centers
+Evaluations
+Fine-tune LLMs
+RAG
+Train LLMs
+Industries
+Autonomous Vehicles
+Communications
+Financial Services
+Healthcare & Life Sciences
+Public Sector
+Scientific Research
+Autonomous Vehicles
+Communications
+Financial Services
+Healthcare & Life Sciences
+Public Sector
+Scientific Research
+Case Studies
+Canva
+Learn how Canva leverages W&B to deploy models
+Microsoft
+Learn how Microsoft uses W&B for their ML projects
+Toyota
+Learn how Toyota uses W&B for autonomous driving
+OpenAI
+Learn how OpenAI Robotics uses W&B for large scale ML
+Enterprise
+Close Enterprise
+Open Enterprise
+Security
+Deployment
+Performance
+Partners
+Support
+Security
+Deployment
+Performance
+Partners
+Support
+Resources
+Close Resources
+Open Resources
+AI Courses
+Blog
+Articles
+Podcast
+Whitepapers
+Events & Webinars
+Press
+AI Courses
+Blog
+Articles
+Podcast
+Whitepapers
+Events & Webinars
+Press
+Docs
+Pricing
+Contact
+LOG IN
+Sign up
+ko
+ja
+en
+de
+RAG techniques: From naive to advanced
+Imagine you’re demoing your company’s new AI chatbot to a potential client. You ask it about their latest product, the one they’ve been working on for months, and what does it return? Information from two years ago about a product they don’t even sell anymore. Frustrating, right?
+This is a good example of what retrieval augmented generation (RAG) prevents. It gives
+LLMs
+access to content not included in their training data, either because it could not access it, did not access it, or if it was created after the LLMs training date.
+In this article we’re going to explore retrieval augmented generation, and some common RAG techniques.
+Let’s jump in and understand the core concepts of modern RAG.
+What is retrieval augmented generation (RAG)?
+Retrieval augmented generation (RAG) is a method that combines information retrieval and language generation to produce more accurate and context-aware responses. It uses a retriever to fetch relevant data from a knowledge base, which a generator then uses to create informed outputs.
+The retriever is responsible for finding relevant information from the knowledge base, which is typically stored in a vector database for efficient similarity search. Think of vector database as a special kind of database that helps you find similar semantically matching items very quickly. The generator, usually a
+large language model (LLM)
+, then uses this retrieved information to produce informed and contextually relevant responses.
+The basic workflow of a RAG system is straightforward yet powerful. When a query is received, the system first converts it into a vector representation. This query vector is then used to search the vector database for similar content. The most relevant information is retrieved and fed into the generator along with the original query. For example, if asked about recent climate change policies, a RAG system might retrieve the latest environmental reports and use them to generate an up-to-date, factual response.
+Source:
+link
+While the basic workflow of retrieval augmented generation provides a robust foundation for combining retrieval and generation, the real-world applications of RAG are far more nuanced and diverse. As the technology has matured, experts have discovered that a one-size-fits-all approach doesn’t suffice for the myriad of challenges presented across different industries and data types. This evolution brings us to an important question:
+Isn’t RAG a single technique? Why do we need multiple RAG techniques?
+RAG as a subject has evolved and people have developed numerous techniques to boost the performance of the traditional retrieval strategies. RAG has evolved into a diverse family of techniques, each tailored to address specific challenges or optimize for particular use cases. The one-size-fits-all approach of early systems quickly revealed its limitations when faced with the vast diversity of real-world applications. Different industries, varying data types, and unique retrieval challenges all demanded more specialized solutions.
+The result is a RAG ecosystem that’s as diverse as it is powerful. Some RAG techniques focus on improving retrieval accuracy, others on reducing computational costs, and still others on handling multi-modal data like images or audio. This toolkit approach allows developers to mix and match RAG techniques based on their specific needs, enhancing accuracy, relevance, and efficiency across a wide range of applications.
+Let’s first look at the most basic form of retrieval augmented generation, naive RAG.
+Naive RAG
+Naive RAG is the simplest form of retrieval augmented generation, involving indexing, retrieval, and generation. When a query arrives, similar data chunks are retrieved and combined to generate a response. However, naive RAG can face challenges with retrieval accuracy and response quality.
+This is the simplest form of RAG. This was the methodology which gained popularity shortly after ChatGPT was revealed to the world. This vanilla RAG follows a typical process that includes
+indexing, retrieval, and generation
+.
+Source: Gao, Yunfan, et al. “Retrieval-augmented generation for large language models: A survey.” (2023)
+Indexing:
+The initial phase involves processing and preparing the data. Generally the embedding models and language models have a certain context limitation. In simple words, they can only understand a certain amount of text at a time. If the text is too long, these models might not be as accurate or they might not be able to process the text at all. To align with the context limitations of language models, the text is divided into smaller, manageable segments called as chunks. These chunks are then transformed into vector representations using an embedding model and stored in a vector database for efficient similarity searches in the subsequent retrieval stage.
+Retrieval:
+When a user query is received, it is converted it into a vector representation using the same embedding model used to encode the chunks. Next, the model calculates similarity scores between this query vector and the vectors of the indexed chunks. It then identifies and retrieve the top K chunks that exhibit the highest similarity to the query, which are incorporated as expanded context in the prompt.
+Generation:
+This process involves synthesizing the original query and the retrieved documents into a cohesive prompt for the large language model to process. The model’s response strategy may vary based on task-specific requirements, allowing it to either leverage its inherent knowledge or confine its answers to the information provided in the retrieved documents. Additionally, one can adjust the tone and format of how the LLM should respond, depending on the query and context and the specific use-case being served.
+However, naive RAG can have several drawbacks:
+Retrieval challenges:
+Getting relevant documents is challenging for a simple similarity search and it will often struggle with precision and recall. This might cause the passing of irrelevant chunks or context to LLM.
+Generation problems:
+Sometimes the LLM, even if provided with relevant context, can suffer from hallucinations, toxicity, biases in outputs which can lead to a bad user experience.
+Complexity limitations:
+For more complex use-case, a single retrieval based on the original query may not be sufficient to gather the required contextual information for the LLM. Complex problems often demand multiple retrieval steps or more sophisticated query processing to provide adequate context for accurate responses.
+Advanced RAG
+Advanced RAG enhances basic RAG by improving how the most relevant context is retrieved for the LLM to generate better answers. The focus is on ensuring the most pertinent data is fetched for queries across various scenarios. Since RAG starts with data processing, it’s important to discuss this in detail.
+Any RAG pipeline starts with the data and processing it. So, let’s start there.
+Chunking
+Chunking in retrieval augmented generation (RAG) is the process of
+splitting large texts into smaller, manageable pieces called chunks
+. This is essential because embedding models and language models have context length limitations. Effective chunking preserves semantic meaning, enabling accurate retrieval and response generation.
+Most embedding models used to process the documents have a fixed context length. Even large language models, despite their impressive capabilities, have limitations on how much context they can handle at once. The challenge, then, is to chunk your data without losing its semantic meaning.
+Typically, most of the popular encoder models used for creating embeddings can handle about 512 tokens at a time. So, we need to choose a chunking strategy that gives enough context for our language models to work with, but still allows the embedding model to create meaningful representations. Ideally, you want to keep semantically related pieces together. But what’s “semantically related” really depends on your data and use-case.
+Unfortunately, there’s no one-size-fits-all chunking strategy. It really depends on the data you’re dealing with. For example, if you’re working with well-formatted data that has a clear structure (like markdown documents), you might chunk based on markdown headers. There are various splitting techniques available in frameworks like LangChain and LlamaIndex. While we can’t dive into all of them here, some popular ones include:
+RecursiveCharacterTextSplitter
+: This is often recommended as a starting point. It splits text based on a list of user-defined characters, trying to keep related pieces of text together.
+HTMLHeaderTextSplitter
+and
+MarkdownHeaderTextSplitter
+: These split text based on HTML or markdown-specific characters, and include information about where each chunk came from.
+SemanticChunker
+: This first splits on sentences, then combines ones next to each other if they’re semantically similar enough.
+One thing to consider is to keep some overlap text between chunks. This can help ensure that semantic context doesn’t get lost between chunks. There are many more text splitters out there, and I’d recommend exploring them to find what works best for your use-case. If you’re feeling overwhelmed, the
+RecursiveCharacterTextSplitter is often a good place to start.
+Indexing
+After chunking, we move on to indexing. This is where we embed (convert to a vector representation) our chunks using an embedding encoder model. Modern embedding models like
+bge-base
+are specifically optimized for search tasks, which is exactly what we need in RAG.
+If you’re wondering which model to use, the
+MTEB leaderboard
+is a great place to start. It can help you find a model that strikes the right balance between latency and accuracy for your specific needs. But don’t just blindly trust the leaderboard, it is always a good practice to test some of these models on your data and see which one works best for your use case.
+It’s worth noting that for a small number of documents, something as simple as a numpy array can work just fine as a vector database. The main point of using a vector database is to create an index to allow for Approximate Search, so you don’t have to compute too many cosine similarities. For many use-cases, datasets with around some thousand vectors don’t even require index creation. If you can live with up to 100ms latency, skipping index creation can simplify your workflow while still guaranteeing 100% recall.
+But what if you’re dealing with millions or billions of vectors? That’s when building an ANN (Approximate Nearest Neighbor) index starts to make sense. An ANN or vector index is a special data structure designed to efficiently organize and search vector data based on their similarity. It narrows down the search space, so you don’t have to scan the entire vector space. While it’s faster than exhaustive search (like kNN or flat search), it’s worth noting that it’s slightly less accurate.
+If you want to dive deeper into how ANN indexes work, there are some great resources out there (
+link
+). But for now, the key takeaway is this: indexing is crucial for efficient searching in RAG, but the complexity of your indexing solution should match the scale of your data.
+Once you have our vector database ready, you can start querying it to start getting relevant documents.
+We’re all set, right ? Not even close! We are just getting started. There’s a whole world of techniques we can use to supercharge our RAG system and take its performance to the next level. In the upcoming sections, we’ll explore a variety of strategies that can dramatically improve our retrieval and generation process. Let’s go….
+Metadata filtering
+In a retrieval augmented generation (RAG) system, metadata is supplementary information attached to data chunks or documents, like titles, authors, timestamps, or tags. This metadata enhances retrieval accuracy by providing additional context, helping the system match queries with the most relevant information.
+By attaching relevant metadata to each chunk of information in your knowledge base, you’re essentially creating additional layers of context. These layers can be leveraged during retrieval, acting as a set of filters that narrow down the search space before you even start the semantic search process. In other words, you only perform the semantic search within the documents that match your query criteria.
+Let’s look at some practical applications:
+Temporal filtering:
+If your chunks are associated with dates, you can easily filter results based on recency or specific time periods. This is super useful for time-sensitive information like news articles or scientific papers. For example, if a user asks about “recent advancements in AI,” you could trigger a filter for chunks dated within the last year, ensuring the most up-to-date information is prioritized.
+Jurisdictional segmentation:
+This is particularly powerful in legal applications. If a user inquires about “property laws in California,” your system can immediately filter for chunks tagged with the California jurisdiction, dramatically reducing the search space and improving relevance.
+Domain-specific categorization:
+For multifaceted knowledge bases, you might tag chunks with domain categories. In a medical database, for instance, chunks could be tagged with specialties like “cardiology,” “neurology,” or “pediatrics.” A query about “heart disease treatments” would then prioritize cardiology-tagged chunks.
+Source:
+link
+Let’s walk through a concrete example to illustrate this:
+Imagine you’re doing RAG on your company’s financial documents, and you have a legal department that handles all legal matters. A user asks, “Can you get the legal division financial report for Q2 2024?”
+There are many ways semantic search could fail here. The model needs to accurately understand and represent “financial report,” “legal division,” “Q2,” and “2024” all in a single vector representation. It might focus on “legal division” and retrieve irrelevant financial reports from other years, leaving your generator (an LLM in our case) to figure out which documents are actually relevant to Q2 2024.
+To mitigate this, we can use metadata filtering, assuming you’ve already stored dates and relevant metadata with your documents and vectors.
+You have a couple of options here:
+Use an LLM call to extract entities like Q2 2024 and legal division from the user query.
+Use zero-shot entity detection models like
+GliNER
+. For example, given below are the Gliner extracted entities for our example query.
+Source: https://huggingface.co/spaces/tomaarsen/gliner_medium-v2.1
+The choice depends on your specific use case and what works best for your data.
+Once you’ve extracted these entities, you can use them to pre-filter your documents or vector database. This ensures that you only perform your vector search on documents whose metadata matches your filters. Most of the vector databases today support these filtering features. For example, you can take a look at how LanceDB (a popular multi-modal vector database) does it
+here
+.
+BM25: The old king still reigns
+In the world of RAG, we often get excited about fancy embedding techniques. But let’s not forget about the good old full-text search – it’s still the king in many scenarios. And when we talk about full-text search, BM25 is the algorithm that stands out.
+Why should we care about BM25 when we have cool embedding techniques? Well, here’s the thing: while embeddings are indeed cool, they have their limitations. It’s very hard to encode all the textual information in a mere 768-dimensional vector (768 is just a approximate figure here, many embedding models have varying embedding vector size). It’s a lossy compression.
+Another challenge with embeddings is that the training data used for pre-training these embedding models will never fully represent the specific data in your company. Sure, you can fine-tune your embedding model on your data to improve performance, but that’s a lot of extra steps. You need to prepare the data, fine-tune your model, validate it, and then finally use it. It’s not exactly a walk in the park.
+This is where keyword search or full-text search comes in. It might seem basic at first glance compared to vector search, but it’s still incredibly powerful. And at the heart of many full-text search systems is BM25, an algorithm powered by tf-idf (term frequency-inverse document frequency).
+In fact, there’s a running joke in the information retrieval community that progress in the field has been slow because BM25 is such a strong baseline that it’s hard to beat. It’s particularly powerful for long documents and those that contain a lot of domain-specific jargon, like medical and legal acronyms. Embedding models might fail to encode the acronym “IRA” (it’s an acronym in legal domain for Individual Retirement Account) in your embedding model, but keyword search can search it without any problems.
+To capture all the strengths and mitigate the pitfalls of embedding search, it’s a good idea to include keyword search in your pipeline. The current best practice is to use both keyword and vector-based search, retrieve documents using both methods, and then combine the results to get the final context. This is also referred as hybrid retrieval or hybrid search in many places.
+One of the best things about BM25 is that it’s incredibly fast. It’s basically a free lunch that you can add to your pipeline, giving you a good boost in performance without much overhead.
+So, while we’re all excited about the latest embedding techniques, let’s not forget about BM25 and full-text search. They might be old school, but they’re still incredibly effective.
+Different retrieval strategies: Getting creative with RAG
+When it comes to retrieval strategies in RAG, we can get pretty creative. The best approach often depends on your specific data and use case. Let’s explore a couple of interesting techniques just to give a point of view, but keep in mind that there are lot of different approaches around the internet and you should look out for them and use what’s best for your problem.
+Hierarchical indexing
+Hierarchical indexing is a clever way to execute the retrieval process in a hierarchical order. It’s particularly useful when you’re dealing with a large number of documents, and each document is huge.
+Source:
+Link
+Here’s how it works:
+First, you summarize each document into a paragraph. You can use any cheap or local LLM for this to keep things fast and cost-effective. The goal here is to capture the semantic idea of the complete document in a short summary so that it can fit in embedding model’s context window to get a relevant vector representation of the complete document.
+Then, you embed these summaries into a vector database.
+You also keep a separate vector index of all the chunks from the original documents.
+When a user query comes in, you perform a two-step search:
+First, search within the summaries index to get the top candidate documents.
+Then, filter out the relevant chunks related to these summaries and search just inside this relevant group.
+This approach is super efficient because it allows you to quickly narrow down your search space before diving into the detailed chunks.
+Parent-child retrieval
+Parent-child retrieval is also one of the popular flavor of retrieval process.
+Source:
+link
+Here’s how it works:
+You create smaller chunks for embedding, which are optimized for the limited context length of most embedding models. These smaller chunks can be encoded more precisely, leading to more accurate semantic search results.
+Each small chunk is linked to a larger chunk that contains more context.
+When you search, you’re looking through the smaller chunks, which allows for more accurate retrieval.
+But when you feed the results to your LLM for reasoning, you provide the corresponding larger chunks. This gives the LLM more context to work with.
+This method is like having a detailed index in a book (the small chunks) that points you to the right chapter (the larger chunks). You can quickly find what you’re looking for, but you also get the full context when you need it.
+These strategies show how we can tailor our retrieval process to different needs. The key is to understand your specific requirements and get creative with your approach. To know more about such techniques you can go through the
+relevant langchain docs
+and
+llamaindex retriever cookbook
+.
+Query transformation
+User queries can often be brief or ambiguous, leaving our RAG system scratching its head. That’s where query transformation techniques come in handy. These methods help standardize and enhance user inputs, making them more digestible for our retrieval system. Let’s explore a few key techniques to get a rough idea of how these work:
+Query rewriting
+This technique involves expanding keywords, clarifying acronyms, or adding detail to the original query. It’s like translating user-speak into system-speak. For example, a user’s query “AI latest” might be rewritten as “Recent advancements in artificial intelligence technology”. How you want to rewrite the query or expand it boils down to the use-case you are dealing with.
+Query decomposition
+Sometimes, a user’s question is just too complex for a single search. Query decomposition breaks down these complex queries into simpler sub-queries, allowing for more manageable searches.
+Let’s say a user asks, “What are the health benefits of drinking green tea and how does it compare to black tea?”. This is a complex query and it will be very rare that your documents might contain a relevant chunk which will directly compare these two. This might lead to vague answers and hallucinations. Instead of tackling this head-on, we can utilize an additional layer of a LLM call that interprets the query and decomposes it into simpler questions like “What are the health benefits of drinking green tea?” and “What are the health benefits of drinking black tea?”.
+We’d then search for each sub-query separately, combine the retrieval results, and use this comprehensive information to formulate our final answer.
+HyDE: Hypothetical document embeddings
+Now, let’s dive into a particularly clever query transformation technique called HyDE. This method addresses a common issue in RAG: the semantic gap between queries and document embeddings.
+Here’s the problem: When a user searches for “How to grow tomatoes?”, our retrieval system might struggle. Why? Because documents often contain broader information than just tomato growing methods – they might include varieties, nutrition, and recipes. As a result, the system might return less relevant results about other vegetables, general gardening, or tomato pests. It could also retrieve documents that only briefly mention growing tomatoes or use similar words in different contexts, like “growing” a tomato business. These issues arise because the document embeddings aren’t perfectly aligned with the specific search query, potentially leading to less accurate and helpful search results.
+HyDE tackles this issue with a smart workaround. Here’s how it works:
+We use a LLM to generate a fake document based on the search query. We basically ask the LLM to “write a passage containing information about the search query”.
+We then use an embedding model to encode this fake document into embeddings.
+Next, we use vector similarity search to find the most similar document chunks in our knowledge base to these hypothetical document embeddings. The key here is that we’re not using the search query to find relevant documents, but the fake HyDE ones.
+Finally, we use the retrieved document chunks to generate the final response.
+Source:
+Gao, Luyu, et al. “Precise zero-shot dense retrieval without relevance labels.” (2022)
+This method helps bridge the gap between the user’s query and the document embeddings, often leading to more relevant results.
+It’s worth noting that there are many other query transformation techniques out there. The best one for you depends on your specific use case. Some might involve converting user queries to SQL for database searches, while others might focus on routing queries to appropriate retrieval engines or tools in an agent-based setup.
+The key takeaway? Don’t just take user queries at face value. With a bit of transformation magic, you can significantly enhance your RAG system’s ability to understand and respond to user needs.
+Reranking
+If you’re looking for a way to instantly boost your RAG pipeline’s performance, look no further than reranking. In fact, I’d go as far as to say that reranking should be a default component in any RAG pipeline. It’s that powerful.
+Let’s break down why reranking is so effective:
+The Bi-encoder vs cross-encoder approach
+Until now, we’ve been talking about bi-encoder models. In this approach, document chunks and queries are processed separately to generate embeddings. These embeddings are then stored in a vector database. When a query comes in, it’s embedded separately, and we search for the most similar document embeddings. Essentially, the document and query representations are computed entirely separately and aren’t aware of each other.
+Enter the cross-encoder. A reranker typically uses a cross-encoder model, which evaluates a query-document pair and generates a similarity score. This method is more powerful because it allows both the query and the document to provide context for each other. It’s like introducing two people and letting them have a conversation, rather than trying to match them based on separate descriptions.
+The scalability challenge
+Now, you might be wondering, “If cross-encoders are so great, why don’t we use them for everything?” Well, there’s a catch. Running a cross-encoder on your entire vector store would be incredibly expensive and time-consuming. Imagine you have 100,000 vectors to search from. For each user query, you’d need to run the cross-encoder model 100,000 times. That’s just not feasible for a production system.
+The reranking solution
+Here’s where reranking comes in. The common practice is to:
+First, retrieve the top k results (say, top 50) using a bi-encoder. This gives us approximate results quickly.
+Then, rank those results using a cross-encoder to produce the top 10 outcomes.
+This way, we get the speed of bi-encoders for the initial broad search, and the accuracy of cross-encoders for fine-tuning our top results.
+Types of rerankers
+There are many types of rerankers out there, based on different techniques. Some popular ones include:
+Cross-encoders
+RankGPT
+T5-based rerankers
+ColBERT-based rerankers
+(this is getting a lot popular these days and you should definitely explore this)
+While the specific techniques vary, the core idea remains the same: use a powerful, computationally expensive model to score only a subset of your documents, which were retrieved by a less accurate but much faster model (the bi-encoders).
+If you’re looking for my recommendations,
+Cohere
+currently offers the best reranker. For those preferring open-source solutions,
+ColBERT
+is a strong contender. Also, have a look at the recently announced
+answerai-colbert-small-v1 from
+Answer.ai
+, you can read more about it in the blog post
+here
+.
+Implementing a reranker in your RAG pipeline might require a little bit of extra work, but the potential improvement in results makes it well worth the effort.
+Context selection
+When it comes to RAG systems, more isn’t always better. In fact, dumping too much information into your LLM can be like trying to find a needle in a haystack. That’s where context selection, or prompt compression, comes into play. It’s all about refining the information we feed into our LLM to help it generate more accurate and relevant responses.
+There are two main challenges we’re trying to tackle:
+Information overload: LLMs, like humans, can get overwhelmed when faced with too much information. Even if all that info is somewhat related to the query, it can be hard for the model to separate the actual information to answer the query. The result? Important details get lost in the noise.
+The “lost in the middle” problem: LLMs, just like us, tend to pay more attention to the beginning and end of long texts. The middle? It often gets overlooked. This means we need to be smart about how we present information to our LLMs.
+So, how do we tackle these challenges? Let’s look at a couple of techniques:
+LLMLingua
+LLMLingua
+is a technique that came out of Microsoft. It uses a smaller language model (SLM) to analyze your input and identify the most important parts.
+Source: Jiang, Huiqiang, et al. “Llmlingua: Compressing prompts for accelerated inference of large language models (2023).
+Here’s how it works:
+It looks at each word’s “perplexity” – think of this as a measure of how surprising or informative a word (or token in terms of LLM) is. In terms of information entropy, tokens with lower perplexity contribute less to the over-all entropy gains of the language model. In other words, removing tokens with lower perplexity has a relatively minor impact on the LLM’s comprehension of the context. Words with low perplexity are like filler words – they don’t add much meaning, so LLMLingua kicks them out.
+The result? This process creates a shorter, more concise input for the LLM, which can help it process information faster and more accurately. It also makes sure the SLM and the main LLM are on the same page through a process called “distribution alignment”. This ensures that what the SLM thinks is important aligns with what the main LLM would consider important.
+LLM-based relevance assessment
+Another very straight-forward approach is to let the LLM be its own critic. We can prompt the LLM and another layer of LLM calling to evaluate the relevance of retrieved documents before it generates its final response. This self-critique process helps filter out irrelevant content, ensuring the LLM focuses on what’s really important for answering the query.
+By implementing these context selection techniques, we’re essentially giving our LLM a pair of noise-cancelling headphones and a highlighter. We’re helping it focus on what’s truly important, leading to more accurate, relevant, and insightful responses. In the world of RAG, sometimes less really is more!
+Modular RAG
+As we’ve explored throughout this blog post, there are numerous techniques to enhance RAG systems, from query transformation and reranking to context selection and compression. Each of these methods offers unique advantages in improving retrieval accuracy and response quality. Now, let’s take a step back and look at RAG from a broader perspective – as a modular framework.
+Source: Gao, Yunfan, et al. “Retrieval-augmented generation for large language models: A survey.” (2023)
+Think of RAG not as a rigid system, but as a flexible, modular framework. Each component we’ve discussed can be
+fine-tuned
+and improved to create a better final system. By mixing and matching these components, you can create a RAG system tailored to your specific needs. Below are a few examples of the specialized modules that can be part of a modular RAG system. Each of these components offers unique capabilities to enhance retrieval and processing. As you read through this list, consider how these modules might fit into your own RAG applications. What challenges could they solve? How might they interact with each other?
+We’ll be diving deeper into some of these components in future blog posts, exploring their inner workings and practical applications. For now, let these ideas spark your imagination about the possibilities of modular RAG.
+Enhanced Search:
+This module allows searching across various data sources like search engines, databases, and more. It expands the scope of information retrieval beyond a single knowledge base.
+RAG Fusion:
+This technique addresses traditional search limitations by using a multi-query strategy. It expands user queries into diverse perspectives, employing parallel vector searches and intelligent re-ranking to uncover both explicit and transformative knowledge.
+Memory Integration:
+This component leverages the LLM’s own capabilities to guide retrieval. It continuously improves by learning from past queries, creating a system that gets smarter over time.
+Smart Routing:
+This module directs queries to the most appropriate data sources. It can even combine information from multiple streams when needed, ensuring comprehensive answers to complex queries.
+Task Adapter:
+This module tailors RAG to various downstream tasks. It automates prompt retrieval for zero-shot inputs and creates task-specific retrievers through few-shot query generation.
+By thinking of RAG as a modular framework, we open up endless possibilities for customization and improvement. You can select and optimize the components that best suit your use case, creating a RAG system that’s truly tailored to your needs. Whether you’re focusing on search accuracy, response relevance, or task-specific performance, the modular approach allows you to build a RAG system that excels in your particular domain.
+Conclusion
+In this first blog post of my RAG series, we’ve explored a variety of techniques to enhance Retrieval-Augmented Generation systems. From query transformation and reranking to context selection and modular frameworks, we’ve seen how RAG can be improved and customized to meet specific needs. But this is just the beginning of our journey into the world of advanced RAG. In upcoming posts, we’ll dive deeper into exciting variations like adaptive RAG, which dynamically adjusts its retrieval strategy, multimodal RAG that incorporates various types of data, and graph-based RAG that leverages complex knowledge structures.
+References
+Gao, Yunfan, et al. “Retrieval-augmented generation for large language models: A survey.” (2023)
+Gao, Luyu, et al. “Precise zero-shot dense retrieval without relevance labels.” (2022)
+Jiang, Huiqiang, et al. “Llmlingua: Compressing prompts for accelerated inference of large language models.” (2023)
+Beyond the Basics of Retrieval for Augmenting Generation (w/ Ben Clavié)
+Advanced RAG Techniques: an Illustrated Overview
+LlamaIndex Cookbook
+Langchain How to guides
+X-twitter
+Linkedin-in
+Youtube
+The Platform
+Traces
+Evaluations
+Playground
+Agents
+Guardrails
+Online Evaluations
+Models
+Experiments
+Sweeps
+Tables
+Inference
+Registry
+Artifacts
+Reports
+SDK
+Automations
+Traces
+Evaluations
+Playground
+Agents
+Guardrails
+Online Evaluations
+Models
+Experiments
+Sweeps
+Tables
+Inference
+Registry
+Artifacts
+Reports
+SDK
+Automations
+Article
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+Resources
+Documentation
+AI Courses
+Articles
+Blog and tutorials
+Podcast
+Events
+Support
+Documentation
+AI Courses
+Articles
+Blog and tutorials
+Podcast
+Events
+Support
+Company
+About us
+Partners
+Trust and security
+Legal
+Careers
+Contact
+Brand guide
+Press
+About us
+Partners
+Trust and security
+Legal
+Careers
+Contact
+Brand guide
+Press
+Copyright © Weights & Biases. All rights reserved.
+Website terms of use
+Privacy policy
+English
+Website terms of use
+Privacy policy
+English
+Platform
+Close Platform
+Open Platform
+Experiments
+Lightweight experiment tracking
+Reports
+Collaborative dashboards
+Artifacts
+Dataset and model versioning
+Tables
+Interactive data visualization
+Sweeps
+Hyperparameter optimization
+Models
+Centralized model registry
+Launch
+Automated ML workflows
+Prompts
+LLMOps and prompt engineering
+Monitoring
+Observability for production ML
+Weave
+Interactive ML app builder
+Solutions
+Close Solutions
+Open Solutions
+Use cases
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+Industries
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+Ecosystem
+Close Ecosystem
+Open Ecosystem
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+Docs
+Pricing
+Enterprise
+Close Enterprise
+Open Enterprise
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+Company
+Close Company
+Open Company
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?
+What are AI agents?
+What are AI guardrails?
+LLM evaluations
+What is RAG?
+What is MLOps?
+ML model registry
+What is LLMOps?
+What is reinforcement learning?

@@ -1,0 +1,2767 @@
+A Classification of Long-Refinement Graphs for Colour Refinement
+Sandra Kiefer T. Devini de Mel
+University of Oxford University of Oxford
+sandra.kiefer@cs.ox.ac.uk devini.demel@gmail.com
+October 24, 2025
+Abstract
+The Colour Refinement algorithm is a classical procedure to detect symmetries in graphs,
+whose most prominent application is in graph-isomorphism tests. The algorithm and its gen-
+eralisation, the Weisfeiler–Leman algorithm, evaluate local information to compute a colouring
+for the vertices in an iterative fashion. Different final colours of two vertices certify that no
+isomorphism can map one onto the other.
+The number of iterations that the algorithm takes to terminate is its central complexity
+parameter. For a long time, it was open whether graphs that take the maximum theoretically
+possible number of Colour Refinement iterations actually exist. Starting from an exhaustive
+search on graphs of low degrees, Kiefer and McKay proved the existence of infinite families of
+suchlong-refinementgraphswithdegrees2and3,therebyshowingthatthetrivialupperbound
+on the iteration number of Colour Refinement is tight.
+In this work, we provide a complete characterisation of the long-refinement graphs with low
+(or, equivalently, high) degrees. We show that, with one exception, the aforementioned families
+are the only long-refinement graphs with maximum degree at most 3, and we fully classify the
+long-refinementgraphswithmaximumdegree4. Tothisend,viaareverse-engineeringapproach,
+we show that all low-degree long-refinement graphs can be represented as compact strings, and
+wederivemultiplestructuralinsightsfromthissurprisingfact. Sincelong-refinementgraphsare
+closedundertakingedgecomplements,thisalsoyieldsaclassificationoflong-refinementgraphs
+with high degrees.
+Kiefer and McKay initiated a search for long-refinement graphs that are only distinguished
+inthelastiterationofColourRefinementbeforetermination. Weconcludeitinthissubmission
+by showing that such graphs cannot exist.
+1 Introduction
+Colour Refinement, also known as Na¨ıve Vertex Classification or the 1-dimensional Weisfeiler–
+Leman algorithm, is a classical combinatorial procedure to detect symmetries in graphs. The
+algorithm computes in iterations a colouring of the vertices that reflects how the vertices are
+connected to the rest of the graph. By assessing local structure, it refines in each iteration the
+colouring from the previous one, until it reaches a stable state, which is when it terminates and
+returns the current colouring. The colour of each vertex in an iteration consists of (an encoding
+of) the colours from the previous iteration of the vertex and the vertices in its neighbourhood.
+The colourings are isomorphism-invariant: if two vertices obtain different colours, then there is no
+isomorphism between the graphs mapping one vertex to the other. This way, the colourings can
+decrease the size of the search space for isomorphisms drastically, and, in fact, the most prominent
+application of the algorithm is in graph-isomorphism tests and graph-canonisation approaches.
+1
+5202
+tcO
+32
+]MD.sc[
+1v20802.0152:viXra
+
+--- Page Suivante ---
+
+Colour Refinement can be implemented to run in time O((m+n)log(n)) [9, 32], where n and m are
+the number of vertices and edges, respectively, of the input graph, and efficient implementations
+are used in all competitive isomorphism solvers, see e.g. [1, 10, 22, 23, 32, 33].
+Besides the practical implementations, the algorithm has also fascinated theoreticians over
+decades. The main reason for this is that it keeps revealing more and more links between various
+areas in computer science. For example, the distinguishing power of the algorithm corresponds to
+theexpressivityofgraphneuralnetworks[34],andtherearemachine-learningkernelfunctionsbased
+on the algorithm [30, 36]. Two graphs have the same final colourings with respect to the algorithm
+if and only if there is a fractional isomorphism between them [16, 35, 37]. This is equivalent to
+no sentence in the 2-variable fragment of the counting logic C distinguishing the graphs [8], and
+also to the graphs agreeing in their homomorphism counts for all trees [11]. Remarkably, these last
+two results generalise naturally to higher-dimensional versions of the Weisfeiler–Leman algorithm
+([12, 21], see also [39] for the original 2-WL algorithm), whose expressive power is a very active
+area of research. Most notably, the algorithm serves as a central subroutine in Babai’s celebrated
+quasipolynomial-time graph-isomorphism algorithm [5].
+The connections that the algorithm exhibits to other areas such as logic, homomorphism count-
+ing, and machine learning extend the toolbox of proof methods to understand the algorithm better.
+While the expressive power of Colour Refinement has been completely characterised [2, 27], its
+computational complexity still sparks research. The central complexity measure that has tight
+links in the related fields is the number of iterations that the algorithm uses to reach its output.
+ThisnumberofcolourrecomputationsiscrucialfortheparallelrunningtimeofColourRefinement,
+since ℓ iterations can be simulated with O(ℓ) steps on a PRAM with O(n) processors [20, 28]. Also,
+when run on two graphs in parallel, the iteration number corresponds to a bound on the descriptive
+complexity of the difference between the graphs. More precisely, the number of iterations until the
+graphs obtain different colourings equals the minimum quantifier depth of a distinguishing sentence
+in the counting logic C2 [8, 21]. There are also interesting connections to proof complexity [3, 4]
+and database theory [14].
+The algorithm proceeds by iteratively enriching the colouring from the previous iteration with
+more information, yielding with each iteration a finer partition of the vertices into colour classes.
+A graph that requires the maximum theoretically possible number of Colour Refinement iterations
+needs to provide as little “progress” as possible in each iteration, implying that the initial partition
+into colour classes needs to be the trivial one with all vertices of the same colour, whereas in the
+final partition, every vertex has to have its own distinct colour. Hence, the trivial upper bound on
+the iteration number on n-vertex graphs is n−1, with the number of colour classes growing by 1 in
+each iteration. We call graphs that achieve this bound long-refinement graphs. On random graphs,
+the iteration number is asymptotically almost surely 2 [6]. On the other hand, Krebs and Verbitsky
+√
+managed to construct graphs with an iteration number of n − O( n) [29]. For a long time, no
+progressonthetrivialupperboundn−1wasmade,anditwasopenwhetherlong-refinementgraphs
+actually exist. Inspired by work due to G¨odicke [15] and starting from an exhaustive search on
+graphs of low degrees, Kiefer and McKay proved the existence of infinite families of long-refinement
+graphs with degrees 2 and 3, thereby showing that the trivial upper bound on the iteration number
+of Colour Refinement on n-vertex graphs is tight [25].
+The main motivation for the works [15] and [25] was to find out whether long-refinement graphs
+exist. With the discovered families, various distinctive properties of long-refinement graphs with
+degrees 2 and 3 became apparent. Those allowed the authors to find compact representations for
+the graph families, which ultimately made it possible to show that the families are infinite. The
+hope was to use these insights to construct new families of long-refinement graphs of degrees 2 and
+3 that would cover all possible graph sizes (starting from the smallest possible n, which is 10).
+2
+
+--- Page Suivante ---
+
+However, infinitely many gaps have persisted since then, and in particular, it has remained open
+for which of the remaining values of n there exist long-refinement n-vertex graphs at all.
+Our Contribution In this work, we provide a complete characterisation of the long-refinement
+graphs with small (or, equivalently, high) degrees. More concretely, we show that, with one excep-
+tion of a graph with minimum degree 1, the aforementioned families are the only long-refinement
+graphs with maximum degree at most 3, and we fully characterise the long-refinement graphs with
+maximum degree at most 4. Since complements of long-refinement graphs are long-refinement
+graphs as well, this also yields a characterisation of the long-refinement graphs with high degrees
+(i.e. with minimum degree at least n−5). While it clearly strengthens and generalises the results
+from [15] and [25], our approach does not use experimental results and is entirely theoretical.
+By the definition of Colour Refinement, it is easy to see that every long-refinement graph has
+exactlytwodifferentvertexdegrees. Fromthefactsthatthealgorithmiterativelyrefinesapartition
+of the vertex set and that long-refinement graphs need to end up with the finest partition possible,
+we deduce that when executing Colour Refinement on a long-refinement graph, there will be a
+stage in which each colour class has size at most 2. We analyse the possible connections between
+these pairs and singletons, depending on the indices of the iterations in which the pairs split into
+singletons. This generalises the analyses from [25], since our results hold for any degree pairs.
+Our structural study gives us a clear understanding of the order and edges between splitting pairs
+in a long-refinement graph. We then head off to reverse-engineer the larger colour classes from
+earlier iterations step by step. Again, our results hold for long-refinement graphs with no degree
+restrictions, but the analysis becomes more and more complex with larger colour classes.
+Restricting ourselves to small degrees, we obtain our classification of long-refinement graphs
+of maximum degree at most 4. With this, we manage to show that all even-order long-refinement
+graphsGwithvertexdegrees2and3haveastageinwhicheachcolourclasshassize2, andallodd-
+order long-refinement graphs with these degree restrictions have a stage in which each colour class
+has size at most 2 and there is only one singleton colour class. This is a surprising insight because
+the corresponding statement was phrased as a requirement in [25], while we show that it is in fact
+a general property. It implies that every long-refinement graph with degrees 2 and 3 has a simple
+compact string representation. It also allows us to capture more restrictions on symmetries in the
+strings that represent long-refinement graphs, ultimately yielding that the families from [25] are
+exhaustive and that the gaps in sizes that the work could not cover occurred because there are no
+long-refinement graphs with those sizes and degrees simultaneously. From the characterisation via
+string representations, we can then easily deduce that there is exactly one long-refinement graphs
+with minimum degree 1 and maximum degree at most 3.
+Since Colour Refinement is usually applied to two graphs with the purpose of distinguishing
+them through their colourings, a natural question to ask – also in the light of the lower bound from
+[29] – is whether there are actually pairs of graphs that take as many refinements as theoretically
+possible to be distinguished. This question was initiated in [25] and has been open since then. Our
+aforementioned results give us a complete understanding of the structure and splitting dynamics
+of long-refinement graphs with low (or high) degrees. No two of those long-refinement graphs are
+distinguishedonlyinthelastiterationofColourRefinementonthem,buttherecouldinprinciplebe
+higher-degreelong-refinementgraphswiththisproperty. Inthissubmission, weconcludethesearch
+by proving that there cannot be a “long-refinement pair” of graphs, i.e. a pair of long-refinement
+graphs (of any degrees) that is only distinguished in the last iteration of Colour Refinement before
+termination.
+3
+
+--- Page Suivante ---
+
+Further Related Work It is worth mentioning that just as for Colour Refinement, for general
+k, the iteration number WL (n) of the k-dimensional Weisfeiler–Leman algorithm (k-WL) on n-
+k
+vertex graphs is being studied. For 2-WL, the paper [26] used a simple combinatorial game to show
+that the trivial upper bound of WL (n) ≤ n2 −1 on the iteration number on n-vertex graphs (as
+2
+well as the improved bound one obtains merely accounting for the fact that the initial partition for
+k-WL with k ≥ 2 always has multiple colour classes) is asymptotically not tight. In [31], algebraic
+machinery was employed to show that WL (n) ∈ O(nlog(n)). This was recently generalised to
+2
+O(knk−1log(n)) for k ≥ 3 in [18]. Concerning lower bounds, Fu¨rer’s WL (n) ∈ Ω(n) remained
+k
+unbeaten over decades [13]. A few years ago, significant progress was made when proceeding to
+relational structures of higher arity [7] (see also [18]). Only very recently, Fu¨rer’s bound was also
+improved for graphs, with Ω(nk/2) being the currently best bound [19].
+Concerning the number of iterations until two graphs are distinguished, it has been shown that
+on graphs of bounded treewidth, on planar graphs, and on interval graphs, there is a constant
+dimension of the Weisfeiler–Leman algorithm that distinguishes a graph from such a class from
+every second one in O(log(n)) iterations [17, 20, 38].
+2 Overview of Results and Methods
+This section serves as an overview of our main results and the methods that we use. All results
+formally stated in this section as well as the short proofs for Lemmas 2.10 and 2.11 are collected
+from the later sections.
+Givena(vertex-colouredormonochromatic)inputgraph,ColourRefinementusesasimplelocal
+criterion to iteratively refine the partition of the vertices induced by the current colouring. As soon
+as a stable state with respect to the criterion is reached, the algorithm returns the graph together
+with the current vertex colouring.
+Definition 2.1 (Colour Refinement). Let G be a graph with vertex set V(G), edge set E(G), and
+vertex-colouring λ: V(G) → C. On input (G,λ), the Colour Refinement algorithm computes its
+output recursively with the following update rules. Letting χ0 := λ, for i ∈ N, the colouring after
+i iterations of Colour Refinement is
+χi(v) := (χi−1(v),{{χi−1(u)|{u,v} ∈ E(G)}}).
+Thus, two vertices obtain different colours in iteration i precisely if they already had different
+colours in iteration i−1 or if they differ in the χi−1-colour multiplicities in iteration i−1 among
+their neighbours.
+Letting πi := π (χi) be the vertex partition induced by the colouring after i iterations of
+G,λ
+Colour Refinement, it is immediate that πi+1 is at least as fine as πi (we write πi+1 ⪯ πi), for every
+i ∈ N, and that, hence, there is a minimal j ≤ |V(G)|−1 such that πj+1 = πj. With this choice of
+j, the output of Colour Refinement on input (G,λ) is χ := χj.
+G,λ
+Thispaperstudieslong-refinementgraphs, i.e.graphsGonwhichtheColourRefinementproce-
+duretakesn−1iterationstoterminate,wheren = |V(G)|. Itiseasytoseethatthisisthemaximum
+theoreticallypossiblenumberofiterationsonann-vertexgraph. Toanalyselong-refinementgraphs,
+we first recall some very basic insights about the refinement iterations on them. Here, since Colour
+Refinement refines the colour of each vertex based on the multiplicity of colour occurrences in its
+neighbourhood, the degrees of vertices (i.e. their numbers of neighbours) are crucial.
+Colour Refinement terminates as soon as the vertex partition induced by the colours is not
+strictly finer than the one in the previous iteration. Hence, to obtain n−1 iterations until termi-
+nation, every iteration on a long-refinement graph must increase the number of colour classes by
+4
+
+--- Page Suivante ---
+
+exactly 1, starting with a single colour class containing all vertices and ending with a partition in
+which each vertex forms its own colour class. This implies in particular that there are precisely
+two vertex degrees in the graph and that in each iteration exactly one colour class is split into
+two colour classes, which then induces the next split. In Section 4, with Lemma 4.4, we formalise
+the notion of inducing a split by introducing unbalanced pairs of colour classes. The lemma is the
+central ingredient for the structural arguments in Sections 5 and 6.
+In Section 5, we first observe that every long-refinement graph must have a stage in which every
+colour class has size at most 2, call that iteration p and the induced vertex partition πp. From then
+on, there is a linear splitting order among the classes of size 2, the pairs. The first part of Section 5
+analyses the connections between these classes, completely dropping the degree requirements from
+[25] and sharpening the insights about the partitions. The first split of a pair must be induced by
+the splitting of a class of size 4 into two pairs, which we denote P and P . See Figure 1 for the
+a b
+situation when P and P are successive in the linear order of pairs, and when P is the successor
+a b b
+of the successor of P .
+a
+... ... ... ... ... ... ... ...
+(a) πp−1 if b=a+1 (b) πp if b=a+1 (c) πp−1 if b=a+2 (d) πp if b=a+2
+Figure 1: The partitions πp−1 and πp, where the splitting order of pairs is from left to right. P
+a
+is blue, P is first blue and then pink, respectively. For clarity, we omit all edges between non-
+b
+consecutive pairs apart from the ones connecting P and P to the minimum of the linear order.
+a b
+TheiterationspriortothisseethepairssymmetricallyprecedingP andsucceedingP resulting
+a b
+from splits of classes of 4 themselves. We thus reverse-engineer the first partition to contain no
+classes larger than 4. This partition may or may not contain a class of size 3, and the analysis of
+partitions in the preceding iterations – wherein we reverse-engineer the classes of size 6 – considers
+both cases. The statements in the second part of Section 5 read more technical, due in part to the
+case distinction required for if there is a class of size 3, but a closer look at them lets us understand
+a similar argument and a similar symmetry between the iterations where classes of size 4 split into
+two pairs, and those where classes of size 6 split into a class of size 4 and a pair. Throughout
+Section 5, arguments about the classes allow us to make observations about the edges incident to
+the vertices within them, and we gain general insights about the structure of all long-refinement
+graphs, without any assumptions on degree.
+We employ these insights in Section 6. Here, we first revisit the compact string notation for
+long-refinement graphs of degrees 2 and 3 that was introduced in [25].
+Notation 2.2. Let Σ := {S,X,X ,0,0 ,1,1 }, and let n be the number of colour classes of size 2
+2 2 2 P
+in the minimal iteration p in which all colour classes have size at most 2. By πp, denote the set of
+S
+colour singletons in iteration p.
+We define σ: [n ] → Σ as the function that maps i to the element in Σ that matches the type
+P
+of P . More precisely, σ(i) is defined as follows:
+i
+• S, if P = min(≺) = P .
+i 1
+• X, if P ∈ {P ,P } and P is not adjacent to any singleton S ∈ πp.
+i a b i S
+• X , if P ∈ {P ,P } and P is adjacent to a singleton S ∈ πp.
+2 i a b i i S
+• 0, if P ∈/ {P ,P ,P }, deg(P ) = 2 and P is not adjacent to any singleton S ∈ πp.
+i 1 a b i i S
+5
+
+--- Page Suivante ---
+
+• 0 , if P ∈/ {P ,P ,P }, deg(P ) = 2, and P is adjacent to a singleton S ∈ πp.
+2 i 1 a b i i i S
+• 1, if P ∈/ {P ,P ,P } with deg(P ) = 3, such that P is not adjacent to any singleton S ∈ πp.
+i 1 a b i i S
+• 1 , if P ∈/ {P ,P ,P }, deg(P ) = 3, and P is adjacent to a singleton S ∈ πp.
+2 i 1 a b i i i S
+Since ≺ is a linear order, we can define a string representation based on a long-refinement graph
+G, where the i-th letter in the string is σ(i) and corresponds to P , the i-th element of ≺. We call
+i
+a string defined in this way a long-refinement string.
+Since the paper [25] was concerned with proving the existence of long-refinement graphs, it
+sufficed to use the string representations to find infinitely many long-refinement graphs. Here, we
+areconcernedwithacomplete characterisation,andtothisend,weusetheresultsfromSection5to
+detectpreciselywhichstringsoverthealphabetyieldlong-refinementgraphs. Wefind, forexample,
+that every long-refinement graph with degrees 2 and 3 has a stage in which all classes have size 2
+except for one singleton in the case where the order of the graph is odd. This yields the helpful
+insight that we can use the above alphabet to represent all long-refinement graphs with degrees
+2 and 3 unambiguously, since the strings describe the exact neighbourhood of each pair and each
+singleton, as long as there is at most one singleton. Thus, up to isomorphism, every string Ξ
+represents exactly one graph, which we denote by G(Ξ).
+Using the technical insights from Section 5, Section 6 generalises the results beyond degrees 2
+and 3, namely to maximum degree at most 4. This yields the first comprehensive classification of
+such long-refinement graphs. Through the symmetries defined in Section 5, we are able to divide
+this argument into cases depending on the number of pairs that remain in the partition, and not
+merged into larger classes.
+InSection7,withTheorems7.1–7.6,wecollectallresultsaboutthestructureoflong-refinement
+graphs of low degrees to obtain a compact classification, ordered by degree pairs. Moreover, we
+provide an alternative and simple proof that there is exactly one long-refinement graph with mini-
+mum degree 1 and maximum degree at most 4, which is the graph in Figure 2. We append these
+results in the following subsection (Subsection 2.1), with references to the figures and tables that
+represent the graphs. Note that, since a graph is a long-refinement graph if and only if the graph
+obtained by complementing the edge relation is a long-refinement graph, the results directly yield
+a classification of long-refinement graphs with high degrees.
+Finally, in Section 8, we turn towards the distinguishability of long-refinement graphs. In its
+applications, Colour Refinement is used to distinguish two graphs. Therefore, given our insights
+about individual long-refinement graphs, it is natural to ask for graphs that take n−1 iterations to
+be distinguished by Colour Refinement, i.e. to obtain distinct colourings (which implies that they
+are not isomorphic). The strongest known lower bound on the number of iterations to distinguish
+√
+two graphs with Colour Refinement is n−O( n) [29] and it is from a decade ago [29]. With the
+results from [25], it is plausible to search for long-refinement pairs of graphs, and hence this was
+posedasanopenquestioninthesamepaper. Againusingthefactthatthelastsplitinbothgraphs
+must be a pair splitting into singletons, we show that such pairs of graphs do not exist.
+Theorem 2.3. For n ≥ 3, there is no pair of graphs G, H with |V(H)| ≤ |V(G)| = n that Colour
+Refinement distinguishes only after n−1 iterations.
+2.1 Our Classification of Long-Refinement Graphs with Small Degrees
+This subsection lists our main classification results, see also Theorems 7.1 – 7.6. Since our entire
+analysis is up to isomorphism, we will not always distinguish explicitly between graphs from the
+same isomorphism class.
+6
+
+--- Page Suivante ---
+
+We write N (v) for the neighbourhood of vertex v in the graph G, and deg(G) for the set of
+G
+vertex degrees in G.
+RecallNotation2.2. Thework[25]identifiedfamiliesoflong-refinementgraphsGwithdeg(G) =
+{2,3}, but left as an open problem whether they are comprehensive. We answer that question
+affirmatively.
+Theorem 2.4. The even-order long-refinement graphs G with deg(G) = {2,3} are exactly the ones
+represented by strings contained in the following sets:
+• {S011XX}
+• {S1k001kX1X1k0 | k ∈ N }
+0
+• {S1k11001kXX1k0 | k ∈ N }
+0
+• {S1k0011kXX1k10 | k ∈ N }
+0
+• {S011(011)k00(110)kXX(011)k0 | k ∈ N }
+0
+• {S(011)k00(110)k1X0X1(011)k0 | k ∈ N }
+0
+The odd-order long-refinement graphs G with deg(G) = {2,3} are exactly the ones represented
+by strings contained in the following sets:
+• {S1 11XX}
+2
+• {S0X1X }∪{S1k1011kX1X1k1 | k ∈ N }
+2 2 0
+• {S110XX }∪{S111k1011kXX1k1 | k ∈ N }
+2 2 0
+• {S1k01k1XX1k1 | k ∈ N }
+2 0
+• {S(011)k00(110)kX1 X(011)k0 | k ∈ N }
+2 0
+In particular, the theorem implies that the gaps that the graphs found in [24] leave open cannot
+be covered with degrees 2 and 3.
+Corollary 2.5. There are no long-refinement graphs G with deg(G) = {2,3} and order n ̸= 12
+such that n mod 18 ∈ {6,12}.
+Theorem 2.4 and Corollary 2.5 completely classify the long-refinement graphs G with deg(G) =
+{2,3}. Expanding to maxdeg(G) ≤ 4, we obtain the following further parts of our classification of
+long-refinement graphs with small degrees (using the results in Section 6).
+Theorem 2.6. There is no long-refinement graph G with deg(G) = {1,2} or deg(G) = {1,4}.
+Theorem 2.7. Thelong-refinementgraphsGwithdeg(G) = {2,4}arepreciselytheonesinFigures
+3b, 3c, 3e, 3h, 3j, 3k, 3l, 3n, 3q, 3r, 3s, and 3t.
+Theorem 2.8. Thelong-refinementgraphsGwithdeg(G) = {3,4}arepreciselytheonesinFigures
+3a, 3d, 3f, 3g, 3i, 3m, 3o, 3p, as well as Tables 1, 2, and 3.
+Theorem 2.9. The graph in Figure 2 is the only long-refinement graph G with deg(G) = {1,3}.
+While Theorems 2.6 – 2.9 are proved through an analysis of the refinement iterations in Section
+6, we now present a simple alternative proof for Theorem 2.9, which relies merely on Theorem 2.4.
+By [25, Lemma 13], a long-refinement graph G with deg(G) = {1,3} has at most two vertices of
+degree 1. We start by treating the case where G has exactly one vertex of degree 1.
+7
+
+--- Page Suivante ---
+
+Figure 2: The unique long-refinement graph with degrees {1,3}.
+Lemma 2.10. The graph in Figure 2 is the only long-refinement graph G with deg(G) = {1,3} in
+which |{v ∈ V(G) : deg(v) = 1}| = 1.
+Proof. Let G be any long-refinement graph with deg(G) = {1,3} and the set of vertices of degree
+1 being a singleton {v }. Then the partition after the first Colour Refinement iteration on G is
+1
+π1 = {{v },V(G)\{v }}. The graph G′ := G[V(G)\{v }], i.e. the subgraph of G induced by
+G 1 1 1
+V(G)\{v }, satisfies deg(G′) = {2,3} and {v ∈ V(G′) | deg(v) = 2} = {v }, where {v } = N (v ).
+1 2 2 G 1
+Also, Colour Refinement takes n−2 iterations to terminate on G′, otherwise G would not be a
+long-refinement graph. Hence, G′ is a long-refinement graph as well, and since |V(G)| is even,
+|V(G′)| is odd. By our classification in Theorem 2.4, G′ must be G(S1 11XX), since that is the
+2
+only long-refinement graph with degrees 2 and 3 in which there is only one vertex of degree 2. So,
+by degree arguments, G must be the graph in Figure 2.
+Now we consider the situation in which there are exactly two vertices of degree 1.
+Lemma 2.11. There is no long-refinement graph G with deg(G) = {1,3} in which |{v ∈ V(G) :
+deg(v) = 1}| = 2.
+Proof. Suppose G is a long-refinement graph with deg(G) = {1,3} for which {v ∈ V(G) : deg(v) =
+1} = {v ,v′} with v ̸= v′. We know that {v ,v′} ∈/ E(G), since G is connected. However,
+1 1 1 1 1 1
+now the graph G′ := (V(G),E(G)∪{{v ,v′}} is a long-refinement graph with deg(G′) = {2,3}
+1 1
+and {v ∈ V(G′) : deg(v) = 2} = {v ,v′}. The degree property is clear. To see that G′ is a
+1 1
+long-refinement graph, note that inserting the new edge does not alter the partition into degrees,
+i.e. π1. Also, since in both graphs, it holds that |N({v ,v′})| ≤ 2, the class {v ,v′} must be
+1 1 1 1
+the last class that splits (in both graphs). Furthermore, N (v ) \ {v′} = N (v ) \ {v′} and
+G 1 1 G′ 1 1
+N (v′) \ {v } = N (v′) \ {v }. This implies that πi = πi for every i ∈ N, so G′ is a long-
+G 1 1 G′ 1 1 G G′
+refinement graph if and only if G is one. By double counting edges, G (and hence also G′) has an
+even number of vertices and hence G′ is one of the graphs from the first list in Theorem 2.4. The
+only graph from that list with exactly two vertices of degree 2 is G(S011XX), but these vertices
+are not adjacent. Hence, G′ does not exist, and therefore G does not exist.
+ThisconcludestheproofofTheorem2.9,whichtogetherwithTheorem2.6yieldsthatthegraph
+in Figure 2 is the only long-refinement graph G with mindeg(G) = 1 and maxdeg(G) ≤ 4.
+Figure 3 lists all long-refinement graphs from our classification that are not part of infinite
+families, in the order in which they appear in our analysis in the remainder of this paper. Tables
+1 – 3 list the infinite families.
+8
+
+--- Page Suivante ---
+
+(a) (b) (c) (d)
+(e) (f) (g) (h)
+(i) (j) (k)
+(l) (m) (n)
+(o) (p) (q) (r)
+(s) (t) (u)
+Figure 3: The long-refinement graphs G with deg(G) ̸= {2,3}, omitting the infinite families from
+Tables 4 – 6.
+9
+
+--- Page Suivante ---
+
+vertex adjacency 1 with n ∈ N adjacency 2 with n ∈ N
+0
+0 2n+1,2n+2,2n+5,2n+6 2n+1,2n+2,2n+5,2n+6
+1 3,4n+7,4n+8 3,4n+7,4n+8
+2 4,4n+9,4n+10 4,4n+9,4n+10
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2n+1∗ 0,2n−1,2n+3 2n+1,2n+2,2n+5
+2n+2∗ 0,2n,2n+4 2n,2n+12n+4
+2n+3 2n+1,2n+5,6n+11,6n+12 0,2n+1,2n+4,2n+5
+2n+4 2n+4,2n+8,6n+17,6n+18 0,2n+2,2n+3,2n+6
+2n+5 0,2n+3,2n+7 2n+3,2n+6,2n+7
+2n+6 0,2n+4,2n+8 2n+4,2n+5,2n+8
+4n+7 1,4n+5,4n+9 1,4n+5,4n+9
+4n+8 1,4n+6,4n+10 1,4n+6,4n+10
+4n+9 2,4n+7,4n+11 2,4n+7,4n+11
+4n+10 2,4n+8,4n+12 2,4n+8,4n+12
+6n+11 2n+3,2n+4,6n+9 0,6n+12,6n+10
+6n+12 2n+3,2n+4,6n+10 0,6n+11,6n+10
+Table1: Thetwoinfinitefamiliesoflong-refinementgraphsGwithorder6n+13fordeg(G) = {3,4}
+where I = [3,2n]∪[2n+7,4n+6]∪[4n+11,6n+10]. Note also that 2n+1,2n+2 are omitted
+when n = 0.
+vertex adjacency 1 adjacency 2
+0 2k+3,2k+4,2k+7,2k+8 2k+5,2k+6,6k+13,6k+14
+1 3,4k+9,4k+10 3,4k+9,4k+10
+2 4,4k+11,4k+12 4,4k+11,4k+12
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2k+3 0,2k+1,2k+5 2k+1,2k+4,2k+5
+2k+4 0,2k+2,2k+6 2k+2,2k+3,2k+6
+2k+5 2k+3,2k+7,6k+13,6k+14 0,2k+3,2k+6,2k+7
+2k+6 2k+4,2k+8,6k+13,6k+14 0,2k+4,2k+5,2k+8
+2k+7 0,2k+5,2k+9 2k+5,2k+8,2k+9
+2k+8 0,2k+6,2k+10 2k+6,2k+7,2k+10
+4k+9 1,4k+7,4k+11 1,4k+7,4k+11
+4k+10 1,4k+8,4k+12 1,4k+8,4k+12
+4k+11 2,4k+9,4k+13 2,4k+9,4k+13
+4k+12 2,4k+10,4k+14 2,4k+10,4k+14
+6k+13 2k+5,2k+6,6k+11 0,6k+14,6k+11
+6k+14 2k+5,2k+6,6k+12 0,6k+13,6k+12
+Table 2: All infinite families of long-refinement graphs G with order 6k+15 and deg(G) = {3,4},
+where I = [3,2k+2]∪[2k+9,4k+8]∪[4k+13,6k+12], defined for k ∈ N .
+0
+10
+
+--- Page Suivante ---
+
+vertex adjacency 1 adjacency 2
+0 2k+7,2k+8,2k+11,2k+12 2k+5,2k+6,6k+17,6k+18
+1 3,4k+13,4k+14 3,4k+13,4k+14
+2 4,4k+15,4k+16 4,4k+15,4k+16
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2k+7 0,2k+5,2k+9 2k+5,2k+8,2k+9
+2k+8 0,2k+6,2k+10 2k+6,2k+7,2k+10
+2k+9 2k+7,2k+11,6k+17,6k+18 0,2k+7,2k+10,2k+11
+2k+10 2k+8,2k+12,6k+17,6k+18 0,2k+8,2k+9,2k+12
+2k+11 0,2k+9,2k+13 2k+9,2k+12,2k+13
+2k+12 0,2k+10,2k+14 2k+10,2k+11,2k+14
+4k+13 1,4k+11,4k+15 1,4k+11,4k+15
+4k+14 1,4k+12,4k+16 1,4k+12,4k+16
+4k+15 2,4k+13,4k+17 2,4k+13,4k+17
+4k+16 2,4k+14,4k+18 2,4k+14,4k+18
+6k+17 2k+9,2k+10,6k+15 0,6k+18,6k+15
+6k+18 2k+9,2k+10,6k+16 0,6k+17,6k+16
+Table 3: All infinite families of long-refinement graphs G with order 6k+19 and deg(G) = {3,4},
+where I = [3,2k+6]∪[2k+13,4k+12]∪[4k+17,6k+16].
+3 Preliminaries
+With N being the set of natural numbers, we set N := N∪{0}, and for a,b ∈ N , let [a,b] := {n ∈
+0 0
+N | a ≤ n ≤ b} and [b] := [1,b]. Multisets are a generalisation of sets in which repeated elements
+0
+are allowed, i.e. elements may occur more than once. To distinguish them from sets, we denote
+multisets using double braces {{,}}. Given a set S, a partition of S is a set of pairwise disjoint
+non-empty sets Π such that (cid:83) M = S. Given two partitions Π,Π′ of S, we say that Π refines
+M∈Π
+Π′ and write Π ⪯ Π′ if every element of Π is a (not necessarily strict) subset of some element of
+Π′. We call a set with a single element a singleton and a set with two elements a pair. A partition
+that consists of singletons only is called discrete.
+Inoursetting,allgraphsareundirected,finite,andsimple. Inparticular,theyhavenoself-loops
+and between every pair of vertices only at most one edge. For a graph G, we use V(G) and E(G)
+to denote the set of vertices and the set of edges of G, respectively. We drop parameters if they
+are clear from or irrelevant in the context and just use V and E or write G = (V,E). The order of
+G is |G| := |V(G)|. The neighbourhood of a vertex v ∈ V(G) is N(v) := {u ∈ V(G) | {u,v} ∈ E}
+(cid:83)
+and we extend the notion to sets of vertices S by setting N(S) := (N(v))\S. We consider v
+v∈S
+adjacent to S if N(v)∩S ̸= ∅ and say that C′ is adjacent to C if N(C)∩C′ ̸= ∅. The degree of v is
+deg(v) := |N(v)| and we set deg(G) := {deg(v) | v ∈ V(G)}. For d ∈ N , the graph G is d-regular
+0
+if deg(G) = {d}, and regular if it is d-regular for some d. A matching is a 1-regular graph.
+Fornon-emptyS,S′ ⊆ V(G), theinduced subgraph G[S]is the graph(S,E) whereE = {{u,v} |
+{u,v} ∈ E(G),u,v ∈ S}, and the subgraph G[S,S′] is the graph (S ∪S′,E′) where E′ = {{u,v} |
+{u,v} ∈ E(G),u ∈ S,v ∈ S′}. If V(G) = S ∪ S′ and S ∩ S′ = ∅ and E(G) ∩ {{v,w} | v,w ∈
+S} = ∅ = E(G)∩{{v,w} | v,w ∈ S′}, then G is bipartite (on bipartition (S,S′)). If, additionally,
+(cid:8) {v,w} | v ∈ S,w ∈ S′(cid:9) = E(G[S,S′]), the graph G is complete bipartite.
+A path (of length ℓ) from u ∈ V(G) to v ∈ V(G) is a sequence u = v ,v ...,v = v such that
+0 1 ℓ
+11
+
+--- Page Suivante ---
+
+{v ,v } ∈ E(G) and v ̸= v for all i ∈ [ℓ] and all j ∈ [0,ℓ] with j ∈/ {i,ℓ}. The distance d(u,v)
+i−1 i i j
+between u and v is the length of a shortest path between u and v. A vertex colouring of G is a
+mapping λ from V(G) into some set C, whose elements we call colours. We call the pair (G,λ) a
+vertex-coloured graph and denote by π (λ) the partition of V(G) into the colour classes, i.e. into
+G
+the maximal sets of vertices that have the same colour with respect to λ.
+An isomorphism between graphs G and H is a bijective mapping φ: V(G) → V(H) such that
+for all u,v ∈ V(G), it holds that {u,v} ∈ E(G) if and only if {φ(u),φ(v)} ∈ E(H). Isomorphisms
+between vertex-coloured graphs (G,χ ) and (H,χ ) must additionally satisfy χ (u) = χ (φ(u)).
+G H G H
+4 Colour Refinement
+In this section, we give a brief introduction to the Colour Refinement algorithm, which is also
+called the 1-dimensional Weisfeiler–Leman algorithm, and state the main facts about it that we
+will use in our further analysis. Given a (vertex-coloured or monochromatic) input graph, Colour
+Refinement uses a simple local criterion to iteratively refine the partition of the vertices induced
+by the current colouring. As soon as a stable state with respect to the criterion is reached, the
+algorithm returns the graph together with the current vertex colouring.
+Definition 4.1 (Colour Refinement). Let G be a graph with vertex colouring λ: V(G) → C. On
+input (G,λ), the Colour Refinement algorithm computes its output recursively with the following
+update rules. Let χ0 := λ and for i ∈ N, the colouring after i iterations of Colour Refinement is
+χi(v) := (χi−1(v),{{χi−1(u)|{u,v} ∈ E(G)}}).
+Thus, two vertices obtain different colours in iteration i precisely if they already had different
+colours in iteration i−1 or if they differ in the χi−1-colour multiplicities among their neighbours
+in iteration i−1. Letting πi := π (χi) be the vertex partition induced by the colouring after i
+G,λ
+iterations of Colour Refinement, it is immediate that πi+1 ⪯ πi holds for every i ∈ N and that,
+hence, there is a minimal j ≤ |G| − 1 such that πj+1 = πj. With this choice of j, the output
+of Colour Refinement on input (G,λ) is χ := χj. We call j the iteration number of Colour
+G,λ
+Refinement on input (G,λ) and denote it by WL (G,λ). If λ induces the trivial partition, i.e.
+1
+(G,λ) is monochromatic, we set WL (G) := WL (G,λ). We call (G,λ) and the induced partition
+1 1
+π(λ) stable if WL (G,λ) = 0, i.e. if π(λ) = π(χ ). It follows from the definition of the Colour
+1 Gλ
+Refinement algorithm that for all P,Q ∈ π(χ ) with P ̸= Q, the graph G[P] is regular and
+G,λ
+H := G[P,Q]isbiregular,i.e.therearek,ℓ ∈ Nsuchthatforeveryv ∈ P,itholdsthat|N (v)| = k,
+H
+and for every w ∈ Q, it holds that |N (w)| = ℓ.
+H
+A long-refinement graph is a graph G for which WL (G) = |G| − 1, i.e. on which Colour
+1
+Refinement takes the maximum possible number of iterations to compute its output. Note that, in
+our quest for long-refinement graphs, we do not have to consider vertex-coloured graphs, because,
+as observed in [25], all long-refinement graphs G of order at least 2 are monochromatic. Moreover,
+they are connected, have |deg(G)| = 2, and Colour Refinement produces the discrete partition on
+them.
+The only connected graphs with degrees 1 and 2 are paths, and a monochromatic path on n
+vertices takes ⌊n−1⌋ iterations of Colour Refinement to stabilise (see, e.g., [25, Fact 5]). Solving
+2
+⌊n−1⌋ = n−1 yields n ≤ 1, but the graph consisting of a singleton vertex does not satisfy the
+2
+degree restrictions. We hence obtain the following observation.
+Observation 4.2 (cf. [25]). There is no long-refinement graph G with deg(G) = {1,2}.
+12
+
+--- Page Suivante ---
+
+Therefore, the smallest degree pairs with which there may be long-refinement graphs are {1,3}
+and {2,3}. For both, examples are given in [25]. More precisely, they present one long-refinement
+graphGwithdeg(G) = {1,3}, onewithdeg(G) = {1,5}, andinfinitelymanywithdeg(G) = {2,3}.
+For specific ones of the infinite families with deg(G) = {2,3}, the proof of their Lemma 27 yields
+a simple construction to show the following.
+Observation 4.3. There are infinitely many sets S with 3 ∈ S and such that deg(G) = S for some
+long-refinement graph G.
+Proof. To see this, one just needs to verify that there are infinitely many numbers 3 ̸= s ∈ N such
+that there are long-refinement graphs G with deg(G) = {2,3} and s = |{v ∈ V(G) | deg(v) = 2}|,
+for which one can consider, for example, the last infinite family in [25, Theorem 24]. Now inserting
+a fresh vertex w with edges to all v ∈ V(G) with deg(v) = 2 yields a long-refinement graph G′ with
+deg(G′) = {3,s}.
+In the remainder of this section, we develop Lemma 4.4, which is the main structural insight
+about the partition classes in successive Colour Refinement iterations and which will allow us to
+pursuethefollowingreverse-engineeringapproach. Tostudylong-refinementgraphsGwith|G| > 1,
+weintendtoconstructthepartitionπi−1 fromthepartitionπi. Eachpartitionπi musthaveexactly
+one more colour class than πi−1, see [25, Proposition 8]. So there must be disjoint A , B such
+i i
+that {A ,B } = πi \ πi−1 and whose union is the unique C with {C } = πi−1\πi. We say
+i i i−1 i−1
+that C splits into A and B in iteration i. The class C splits immediately after and as a direct
+i−1 i i i
+consequence of C splitting, so all vertices in C must have the same number of neighbours in
+i−1 i
+C , but differ in their numbers of neighbours in A or in B . We formalise this by defining the
+i−1 i i
+degree of vertex v with respect to set C ⊆ V(G) as deg (v) := |N(v)∩C| and, for vertex sets C,C′
+C
+and v ∈ C, we define the degree of C into C′ as follows:
+(cid:26)
+deg (v), if deg (v) = deg (u) holds for every u ∈ C
+deg (C) := C′ C′ C′
+C′ ⊥, otherwise
+IfC′ = V(G),weletdeg(C) := deg (C). Ifdeg (C) = ⊥,thenC isunbalancedwrt C′. Otherwise,
+C′ C′
+C is balanced wrt C′. If we do not want to specify the class C′ but just claim its existence, we
+call C simply unbalanced. With these notions, notice that every class in πi with i > 0 is balanced
+wrt every class in πi−1. In particular, C is balanced wrt C , and also with respect to each class
+i i−1
+in πi ∩πi−1. Since C is split in iteration i+1, C cannot also be balanced wrt all classes in πi,
+i i
+hence there must be a class in πi \πi−1 = {A ,B } wrt which C is unbalanced (cf. [25, Lemma
+i i i
+11]). In fact, since C is balanced wrt C , i.e. A ∪B , all vertices in C have the same degree into
+i i−1 i i i
+A ∪B , and therefore deg (C ) = ⊥ holds if and only if deg (C ) = ⊥. We summarise all these
+i i Ai i Bi i
+observations in the following lemma.
+Lemma 4.4. Let G be a long-refinement graph with |G| > 1. Then in any non-stable partition πi
+on V(G), there is exactly one unbalanced class C ∈ πi.
+i
+For the following, assume that, i > 0, that is, πi ̸= π0. Then there are exactly two distinct
+options A , B for C′ ∈ πi with deg C = ⊥. Hence,
+i i C′ i
+deg (C ) = ⊥ = deg (C ).
+Ai i Bi i
+Furthermore, C = A ∪B and
+i i+1 i+1
+deg (A )+deg (A ) = deg (C ) = deg (B )+deg (B ) ∈ [1,|C |−1]. (1)
+Ai i+1 Bi i+1 Ci−1 i Ai i+1 Bi i+1 i−1
+13
+
+--- Page Suivante ---
+
+In particular, it holds that deg (C ) ̸= ⊥.
+Ci−1 i
+Finally, if i > 1, then C ̸= V(G) and, since the first iteration of Colour Refinement separates
+i
+vertices by degree, deg(C ) ̸= ⊥ and thus deg(A ) = deg(B ).
+i i i
+As a first application of our formal definition of classes being unbalanced wrt each other, we
+note that the class of long-refinement graphs is closed under edge complementation.
+Lemma 4.5. A graph G = (V,E) is a long-refinement graph if and only if the graph G′ = (V,E′)
+is a long-refinement graph, where E′ = {{u,v} | u,v ∈ V,{u,v} ∈/ E,u ̸= v}.
+Proof. It suffices to show that πi = πi holds for every i ∈ N . First note that for vertex sets
+G G′ 0
+C,C′ ⊆ V that are either equal or disjoint, we have that deg (C) = ⊥ holds in G if and only if it
+C′
+holds in G′. Indeed, if C = C′, then G[C] is a subgraph of the complete graph on C. The latter
+is (|C| − 1)-regular, hence G[C] is regular if and only if the “complement subgraph” is regular.
+Similarly, if C ∩ C′ = ∅, the graph G[C,C′] is a subgraph of the complete bipartite graph on
+bipartition (C,C′). The latter is biregular, meaning it satisfies deg (C) ∈ N ∋ deg (C′). Hence,
+C′ C
+deg (C) ̸= ⊥ holds in G[C,C′] if and only if it holds in the “complement subgraph”, and the same
+C′
+is true for the condition deg (C′) ̸= ⊥.
+C
+We can now proceed by induction on i. It is clear that π0 = π0 . For the inductive step,
+G G′
+suppose that πi = πi holds for some i ≥ 1. It suffices to see that, up to possibly swapping the
+G G′
+roles of A and B , the classes A , B , and C from Lemma 4.4 are the same in both graphs. Indeed,
+i i i i i
+the graph G satisfies Lemma 4.4, so there is a unique unbalanced class C ∈ πi that splits into A
+i i+1
+and B in iteration i+1. By the observation above, C is also unbalanced in G′, precisely to A
+i+1 i i
+and to B , and there is no other unbalanced class in G′ in πi (as otherwise the same would hold in
+i
+the long-refinement graph G, contradicting Lemma 4.4).
+5 Reverse-Engineering Long-Refinement Graphs
+We now collect structural insights about long-refinement graphs with arbitrary degrees. We first
+treat the last iterations of Colour Refinement to deduce the connections between the partition
+classes in those iterations where we are guaranteed that all classes have size at most 2. We then
+reverse-engineer the previous, larger classes and their connections by analysing unions of the pairs
+and singletons. The structural insights allow us to deduce helpful facts about the arrangement of
+pairsandsingletons, yieldingnecessaryconditionsforagraphtoqualifyasalong-refinementgraph.
+We will use those in the Section 6 to show that long-refinement graphs with small degrees can be
+represented as strings and that the only strings whose graphs satisfy the necessary conditions are
+the ones found and presented in [25]. We also extend the classification to maximum degree 4 there.
+LetGbealong-refinementgraphoforder|G| > 1,andletpbetheminimalindexofaniteration
+of Colour Refinement in which every element in the partition πp has size at most 2, i.e. πp contains
+only pairs and singletons. Note that p < ∞ since Colour Refinement must produce the discrete
+partition on G. Let πp := {M ∈ πp | |M| = 1} be the singletons in πp, and πp := {M ∈ πp | |M| =
+S P
+2} be the pairs in πp. Note that for all i ≥ p, the class C that splits in iteration i+1 must be
+i
+a pair P ∈ πp. This gives us a linear order ≺ on πp by the iterations in which pairs split, and
+P P
+we denote the i-th element of ≺, the pair C , by P . Let α(P ) := P and β(P ) := P ,
+p+i−1 i i i−1 i i+1
+respectively (for i = min(≺), we let α(P ) := ⊥, and for i = max(≺), we let β(P ) := ⊥). We also
+i i
+call P,P′ consecutive pairs if P′ = β(P). We let n := |πp| be the number of pairs.
+P P
+We now analyse the structure of long-refinement graphs, in particular how the elements in πp
+P
+areconnected. Intheremainderofthispaper,byapair,wemeananelementofπp. Asthefollowing
+P
+14
+
+--- Page Suivante ---
+
+lemma states, consecutive pairs are always connected via a matching. The proof is identical to the
+proof of the same statement for graphs G with deg(G) = {2,3}, which is [25, Corollary 15].
+Lemma 5.1. For all i ∈ [n −1], deg (P ) = deg (P ) = 1.
+P Pi i+1 Pi+1 i
+Recall that C is the class that splits in iteration p+1 and therefore is equal to P , and that
+p 1
+by definition, we have A ,B ∈ πp. By the choice of p, both A and B have cardinality at most 2.
+p p p p
+By Lemma 4.4, we know deg (P ) ̸= ⊥ and deg (P ) = ⊥ = deg (P ). Furthermore, a
+Cp−1 1 Ap 1 Bp 1
+pair P is always balanced wrt itself, since deg (P) ∈ {0,1}. We obtain the following proposition.
+P
+Proposition 5.2. P ∈/ {A ,B }.
+1 p p
+We now show that A and B are in fact pairs.
+p p
+Lemma 5.3. A ,B ∈ πp.
+p p P
+Proof. If |A | = |B | = 1, then |C | = |A ∪B | = 2, contradicting the minimality of p.
+p p p−1 p p
+Let us next assume that |A ∪ B | = 3, i.e. they are a singleton and a pair. Without loss
+p p
+of generality, let A = {s} be the singleton. By Lemma 4.4, we know deg (P ) ̸= ⊥ and
+p Cp−1 1
+deg (P ) = ⊥ = deg (P ). The latter yields that G[A ,P ] contains a single edge. With
+Ap 1 Bp 1 p 1
+Proposition 5.2 and since P is the only class that splits in iteration k+1, Lemma 4.4 gives us that
+1
+B is balanced wrt P , i.e. deg (B ) ̸= ⊥. Together with deg (P ) = ⊥, this yields that the two
+p 1 P1 p Bp 1
+vertices in B have the same (unique) neighbour in P . But then deg (P ) = ⊥, a contradiction.
+p 1 Cp−1 1
+Therefore, theonlyremainingpossibilityisthat|A | = |B | = 2, whichconcludestheproof.
+p p
+Let a and b be the positions of A and B , respectively, in ≺. That is, A = P and B = P .
+p p p a p b
+By Proposition 5.2, we have a > 1 and b > 1. We can assume b > a by symmetry. By Lemma
+5.1, deg (P ) = 1 and deg (P ) = ⊥ = deg (P ), and therefore P ∈/ {P ,P }. Thus, with
+P2 1 Ap 1 Bp 1 2 a b
+Proposition 5.2, we obtain that n ≥ 4.
+P
+The following lemma describes how the first pair in ≺ is connected to the last classes that cause
+its splitting in iteration p. It generalises the same statement from degrees 2 and 3 to arbitrary
+degrees.
+Lemma 5.4 (cf. [25], Lemma 16). There exists u ∈ P such that G[{u},P ] and G[P \{u},P ] are
+1 a 1 b
+complete bipartite, and E(G[{u},P ]) = E(G[P \{u},P ]) = ∅.
+b 1 a
+Proof. Recall again, by Lemma 4.4, that deg (P ) = ⊥ = deg (P ). In particular, there is a
+Ap 1 Bp 1
+vertexu ∈ P suchthatN(u)∩P ̸= ∅. Furthermore,byProposition5.2andagainwithLemma4.4,
+1 a
+we must have deg (P ) ̸= ⊥ ̸= deg (P ). The first inequality lets us conclude that G[{u},P ] is
+P1 a P1 b a
+complete bipartite and that E(G[P \{u},P ]) = ∅. With deg (P ) ̸= ⊥, we obtain the claimed
+1 a Cp−1 1
+statements about G[P ,P ].
+1 b
+We already know that consecutive pairs are connected via a matching. The following lemma
+says that non-consecutive pairs (except for the case of P and P ) as well as a pair and a singleton
+a b
+form either an empty or a complete bipartite graph, i.e. their connections are trivial.
+Lemma 5.5. Let P and P be pairs with i+1 < j, and, if i = 1, then j ∈/ {a,b}. Let S ∈ πp.
+i j S
+Then deg (P ) ∈ {0,1} and deg (P ) = deg (P ) = deg (S) ∈ {0,2}.
+S i Pi j Pj i Pi
+Proof. Note that Lemma 5.3 says that C splits into two pairs and hence does not introduce
+p−1
+new singletons in iteration p, i.e. πp ⊆ πp−1. Also πp ⊆ πp, so S ∈ πp−1 and P ∈ πp. Thus,
+S P i
+⊥ ̸= deg (P ) ∈ {0,1} or, equivalently, deg (S) = {0,2}.
+S i Pi
+15
+
+--- Page Suivante ---
+
+For the second part, choose u and v such that {u,v} = P and A = {u}, and B = {v}.
+i p+i p+i
+Naturally, {A ,B } ⊆ πp+i and, since j > i + 1, P ∈ πp+i+1 . Therefore, deg (P ) ̸=
+p+i p+i j Ap+i j
+⊥ ̸= deg (P ). By the fact that |A | = |B | = 1, we have that each of deg (P ) and
+Bp+i j p+i p+i Ap+i j
+deg (P ) is either 0 or 1. Now, we show that deg (P ) = deg (P ). If i = 1, then by
+Bp+i j Ap+i j Bp+i j
+assumption P ∈/ {P ,P } and thus P ∈ πp−1, while P ∈ πp. If i ̸= 1, then P ∈ πp and
+j a b j i j
+P ∈ πp+1. In either case, since P splits later than P , this gives us deg (P ) ̸= ⊥ and therefore
+i j i Pi j
+deg (P ) = deg (P ) ∈ {0,1}. This tells us that either G[P ,P ] is complete bipartite or
+Ap+i j Bp+i j i j
+E(G[P ,P ]) = ∅.
+i j
+The following lemma states that the distance in ≺ between P and P , i.e. between the classes
+a b
+that induce the splitting of P , is at most 2.
+1
+Lemma 5.6. b ∈ {a+1,a+2}.
+Proof. Assume that b > a+2. Then consider the set of distinct pairs Π := {P ,P ,P }.
+a−1 a+1 b−1
+For each P ∈ Π, it holds that exactly one set of {P ,P} and {P ,P} consists of consecutive pairs.
+a b
+Therefore, by Lemmas 5.1 and 5.5, C = P ∪P is unbalanced wrt P. Thus, the first iteration
+p−1 a b
+i for which any pair P ∈ Π is in πi must directly precede the iteration p in which C splits. We
+p−1
+have that |πi \πi−1| = 2 and (πp \πp−1)∩Π = ∅, so there must be a P ∈ Π that is not in πp, a
+contradiction. Thus, a < b ≤ a+2.
+In the previous lemmas, we have analysed the splits that happen from the first moment on
+where the largest class has size 2. Our structural insights have revealed the relations between the
+pairs in πp. Now we will work back in time from πp, i.e. starting from πp, we reverse-construct the
+partitions πp−i for increasing i. Recall that a and b are the positions of A and B in the splitting
+p p
+order ≺ of the pairs, whose collection is πp with size n = |πp|, and that πp is the collection of
+P P P S
+singletons in πp. Define ℓ := min{n −b,a−1}. Then the technical statement in the lemma
+4→2 P
+below expresses that each of the ℓ iterations preceding πp splits one class of four vertices into
+4→2
+two pairs, which will be elements of πp.
+Lemma 5.7. For every h ∈ [0,ℓ ], the following holds:
+4→2
+πp−h−1 = πp ∪{P ∪P | i ∈ [0,h]}∪{P | i ∈ [1,a−h−1] ∪ [a+1,b−1]∪[b+h+1,n ]}.
+S a−i b+i i P
+Proof. We prove the statement by induction on h. The case for h = 0 follows from Lemma 5.3 and
+the fact that πp−1 = πp\{A ,B }∪{A ∪B }. This is illustrated in Figure 4.
+p p p p
+... ... ... ... ... ... ... ...
+(a) πp if b=a+1 (b) πp−1 if b=a+1 (c) πp if b=a+2 (d) πp−1 if b=a+2
+Figure 4: πp−1 when b < n . P is blue, P is pink and blue, respectively. For clarity, we omit all
+P a b
+edges between non-consecutive pairs.
+For the following arguments, see Figure 5 for a visualisation of the situation. Assume h ∈ [ℓ ]
+4→2
+and suppose the claim holds for all values in [0,h−1]. We show that it also holds for h then.
+Thedefinitionofℓ ensuresthatP andP arewell-defined,andtheinductionhypothesis
+4→2 a−h b+h
+for h−1 ensures that they, as well as P ∪P , are elements of πp−h.
+a−h+1 b+h−1
+By Lemma 5.1, deg (P ) = 1 = deg (P ). By Lemma 5.5, deg (P ) and
+P a−h+1 P b+h−1 P a−h+1
+a−h b+h b+h
+deg (P ) are each either 0 or 2. But this implies that P ∪P is unbalanced wrt
+P b+h−1 a−h+1 b+h−1
+a−h
+16
+
+--- Page Suivante ---
+
+each of P and P . So, by Lemma 4.4, it follows that P and P must be in πp−h\πp−h−1.
+a−h b+h a−h b+h
+That is, {P ,P } = {A ,B }, and hence A ∪B = C ∈ πp−h−1. Moreover,
+a−h b+h p−h p−h p−h p−h p−h−1
+Equation 1 yields that deg (P ) = deg (P ). Hence, πp−h−1 = {P ∪ P } ∪
+P a−h+1 P b+h−1 a−h b+h
+b+h a−h
+(πp−h\{P ,P }), and thus the desired result holds.
+a−h b+h
+... ... ... ... ... ... ... ...
+(a) πp−h+1 (b) πp−h
+Figure 5: Induction step for the proof of Lemma 5.7 in the case that b = a+1. The arrangement
+of the pairs follows the splitting order ≺, i.e. a pair further left has a lower index in ≺. The unique
+new pairs in πp−h+1 (in pink and brown) are in symmetric position to P and P (in blue) and
+a b
+united to a class of size 4 (in brown) in πp−h.
+For the purpose of better readability, let ℓ := ℓ in the remainder of this section. The above
+4→2
+allows us to describe the partition πp−ℓ−1. With the following lemma, we describe how the classes
+in πp−ℓ−1 are connected to each other. By pattern matching with the classes in Lemma 5.7, the
+reader will be able to verify that it states the following. The classes of size 4 which split into pairs
+that are in πp are connected non-trivially if and only if they split in consecutive iterations.
+Lemma 5.8. For every h ∈ [0,ℓ−1], the following holds:
+deg (P ∪P ) = deg (P ∪P ) ∈ {1,3}. (2)
+P ∪P a−h−1 b+h+1 P ∪P a−h b+h
+a−h b+h a−h−1 b+h+1
+Moreover, for every h ∈ [0,ℓ − 1] and every C ∈ πp−h−2\{C ,C ,C }, the following
+p−h p−h−1 p−h−2
+hold:
+deg (P ∪P ) ∈ {0,|C|} and deg (C) ∈ {0,4}. (3)
+C a−h b+h P ∪P
+a−h b+h
+Proof. Equation 2 follows directly from the proof of Lemma 5.7. Statement 3 follows from the fact
+that C = P ∪P is in πp−h−1 and thus balanced wrt all classes in πp−h−2. If |C| = 1,
+p−h−1 a−h b+h
+this is sufficient to prove deg (P ∪P ) ∈ {0,1} and the second, equivalent statement. If C
+C a−h b+h
+is a pair, then because P ,P ,P ,P are not in πp−h−2, Lemma 5.5 implies that
+a−h−1 a−h+1 b+h−1 b+h+1
+deg (P ) = deg (P ) ∈ {0,2}, givingtherequiredresult. Finally, if|C| = 4, thenC = P ∪
+C a−h C b+h a−h′
+P for some h′ ∈ [0,h−2], and the above argument implies deg (P ) = deg (P ) ∈ {0,4},
+b+h′ C a−h C b+h
+giving the desired result.
+With the insights so far, we have collected information about the classes and their relations
+from the point on when all remaining classes of size 4 split consecutively into pairs until only pairs
+and singletons are left, with the pairs then consecutively splitting into singletons until a discrete
+partition is reached. We intend to carry this one step further and to analyse the split(s) before this
+moment. We are going to prove that C is either a union of three pairs or a union of a certain
+p−ℓ−2
+pair and a singleton S ∈ πp. Here, we need to perform a case distinction, and we introduce an
+S
+auxiliary variable t to deal with the cases in parallel. We let t := 0 in the first case, and t := 1 in
+the second. Recall that p is the index of the first iteration in which all classes have size at most
+2, and p−ℓ is the index of the first iteration in a cascade of splits of classes of size 4 into pairs
+(until iteration p). Depending on the case whether t = 0 or t = 1, we let q(t) := p−ℓ−1−t,
+which will be the first iteration in which there are classes of size at most 4 (quadruples). Define
+π q(t) := {M ∈ πq(t) | |M| = 1}. We also define c := a−ℓ, and d := c−t−1 to simplify notation,
+S
+which will play a similar role in future proofs that a and b did in proofs up to this point.
+17
+
+--- Page Suivante ---
+
+Lemma 5.9. C is either P ∪P ∪P or P ∪S for a singleton S ∈ πp. In the first
+p−ℓ−2 c−1 c nP c−1 S
+case, set t := 0, in the second t := 1. Then,
+πq(t)−1 = π q(t) ∪{P ∪P | i ∈ [0,ℓ−1]}∪{P ∪P ∪P }
+S a−i b+i d c nP
+∪{P | i ∈ [c−t−2]∪[a+1,b−1]}∪M ,
+i t
+and also M = ∅ and M = {P ∪S}.
+0 1 c−1
+Proof. We first prove by contradiction that P exists. Assume that ℓ = a − 1, i.e. P = P .
+c−1 c 1
+Since P ≺ P , ℓ must be greater than 1, allowing us to apply Lemma 5.8, along with Lemma
+2 a
+5.4, to get deg (P )−deg (P ) ∈ {−2,2}. If P ̸= P , then we have deg (P )−
+Pa∪P
+b
+c Pa∪P
+b
+b+ℓ b+ℓ nP P
+b+ℓ+1
+c
+deg (P ) ∈ {−1,1}, by Lemmas 5.1 and 5.5. This contradicts Lemma 4.4. Assume then
+P b+ℓ
+b+ℓ+1
+that P = P , implying there are no pairs in πp−ℓ−1. By Lemma 4.4, there must be a class C
+b+ℓ nP
+which satisfies deg (P )−deg (P ) ∈ {−2,2}. By Lemma 5.8, there are no classes of size 4
+C a−ℓ C b+ℓ
+that can satisfy this. Thus, we must have P ≺ P and ℓ = n −b.
+1 a−ℓ P
+Then, C is unbalanced by P , by Lemmas 5.5 and 5.1. Note that we have deg (P )−
+p−ℓ−1 c−1 Pc−1 c
+deg (P ) ∈ {−1,1}. Next, we look for a class B with deg (P )−deg (P ) ∈
+Pc−1 nP p−ℓ−1 B
+p−ℓ−1
+c B
+p−ℓ−1
+b+ℓ
+{−1,1}. By Lemma 5.8, no class P ∪P ∈ πp−ℓ−1 with h < ℓ can satisfy this requirement. By
+a−h b+h
+Lemma 5.5, no pair other than P can satisfy this equation. This leaves only πp ∪{P ∪P },
+c−1 S c nP
+proving the first statement of Lemma 5.9. This immediately gives us the desired result for πq(t)−1
+for t = 0.
+For t = 1, the above yields C = P ∪ S, from which we can find πq(t), but we must
+q(t) a−ℓ−1
+still prove that C is P ∪P ∪P , in order to get the desired expression for πq(t)−1. First,
+q(t)−1 d c nP
+notice that deg (S) = 2 and deg (P ) ∈ {1,3}. Thus, without loss of generality,
+Pc∪PnP Pc∪PnP c−1
+A = P ∪ P and B satisfies deg (S) − deg (P ) ∈ {−1,1}. If P = P , then
+q(t) c nP q(t) B
+q(t)
+B
+q(t)
+c−1 c−1 1
+P ∪S is unbalanced wrt P ∪P , but P ∪P does not satisfy the above equation, so P ≺ P .
+c−1 a b a b 1 c−1
+Thus, P is well-defined and, by Lemmas 5.1 and 5.8, deg (P ) = 1 and deg (S) ∈ {0,2}.
+c−2 Pc−2 c−1 Pc−2
+This satisfies the requirement for B , so πq(t) = {P ∪P ∪P }∪(πp−ℓ−1\{P ,P ∪P }).
+q(t)−1 d c nP d c nP
+In the case that t = 1, we will let S denote the singleton S described in Lemma 5.9. Notice
+q(t)
+that π q(t) = πp if t = 0, and π q(t) = πp\{S } if t = 1. Also, for either value of t, let M be defined
+S S S S q(t) t
+as in the lemma.
+Having defined C , where t = 1, we now make some observations about its neighbourhood.
+q(t)
+Lemma 5.10. Suppose that t = 1, i.e. that C = S ∪P . Then
+p−ℓ−2 q(t) c−1
+deg (P ∪P ∪P ) ∈ {1,2}
+S
+q(t)
+∪Pc−1 d c nP
+and
+deg (S ∪P ) = 2·deg (P ∪P ∪P ) ∈ {2,4}.
+P
+d
+∪Pc∪PnP q(t) c−1 S
+q(t)
+∪Pc−1 d c nP
+Furthermore,
+deg (S ∪P ) ∈ {0,|C|} and, equivalently, deg (C) ∈ {0,3}
+C q(t) c−1 S
+q(t)
+∪Pc−1
+for every C ∈ πq(t)−ℓ−2\{S ∪P ,P ∪P ∪P }.
+q(t) c−1 d c nP
+Proof. Wegetthevaluesfordeg (S ∪P )directlyfromtheonesfordeg (S ),
+P
+d
+∪Pc∪PnP q(t) c−1 Pc∪PnP q(t)
+deg (P ), deg (S ), and deg (P ). Since P ∪P ∪P has double the vertices as
+Pc∪PnP c−1 P
+d
+q(t) P
+d
+c−1 d c nP
+18
+
+--- Page Suivante ---
+
+S ∪P , is incident to the same number of edges, and both are balanced with respect to the
+q(t) c−1
+other, we obtain deg (P ∪P ∪P ) ∈ {1,2}.
+S
+q(t)
+∪P
+a−ℓ−1
+d c nP
+The second statement holds by the fact that S ∪P is balanced wrt all classes C ∈ πp−ℓ−1\
+q(t) c−1
+{P ,P ∪P }. Separately, S and P are trivially attached to the classes in πp−ℓ−1\{P ,P ∪
+d c nP q(t) c−1 d c
+P }. This holds by Lemma 5.5 for singletons and pairs, and by Lemma 5.8 for classes of four
+nP
+vertices. Since S ∪P is balanced wrt C, it holds that if S is adjacent to C, then P is as
+q(t) c−1 q(t) c−1
+well, and vice versa. Thus S ∪P is trivially attached to C.
+q(t) c−1
+By a similar argument to that used in Lemma 5.7, we can work backwards from partition πq(t).
+Recall that d = a−ℓ−t−1. We define ℓ′ := min{ℓ,d−1}. This definition guarantees that P
+d−h
+and P ∪P are elements of every πq(t)−h for h ∈ [ℓ′].
+c+h nP−h
+. . . . . . . . . . . . . . . . . . . . . . . . .
+. .
+Pd Pc∪Pnp
+Pd Pc∪Pnp Pd∪Pc∪Pnp
+(a)Theiterationp−ℓ=q(t)when (b)Theiterationp−ℓ−1=q(t)−1 (c) The iteration p−ℓ−1 = q(t)
+t=0 when t=0 when t=1
+. .
+. .
+. .
+. . . .
+. . . .
+. . . .
+.
+.
+.
+. .
+. .
+. .
+. . . . . .
+. . . . . .
+Pd∪Pc∪Pnp . . . . . .
+(d) The iteration p−ℓ−2 = q(t)
+when t=1 (e) Induction Hypothesis (f) Induction Step
+Figure 6: Diagrams depicting the base case and induction arguments for Lemma 5.11.
+Lemma 5.11. For all h ∈ [0,ℓ′],
+πq(t)−h−1 = π q(t) ∪{P ∪P | i ∈ [h+1,ℓ]}∪{P ∪P ∪P | i ∈ [0,h]}
+S c+i nP−i d−i c+i nP−i
+∪{P | i ∈ [d−h−1]∪[a+1,b−1]}∪M .
+i t
+Proof. By using the relations between the variables a, b, c, d, the base case of h = 0 is given
+by Lemma 5.9. Consider h ∈ [ℓ′], with the above statement holding up to h − 1. Then, by
+Lemmas 5.1, 5.8, and 4.4, and by the same argument as used in Lemma 5.7, we obtain C =
+q(t)−h−1
+P ∪P ∪P .
+d−h c+h nP−h
+Corollary 5.12. For h ∈ [0,ℓ′−1],
+deg (C ) = deg (C ) ∈ {1,5}. (4)
+C q(t)−h−1 C q(t)−h−2
+q(t)−h−2 q(t)−h−1
+Also,
+deg (C ) ∈ {0,1,4,5}. (5)
+C q(t)−h−1
+q(t)−h−1
+19
+
+--- Page Suivante ---
+
+For every h ∈ [0,ℓ′−1] and C ∈ πq(t)−h−2\{C ,C ,C }, it holds that
+q(t)−h−2 q(t)−h−1 q(t)−h
+deg (C) ∈ {0,6} and deg (C ) ∈ {0,|C|}. (6)
+C C q(t)−h−1
+q(t)−h−1
+Proof. Using Equation 1, we obtain
+⊥ ̸= deg (C ) ∈ {1,5}
+C q(t)−h−2
+q(t)−h−1
+and hence Equation 4.
+To see Equation 5, recall that C ∈ πq(t)−h−1 is balanced wrt C ∈ πq(t)−h−2. Also
+q(t)−h−1 q(t)−h−1
+P and P ∪P are trivially attached, from Lemma 5.8. There is also deg (P ) ∈
+d−h c+h nP−h P
+d−h
+d−h
+{0,1}. These ingredients together give deg (P ) ∈ {0,1,4,5} and therefore, by balanced-
+C d−h
+q(t)−h−1
+ness deg (C ) ∈ {0,1,4,5}.
+C q(t)−h−1
+q(t)−h−1
+Equation 6 follows from the fact that P ∪ P = C ∈ πq(t)−h−1, and it is thus
+a−h b+h q(t)−h−1
+balanced wrt all classes in πq(t)−h−2. If C is a singleton, this is sufficient to show deg (P ∪
+C a−h
+P ) ∈ {0,1} and the second, equivalent statement. If C is a pair, then by assumption C ∈/
+b+h
+{P ,P ,P ,P }. Hence, Lemma 5.5 implies that deg (P ) = deg (P ) ∈
+a−h−1 a−h+1 b+h−1 b+h+1 C a−h C b+h
+{0,2}, giving the required result. Finally, if |C| = 4, then C = P ∪P for some h′ ∈ [0,h−2]
+a−h′ b+h′
+and the above argument implies deg (P ) = deg (P ) ∈ {0,4}, giving the desired result.
+C a−h C b+h
+Recall that by Lemma 5.6, we know that b ∈ {a+1,a+2}. Depending on which of the two
+situationsoccurs, thefollowinglemmaestablishesthepossiblerangesford. Wewillusethisinsight,
+and a case distinction on the values of d, in Section 6 to establish the existence and non-existence
+of long-refinement graphs and to classify them.
+Lemma 5.13. If b = a+1, then d ∈ [ℓ,ℓ+4], and if b = a+2, then d ∈ [ℓ,ℓ+2].
+(b) πq(t)−ℓ−1 if d > ℓ + 2 and
+(a) πq(t)−d if d=ℓ−1 b=a+2 (c) πq(t)−ℓ−2 if d>ℓ+4
+Figure 7: Examples of contradictions occurring in the proof of Lemma 5.13 for d < ℓ, d > ℓ+2,
+and d > ℓ+4 when the degrees are 2 and 3. Notice that yellow classes are unbalanced wrt blue,
+green, and pink classes.
+Proof. We prove this by showing that the assumption d < ℓ leads to a contradiction, as does
+d > ℓ+2 when b = a+2 and d > ℓ+4 when b = a+1. For the following, consider Figure 7.
+Assume that 1 ≤ d ≤ ℓ−1. Then P = P , for some h ≤ ℓ−2. Recall that C =
+1 d−h q(t)−h−1
+P ∪P ∪P . See the lowest class in Figure 7a, which is unbalanced wrt all three classes.
+1 c+h nP−h
+We have deg (P ) = 2. Since P and P are not consecutive to P or P , we have
+Pa∪P
+b
+1 c+h nP−h a b
+deg (P ∪P ) ∈ {0,4}. Here, we have a difference of 2. We also know that
+Pa∪P
+b
+c+h nP−h
+deg (P ∪P ) ∈ {1,3},
+P
+c+h+1
+∪P
+nP−h−1
+c+h nP−h
+whereas
+deg (P ) ∈ {0,4}.
+P ∪P 1
+c+h+1 nP−h−1
+20
+
+--- Page Suivante ---
+
+We cannot get a difference of 2 from these values, hence we have a contradiction to Lemma 4.4,
+proving d ≥ ℓ.
+Next, assume that d ≥ ℓ+3 and b = a+2. Then, C = P ∪P ∪P , with d−ℓ ≥ 3. See
+q(t)−ℓ−1 d−ℓ a b
+Figure 7b, where the yellow class C is unbalanced wrt the green class P , the blue class
+q(t)−ℓ−1 a+1
+P and the pink class P . Formally, since b = a+2, deg (P ∪P ) = 1 and, by Lemma 5.5,
+d−ℓ−1 1 Pa+1 a b
+deg (P ) ∈ {0,2}. Next,wehavedeg (P ∪P ) = 1and,byLemma5.5,deg (P ) ∈ {0,2}.
+Pa+1 d−ℓ P1 a b P1 d−ℓ
+Finally, we have deg (P ∪P ) ∈ {0,2} and deg (P ) = 1. Thus, as we have C
+P a b P d−ℓ q(t)−ℓ−1
+d−ℓ−1 d−ℓ−1
+unbalanced wrt at least three classes, we obtain a contradiction to Lemma 4.4 and have proved
+d ≤ ℓ+2 for b = a+2.
+Finally, assume that b = a + 1 and, towards a contradiction, that d ≥ ℓ + 5. See Figure
+7c. As before, we have deg (P ∪ P ) = 1 and with Lemma 5.5, deg (P ) ∈ {0,2}. Also,
+P1 a b P1 d−ℓ
+deg (P ∪P ) ∈ {0,2} and deg (P ) = 1. We must therefore have C = P ∪
+P a b P d−ℓ q(t)−ℓ−2 1
+d−ℓ−1 d−ℓ−1
+P . Then, C is unbalanced wrt P , P , and C . This is a contradiction and
+d−ℓ−1 q(t)−ℓ−2 2 d−ℓ−1 q(t)−ℓ−1
+therefore d ≤ ℓ+4.
+Withthereverse-engineeringmethodsinthissection,wehavemanagedtoreconstructpartitions
+during the execution of Colour Refinement in which the classes have size up to 6. This could be
+carried further, but the analysis would become more and more involved. However, when restricting
+the degrees to a maximum of 4, these last iterations comprise enough of the entire execution of
+Colour Refinement to yield characterisations and compact representations for all long-refinement
+graphs with small degrees. We will see this in Section 6, where we apply the ingredients collected
+in this section.
+6 Long-Refinement Graphs with Maximum Degree at most 4
+In this section, we establish a comprehensive list of all the long-refinement graphs with maximum
+degree at most 4. We use the observation from Lemma 5.13 that d ∈ [ℓ,ℓ + 4] and consider
+the cases separately. Unifying previous results [25], we include a string notation to represent the
+long-refinement graphs G with deg(G) = {2,3}, where each letter represents a pair.
+Notation 6.1. We define σ: [n ] → Σ as the function that maps i to the element in Σ that matches
+P
+the type of P . More precisely, σ(i) is defined as follows:
+i
+• S, if P = min(≺) = P .
+i 1
+• X, if P ∈ {P ,P } and P is not adjacent to any singleton S ∈ πp.
+i a b i S
+• X , if P ∈ {P ,P } and P is adjacent to a singleton S ∈ πp.
+2 i a b i i S
+• 0, if P ∈/ {P ,P ,P }, deg(P ) = 2 and P is not adjacent to any singleton S ∈ πp.
+i 1 a b i i S
+• 0 , if P ∈/ {P ,P ,P }, deg(P ) = 2, and P is adjacent to a singleton S ∈ πp.
+2 i 1 a b i i i S
+• 1, if P ∈/ {P ,P ,P } with deg(P ) = 3, such that P is not adjacent to any S ∈ πp.
+i 1 a b i i S
+• 1 , if P ∈/ {P ,P ,P }, deg(P ) = 3, and P is adjacent to a singleton S ∈ πp.
+2 i 1 a b i i i S
+Since ≺ is a linear order, we can define a string representation based on a long-refinement graph
+G, where the i-th character in the string is σ(i) and corresponds to the i-th element of ≺, P . We
+i
+call a string defined in this way a long-refinement string.
+The strings describe the exact neighbourhood of each pair and each singleton, as long as there
+is at most one singleton. We will prove that this is the case. Thus, every string Ξ unambiguously
+represents exactly one graph, up to isomorphism, which we denote by G(Ξ).
+21
+
+--- Page Suivante ---
+
+Thelimitationondegreeallowsforsomeimmediateinsightsintothestructureoflong-refinement
+graphs. For example, Corollary 5.12 yields the following when the maximum degree is 4.
+Observation 6.2. For h ∈ [1,ℓ′−1], C (i.e. the class P ∪P ∪P ) has degree 2
+q(t)−h−1 d−h c+h nP−h
+or 3, with N(C ) ⊆ C ∪C ∪C .
+q(t)−h−1 q(t)−h−2 q(t)−h−1 q(t)−h
+With h = 0, Corollary 5.12 also describes the neighbourhood of C (i.e. P ∪P ∪P ),
+q(t)−1 d c nP
+which depends on the value of t. Figure 8 illustrates the possible edge layouts between C and
+q(t)
+C when t = 0 or t = 1, which are a result of the proof of Lemma 5.9. This yields the following
+q(t)−1
+observation.
+Observation 6.3. If t = 0, then deg(C ) = 2 with
+q(t)−1
+deg (C ) = 1 = deg (C ),
+C q(t)−1 C q(t)−1
+q(t)−2 q(t)−1
+and deg (C ) = 0 for every other class C ⊆ V(G).
+C q(t)−1
+If t = 1, then deg(C ) ∈ {2,3,4} with
+q(t)−1
+deg (C ) = 1, deg (C ) ∈ {0,1}, deg (C ) ∈ {1,2},
+C q(t)−1 C q(t)−1 C q(t)−1
+q(t)−2 q(t)−1 q(t)
+and deg (C ) = 0 for every other class C ⊆ V(G).
+C q(t)−1
+P d P c P np
+P P P d P c P np
+d c P
+np P
+c−1
+(a) (b) (c)
+Figure 8: All possible layouts between C (P ∪P ∪P ) and C (P ∪P or S ∪P )
+q(t)−1 d c nP q(t) c nP q(t) c−1
+when the maximum degree is at most 4. Note
+We begin by proving the following two technical lemmas, which will assist us in cases where ℓ
+can be arbitrarily large. Recall that C = P ∪P ∪P for i ∈ [0,ℓ′] and C =
+q(t)−i−1 d−i c+i nP−i q(t)−i−1
+P ∪S for i = −1 when t = 1.
+c−1 q(t)
+Lemma 6.4. Let j be an iteration j > 0 and let the following statements hold.
+1. {C | i ∈ [−t,ℓ′]} ⊆ πj, with l′+t > 0.
+q(t)−i−1
+2. B is C , and A is not contained in {C | i ∈ [−t,ℓ′]}
+j q(t)−ℓ′−1 j q(t)−i−1
+3. deg (A ) = deg (B )+deg (B ), where deg (B ) = 1 (or 2 if ℓ′ = 0 and
+Cj−1 j Cj−1 j C q(t)−ℓ′ j C q(t)−ℓ′ j
+t = 1 as depicted in Figure 8c) and {deg (A )} = deg(A ).
+Cj−1 j j
+(cid:16) (cid:17)
+Then, for j′ ∈ [0,ℓ′+t], πj−1−j′\πj = {C } and C = A ∪ (cid:83) C .
+j−1−j′ j−1−j′ j i∈[0,j′] q(t)−ℓ′+i−1
+Proof. For j′ = 0, we simply observe that C = A ∪B is A ∪C , as required.
+j−1 j j j q(t)−ℓ′−1
+For j′ > 1, we assume the statement holds up until j′−1. We wish to show that
+C = C ∪C .
+j−j′ j−j′+1 q(t)−ℓ′+j′−1
+22
+
+--- Page Suivante ---
+
+Todothis,weprovethatC isunbalancedwrtitselfandC . SinceA ⊆ C and
+j−j′+1 q(t)−ℓ′+j′−1 j j−j′+1
+N(A ) ⊆ C ⊆ C , there are vertices v ∈ A in C such that deg(v) = deg (v).
+j j−1 j−j′+1 j j−j′+1 C j−j′+1
+The upper limit on j′ gives q(t)−ℓ′+j′−1 ≤ q(t)−1+t so we can apply Corollary 5.12 and
+Lemma 5.10 to show that deg (C ) = 1 (or 2 if ℓ′ = 0, and t = 1 as depicted
+C q(t)−ℓ′+j′−1 q(t)−ℓ′+j′−2
+in Figure 8c). Since C ⊆ C , there are vertices u with deg (u) = 1 (or
+q(t)−ℓ′+j′−2 j−j′+1 C q(t)−ℓ′+j′−1
+2) and thus also deg (u) < deg(u). We thus get that C is unbalanced wrt itself and
+C j−j′+1 j−j′+1
+C . By Lemma 4.4, this proves the statement for j′.
+q(t)−ℓ′+j′−1
+Lemma 6.5. Let j > 0 be an iteration such that the following statements hold.
+1. {C | i ∈ [−t,ℓ′]} ⊆ πj, with ℓ′ > 0.
+q(t)−i−1
+2. B is C , and A is not contained in {C | i ∈ [−t,ℓ′]}.
+j q(t)−ℓ′−1 j q(t)−i−1
+3. There exists a class M with deg (M) = 2, deg (A ) = 1, and deg (M) = deg (B ) = 0.
+Aj M j Bj M j
+4. {deg (B )+deg (B )} = deg(B ) with deg (B ) = 1 (or 2 if ℓ′ = 0 and t = 1
+Cj−1 j C q(t)−ℓ′ j j C q(t)−ℓ′ j
+as depicted in Figure 8c).
+Then deg (B ) = 1 and, for j′ ∈ [0,ℓ′−1+t], there are two classes E ,D in πj−2−j′ which
+C q(t)−ℓ′ j j′ j′
+satisfy the following statements.
+• πj−2−j′\πj = {D ,E }
+j′ j′
+• D = M ∪ (cid:83) C
+j′ i∈[0,⌊j′−1⌋] q(t)−ℓ′+3i
+3
+(cid:16) (cid:17) (cid:16) (cid:17)
+• E = A ∪B ∪ (cid:83) C ∪ (cid:83) C
+j′ j j i∈[0,⌊j′−2⌋] q(t)−ℓ′+1+3i i∈[0,⌊j′−3⌋] q(t)−ℓ′+2+3i
+3 3
+Proof. We begin with the base case, j′ = 0, by finding an expression for πj−2. Given the assumed
+values of A and B , we can see that πj−1 = πj\{A ,B }∪{A ∪B }. Then, by Assumption 3, the
+j j j j j j
+class C = A ∪B is clearly unbalanced wrt M. Since ℓ′ +t > 0, the class C is in πj−1,
+j−1 j j q(t)−ℓ′
+which implies that C is unbalanced wrt C . Thus, by Lemma 4.4, C = M ∪C . It
+j−1 q(t)−ℓ′ j−2 q(t)−ℓ′
+is therefore apparent that πj−2\πj = {C ,C } and that letting D := C and E := C
+j−1 j−2 0 j−2 0 j−1
+satisfies all desired statements. Note that this also contradicts deg (B ) = 2, as it would not
+C q(t)−ℓ′ j
+satisfy Lemma 4.4.
+Wenextconsidertheinductionstep,wherej ∈ [1,ℓ′−1+t]. Weassumethatthestatementshold
+up to j′−1 (i.e. πj−1−j′ and D ,E are as described) and prove the same for j′ (i.e πj−2−j′
+j′−1 j′−1
+and D ,E ). We must consider three options separately: a) C = D , i.e. when j′−1 ≡ 1
+j′ j′ j−1−j′ j′−1
+mod 3; b) C = E and C = D , i.e. j′−1 ≡ 2 mod 3; and c) C = E with
+j−1−j′ j′−1 j−j′ j′−1 j−1−j′ j′−1
+C ⊆ E when j′−1 ≡ 0 mod 3.
+j−j′ j′−1
+In all three cases, since j′ is no greater than ℓ′−1+t, we may apply Corollary 5.12 and Lemma
+5.10 to observe that C has degree 1 (or 2 in the case where t = 1 as depicted in Figure
+q(t)−ℓ′+j′−2
+8c), into C . Therefore, C is unbalanced wrt C , , which we may denote
+q(t)−ℓ′+j′−1 j−1−j′ q(t)−ℓ′+j′−1
+A . To construct πj−2−j′, we need B . The analysis differs by case, with arguments
+j−1−j′ j−1−j′
+presented below for each.
+In the first case, where C = D , we have by assumption deg (M) = 2 whereas
+j−1−j′ j′−1 E j′−1
+deg (C ) = 1. This gives us that B = E and thus
+E j′−1 q(t)−ℓ′+j′−2 j−1−j′ j′−1
+D = D ,
+j′ j′−1
+E = E ∪C ,
+j′ j′−1 q(t)−ℓ′+j′−1
+23
+
+--- Page Suivante ---
+
+which is what we expect for j′ ≡ 2 mod 3, and also πj−2−j′\πj = {D ,E }.
+j′ j′
+Now, considerthesecondcasewhereC = E andC = D . Consideranarbitrary
+j−1−j′ j′−1 j−j′ j′−1
+u ∈ B ⊆ E which, by assumption, has degree 1 into D and degree deg(u)−1 into E .
+j j′−1 j′−1 j′−1
+Then v ∈ C has degree 1 into D , degree 1 (or 2) into A , and degree deg(v)−2
+q(t)−ℓ′+j′−2 j′−1 j−1−j′
+(or deg(v)−3) into E . Hence, in this case, we obtain B = E and
+j′−1 j−1−j′ j′−1
+D = D ,
+j′ j′−1
+E = E ∪C ,
+j′ j′−1 q(t)−ℓ′+j′−1
+which is what we expect for j′ ≡ 0 mod 3.
+Finally, we treat the case where C = E with C ⊆ E . In this case, C
+j−1−j′ j′−1 j−j′ j′−1 q(t)−ℓ′+j′−2
+has degree 0 into D , whereas B ⊆ E has degree 1 into D , making B = D .
+j′−1 j j′−1 j′−1 j−1−j′ j′−1
+Then we have B = D and
+j−1−j′ j′−1
+D = D ∪C ,
+j′ j′−1 q(t)−ℓ′+j′−1
+E = E ,
+j′ j′−1
+which is what we expect for j′ ≡ 1 mod 3.
+Havingestablishedtheseresults,wenowbegintolookforlong-refinementgraphswithmaximum
+degree at most 4. We make the following assumption throughout the rest of this section.
+Assumption 6.6. G is a long-refinement graph with maxdeg(G) ≤ 4.
+Recall that, by Lemma 5.13, it holds that d ≥ ℓ. We first treat the case that d = ℓ. In this
+case, ℓ′, which we recall is defined as min{ℓ,d−1}, is thus ℓ−1. Thus, Lemma 5.11 with some
+substitutions yields the following equation.
+πq(t)−ℓ = π q(t) ∪{P ∪P ∪P | i ∈ [ℓ−1]}
+S i a−i b+i
+∪{P | i ∈ [a+1,b−1]}∪{P ∪P }∪{S ∪P | t = 1} (7)
+i a b c−1
+The next lemma will allow us to determine the possible expressions for πq(t)−ℓ−1.
+Lemma 6.7. Let d = ℓ. Then (after possibly swapping the roles of A and B ) we have that
+q(t)−ℓ q(t)−ℓ
+q(t)
+A = P ∪P , andeitherB ∈ π orB = P ∪P ∪P , eachwithdeg (P ∪
+q(t)−ℓ a b q(t)−ℓ S q(t)−ℓ 1 a−1 b+1 B q(t)−ℓ a−1
+P )−deg (P ) = 1.
+b+1 B 1
+q(t)−ℓ
+Proof. Note the inclusion of P ∪P ∪P and P ∪P in the expression for πq(t)−ℓ (Equation
+1 a−1 b+1 a b
+7). Lemma 5.4 yields deg (P ) = 2, and Lemma 5.8 with the degree restrictions on P ∪P
+Pa∪P
+b
+1 a b
+yields deg (P ∪P ) = 1. Then P ∪P ∪P is unbalanced wrt P ∪P and therefore,
+Pa∪P
+b
+a−1 b+1 1 a−1 b+1 a b
+by Lemma 4.4, either A or B is P ∪ P . Let us fix A = P ∪ P , without loss
+q(t)−ℓ q(t)−ℓ a b q(t)−ℓ a b
+of generality. By Lemma 4.4, the class B ∈ πq(t)−ℓ\{A } must satisfy deg (P ∪
+q(t)−ℓ q(t)−ℓ B a−1
+q(t)−ℓ
+P )−deg (P ) = 1. By Corollary 5.12, there is no class C ∈ {P ∪P ∪P | i ∈ [2,ℓ−1]}
+b+1 B 1 i a−i b+i
+q(t)−ℓ
+that can satisfy this: by Observations 6.2 and 6.3, either i = 2 and G[P ∪ P ∪ P ,C] is
+1 a−1 b+1
+a matching, or E(G[P ∪ P ∪ P ,C]) = ∅. Lemma 5.10 discounts B = S ∪ P . So,
+1 a−1 b+1 q(t)−ℓ c−1
+observing the expression for πq(t)−ℓ, we see that B ∈ π q(t) or B = P ∪P ∪P .
+q(t)−ℓ S q(t)−ℓ+1 1 a−1 b+1
+Lemma 6.7 yields two possible expressions for πq(t)−ℓ−1. Taking B ∈ π q(t) , we fix one
+q(t)−ℓ S
+expression for πq(t)−ℓ−1. By analysing this partition, we can determine possible expressions of
+previous partitions and the graphs that realise them.
+24
+
+--- Page Suivante ---
+
+(a) (b) (c)
+q(t)
+Figure 9: The long-refinement graphs with d = ℓ and B ∈ π .
+q(t)−ℓ S
+q(t)
+Lemma 6.8. Assume d = ℓ, A = P ∪P , and B ∈ π . Then G is one of the graphs
+q(t)−ℓ a b q(t)−ℓ S
+depicted in Figure 9.
+Proof. The expression for πq(t)−ℓ from Equation 7 and the values of A and B give the
+q(t)−ℓ q(t)−ℓ
+following expression for πq(t)−ℓ−1.
+πq(t)−ℓ−1 = π q(t) \{B }∪{P ∪P ∪P | i ∈ [ℓ−1]}
+S q(t)−ℓ i a−i b+i
+∪{P | i ∈ [a+1,b−1] }∪{P ∪P ∪B }∪M
+i a b q(t)−ℓ t
+Recall that deg (P ∪ P ) − deg (P ) = 1. Since |B | = 1, this implies
+B a−1 b+1 B 1 q(t)−ℓ
+q(t)−ℓ q(t)−ℓ
+that deg (P ) = 0 and deg (P ∪ P ) = 1. Then, deg (B ) = 4
+B
+q(t)−ℓ
+1 B
+q(t)−ℓ
+a−1 b+1 P1∪Pa−1∪P
+b+1
+q(t)−ℓ
+and deg (P ∪ P ) = 2 by Lemmas 5.4 and 5.5. Thus C is unbalanced wrt
+P1∪Pa−1∪P
+b+1
+a b q(t)−ℓ−1
+P ∪P ∪P so we can assume, without loss of generality, that A = P ∪P ∪P .
+1 a−1 b+1 q(t)−ℓ−1 1 a−1 b+1
+By degree restrictions on B , deg (B ) = 0, so to satisfy Lemma 4.4, P ∪P will
+q(t)−ℓ B q(t)−ℓ−1 a b
+q(t)−ℓ
+have degree 2 into A and B , and 0 into all other classes in πq(t)−ℓ−1. If b = a+2,
+q(t)−ℓ−1 q(t)−ℓ−1
+the degree of P ∪P into class P is 1, so b = a+1 and P ,P must be consecutive pairs. As
+a b a+1 a b
+P ∪P has non-zero degree into B ∪P ∪P , the latter class must be B . This implies
+a b q(t)−ℓ a b q(t)−ℓ−1
+that P ∪P has degree 2 into B ∪P ∪P and thus that P ,P ∈ E(G). With this and the
+a b q(t)−ℓ a b a b
+expression for A , we get C = B ∪P ∪P ∪P ∪P ∪P . Either C
+q(t)−ℓ−1 q(t)−ℓ−2 q(t)−ℓ 1 a−1 a b b+1 q(t)−ℓ−2
+is V(G) and deg(B ∪P ∪P ) ̸= deg(P ∪P ∪P ), or all vertices in C have degree
+q(t)−ℓ a b 1 a−1 b+1 q(t)−ℓ−2
+4. In the first case, since vertices in P , and therefore also P ∪P , have degree at least 3, G
+1 a−1 b+1
+must be the graph illustrated in Figure 9a with deg(G) = {3,4}.
+Now, consider the second case. Notice that B ∪ P ∪ P has degree 4 into C ,
+q(t)−ℓ a b q(t)−ℓ−2
+so must have degree 0 into all other classes. Thus, by Lemma 4.4, P ∪ P ∪ P must be
+1 a−1 b+1
+adjacent to exactly one other class, which we may call B without loss of generality, and
+q(t)−ℓ−2
+deg (P ∪P ∪P ) is at most 2. Degree restrictions on B imply that it is not a
+B 1 a−1 b+1 q(t)−ℓ−2
+q(t)−ℓ−2
+singleton. Therefore B is either P ∪P ∪P (ℓ > 1) or P ∪S (ℓ = 1 and t = 1).
+q(t)−ℓ−2 2 a−2 b+2 2 q(t)
+By Observations 6.2 and 6.3, notice that deg(B ) = 4 only in the case illustrated in Figure
+q(t)−ℓ−2
+8c, where t = 1 and deg (S ∪ P ) = 4. Note, however, that this would result in a
+P
+d
+∪Pc∪PnP c−1
+graph that is either 4-regular or disconnected. Therefore C must be V(G), with either
+q(t)−ℓ−3
+B = P ∪P ∪P , as depicted in Figure 8a, or S ∪P , as depicted in Figure 8b. The
+q(t)−ℓ−2 d c nP c−1
+resulting graphs are depicted in Figure 9b and 9c.
+Now, consider the second case from Lemma 6.7, in which B = P ∪P ∪P , and thus
+q(t)−ℓ 1 a−1 b+1
+consider the second possible expression for πq(t)−ℓ−1. There are infinitely many graphs which can
+realise this partition at iteration q(t)−ℓ−1. We describe them below.
+Lemma 6.9. Assume d = ℓ, A = P ∪P and B = P ∪P ∪P . If deg(G) = {2,3},
+q(t)−ℓ a b q(t)−ℓ 1 a−1 b+1
+then G is represented by a string in one of the following sets:
+25
+
+--- Page Suivante ---
+
+• {S1k01k1XX1k1 | k ∈ N }
+2 0
+• {S1k0011kXX1k10 | k ∈ N }
+0
+• {S(011)k00(110)k1X0X1(011)k0 | k ∈ N }
+0
+If deg(G) ̸= {2,3}, then G is one of the graphs in Figure 10 or in Table 4.
+(a) (b) (c) (d) (e)
+(f) (g) (h)
+(i) (j)
+(k) (l)
+Figure 10: The long-refinement graphs G with d = ℓ, B = P ∪P ∪P , and deg(G) ̸=
+q(t)−ℓ 1 a−1 b+1
+{2,3}.
+Proof. The expression for πq(t)−ℓ from Equation 7 and the assumed values of A and B
+q(t)−ℓ q(t)−ℓ
+yield the following expression for the previous partition.
+πq(t)−ℓ−1 = π q(t) ∪{P ∪P ∪P | i ∈ [2,ℓ−1]}
+S i a−i b+i
+∪{P | i ∈ [a+1,b−1]}∪{P ∪P ∪P ∪P ∪P }∪M
+i 1 a−1 a b b+1 t
+Recall that deg (P ∪P )−deg (P ) = 1. The degrees of P and
+P1∪Pa−1∪P
+b+1
+a−1 b+1 P1∪Pa−1∪P
+b+1
+1 1
+P ∪P intoP ∪P ∪P dependonwhetherP isP (whichoccurswhenℓ = 1andt = 0),
+a−1 b+1 1 a−1 b+1 a−1 2
+whetherG[P ,P ]isemptyorcompletebipartite,andwhichamongP ,P ,andP areinE(G).
+a b 1 a−1 b+1
+CarefulconsiderationofallcasesyieldsfourlayoutsfortheedgesincidenttoP ∪P ∪P which
+1 a−1 b+1
+satisfy the degree difference of 1. These layouts are depicted in Figure 11 with P ∪P ∪P
+1 a−1 b+1
+depicted in blue.
+26
+
+--- Page Suivante ---
+
+vertex adjacency 1 with n ∈ N adjacency 2 with n ∈ N
+0
+0 2n+1,2n+2,2n+5,2n+6 2n+1,2n+2,2n+5,2n+6
+1 3,4n+7,4n+8 3,4n+7,4n+8
+2 4,4n+9,4n+10 4,4n+9,4n+10
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2n+1∗ 0,2n−1,2n+3 2n+1,2n+2,2n+5
+2n+2∗ 0,2n,2n+4 2n,2n+12n+4
+2n+3 2n+1,2n+5,6n+11,6n+12 0,2n+1,2n+4,2n+5
+2n+4 2n+4,2n+8,6n+17,6n+18 0,2n+2,2n+3,2n+6
+2n+5 0,2n+3,2n+7 2n+3,2n+6,2n+7
+2n+6 0,2n+4,2n+8 2n+4,2n+5,2n+8
+4n+7 1,4n+5,4n+9 1,4n+5,4n+9
+4n+8 1,4n+6,4n+10 1,4n+6,4n+10
+4n+9 2,4n+7,4n+11 2,4n+7,4n+11
+4n+10 2,4n+8,4n+12 2,4n+8,4n+12
+6n+11 2n+3,2n+4,6n+9 0,6n+12,6n+10
+6n+12 2n+3,2n+4,6n+10 0,6n+11,6n+10
+Table4: Thetwoinfinitefamiliesoflong-refinementgraphsGwithorder6n+13fordeg(G) = {3,4}
+where I = [3,2n]∪[2n+7,4n+6]∪[4n+11,6n+10]. Note also that 2n+1,2n+2 are omitted
+when n = 0.
+P a ∪P b P a ∪P b P a ∪P b P a ∪P b
+C C C
+q(t)−(cid:96)+1 q(t)−(cid:96)+1 q(t)−(cid:96)+1
+(a) ℓ=1 and t=0 (b) l=1 and t=1 (c) ℓ>1 or t=1 (d) l>1 or t=1
+Figure 11: Edge layouts satisfying deg (P ∪P )−deg (P ) = 1. Note
+P1∪Pa−1∪P
+b+1
+a−1 b+1 P1∪Pa−1∪P
+b+1
+1
+these depict colour classes as in πq(t)−ℓ and only the edges incident to P ∪P ∪P . The union
+1 a−1 b+1
+of the green and blue classes is C .
+q(t)−ℓ−1
+ConsiderFigure11a,whereℓ = 1andt = 0. First,letC = V(G). Thendeg(P ∪P ) ̸=
+q(t)−ℓ−1 a b
+deg(P ∪P ∪P ), so deg(P ∪P ) ̸= 4. Since P and P have minimum degree 3, G must be as
+1 a−1 b+1 a b a b
+depicted in Figure 10a. Next, assume C ⊊ V(G). Then C must be unbalanced wrt
+q(t)−ℓ−1 q(t)−ℓ−1
+exactlytwoclassesA andB . OneofthoseclassesmustbeC ,asitcontainsall
+q(t)−ℓ−1 q(t)−ℓ−1 q(t)−ℓ−1
+the neighbours of P ∪P ∪P and we say without loss of generality that A = C .
+1 a−1 b+1 q(t)−ℓ−1 q(t)−ℓ−1
+We can observe from Equation 8, taking ℓ = 1 and t = 0, that the only other classes possible in
+πq(t)−ℓ−1 are P (if b = a+2) and singletons π q(t) . We first assume that B is a singleton
+a+1 S q(t)−ℓ−1
+and prove a contradiction. Since P ∪P is adjacent to but balanced wrt B , B must
+a b q(t)−ℓ−1 q(t)−ℓ−1
+be adjacent to all four vertices of P ∪ P . Then all vertices in set C ∪ B have 4
+a b q(t)−ℓ−1 q(t)−ℓ−1
+neighboursinthatsameset, makingGeitherdisconnectedor4-regular. ThusB isP and
+q(t)−ℓ−1 a+1
+C = P ∪P ∪P ∪P ∪P ∪P . Sinceℓ = 1andt = 0,thiscontainsallthepairsinπp. If
+q(t)−ℓ−2 1 a−1 a a+1 b b+1 P
+deg(P ) ̸= {4}, thenV(G) = C andGisasdepictedinFigures10b, wheredeg(P ) = 2,
+a+1 q(t)−ℓ−2 a+1
+and 10c, where deg(P ) = 3. If deg(P ) = 4, then P can be adjacent to exactly one class
+a+1 a+1 a+1
+in πq(t)−ℓ−2\{C }, i.e. a singleton S ∈ π q(t) . We then get C = S ∪C . Since
+q(t)−ℓ−2 S q(t)−ℓ−3 q(t)−ℓ−2
+27
+
+--- Page Suivante ---
+
+deg (P ) can only be 1, we also need P ∈ E(G) to satisfy deg(P ) = {4}. Singleton S then
+S a+1 a+1 a+1
+has degree 2 into P and shares no edges with the other pairs. Therefore, S can only have degree
+a+1
+4 if it is itself adjacent to two other singletons, at which point C would be unbalanced wrt
+q(t)−ℓ−3
+three classes contradicting Lemma 4.4. Therefore C = V(G) and deg(P ) = 2 and G is
+q(t)−ℓ−2 a+1
+as depicted in Figure 10d.
+Next, consider Figure 11b. Here, C ̸= V(G), so deg(P ∪P ) = deg(P ∪P ∪
+q(t)−ℓ−1 a b 1 a−1
+P ) = 4. The vertices of P ∪P ∪P have two neighbours in C , whereas P ∪P
+b+1 1 a−1 b+1 q(t)−ℓ+1 a b
+have none by Observations 6.2 and 6.3. Thus, C is in πq(t)−ℓ−1\πq(t)−ℓ−2 and without
+q(t)−ℓ+1
+loss of generality we may denote it A . Thus, to satisfy Lemma 4.4, we require the class
+q(t)−ℓ−1
+B to satisfy deg (P ∪P )−deg (P ∪P ∪P ) = 2. Thus B can
+q(t)−ℓ−1 B a b B 1 a−1 b+1 q(t)−ℓ−1
+q(t)−ℓ−1 q(t)−ℓ−1
+be neither a singleton (trivial), nor P (as deg (P ∪P ) = 1), nor any of the classes of size
+a+1 Pa+1 a b
+6 (Observations 6.2,6.3), and must therefore be C . However, we then have the vertices of
+q(t)−ℓ−1
+set C ∪C each with 4 neighbours in C ∪C , implying that either G is
+q(t)−ℓ−1 q(t)−ℓ+1 q(t)−ℓ−1 q(t)−ℓ+1
+4-regular, or disconnected.
+Now, considerFigure11c. Here,C ̸= V(G),sodeg(P ∪P ) = deg(P ∪P ∪P ) =
+q(t)−ℓ−1 a b 1 a−1 b+1
+4. First, consider the case where b = a+2. We then have πq(t)−ℓ satisfying the assumptions for
+πj in Lemma 6.5, with M = P . Recall that ℓ′ = ℓ−1. Then, the results of the aforementioned
+a+1
+lemma yield that
+πq(t)−2ℓ−t\πq(t)−ℓ = {D ,E } with P ∪P ∪P = C ⊆ E
+ℓ−2+t ℓ−2+t 1 a−1 b+1 q(t)−ℓ ℓ−2+t
+We therefore require deg(E ) = deg(P ∪ P ∪ P ) = 4, which implies that it cannot
+ℓ−2+t 1 a−1 b+1
+include any class P ∪P ∪P = C where h ∈ [1,ℓ−2], by Observations 6.2. This
+d−h c+h n P−h q(t)−h−1
+gives an upper limit to ℓ, yielding ℓ ∈ [1,3]. Where ℓ = 1, t must be 1 as C exists . By
+q(t)−ℓ+1
+Lemma 6.5, deg (B ) = 1, so we must have edges depicted as in Figure 8b, and we have
+C j
+q(t)−ℓ+1
+C = P ∪P ∪S . Thegraphwithdeg(C ) = 2isnotalong-refinementgraphas
+q(t)−ℓ−2 a+1 c−1 q(t) q(t)−ℓ−2
+C is then balanced at iteration q(t)−ℓ−2. Degree deg(C ) = 4 can only be achieved
+q(t)−ℓ−2 q(t)−ℓ−2
+if G[P ∪S ] is complete, P is in E(G), and P is adjacent to a singleton. That singleton,
+c−1 q(t) a+1 a+1
+however, would also need to have degree 4, which is not achievable, given the classes in πq(t)−ℓ−2
+without violating Lemma 4.4. Finally, if deg(C ) = 3, then G[P ∪S ] is an empty graph
+q(t)−ℓ−2 c−1 q(t)
+butP ∪S isadjacenttoasingletonwhichwedenoteS . DegreerestrictionsonS
+c−1 q(t) q(t)−ℓ−2 q(t)−ℓ−2
+imply it is not adjacent to P , so either P ∈ E(G) or P is adjacent to another singleton
+a+1 a+1 a+1
+S′ ̸= S . The former option yields the graph depicted in Figure 10f, while the latter
+q(t)−ℓ−2 q(t)−ℓ−2
+leadstoacontradictionasC wouldthenbeS′ ∪S implyingdeg(S′ ) = 3
+q(t)−ℓ−3 q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ−2
+and thus that it is adjacent to another singleton S . As deg(G) = {3,4}, S cannot
+q(t)−ℓ−3 q(t)−ℓ−3
+have a satisfying degree without violating Lemma 4.4, given the classes in πq(t)−ℓ−3. Where ℓ = 2
+and t = 0, by Lemma 6.3, we get the graph depicted in Figure 10h. Where ℓ = 2 and t = 1, we
+have C = E ∪P ∪S . Then deg(P ∪S ) = deg(E ) = 4. This implies
+q(t)−2ℓ−1 ℓ−2+t c−1 q(t) c−1 q(t) ℓ−2+t
+P ∪ S has edge layout as depicted in Figure 8c, or as in Figure 8b with G[P ∪ S ] a
+c−1 q(t) c−1 q(t)
+complete graph. The former is not possible as both C and D are then unbalanced.
+q(t)−2ℓ+1 ℓ−2+t
+The latter leads to the long-refinement graph depicted in Figure 10i when deg(D ) = 2 and
+ℓ−2+t
+Figure 10j when deg(D ) = 3. Finally, consider when ℓ = 3 and therefore deg(C ) = 4,
+ℓ−2+t q(t)−1
+where C = P ∪P ∪P . This can only be satisfied by t = 1, with edges as depicted in Figure
+q(t)−1 d c nP
+8c and P ,P ,P . This case yields the graphs depicted in Figure 10k and 10l, for deg(D )
+d c nP ℓ−2+t
+equal to 2 or 3, respectively.
+Next, let us consider the case where b = a+1. The class P ∪P ∪P has degree 1 into
+1 a−1 b+1
+C , whereas P ∪P has degree 0 into C . Thus, C is in πq(t)−ℓ−1\πq(t)−ℓ−2
+q(t)−ℓ+1 a b q(t)−ℓ+1 q(t)−ℓ+1
+and without loss of generality we may denote it A . Then, by Lemma 4.4, we require
+q(t)−ℓ−1
+28
+
+--- Page Suivante ---
+
+the class B to satisfy deg (P ∪ P ) − deg (P ∪ P ∪ P ) = 1. This
+q(t)−ℓ−1 B a b B 1 a−1 b+1
+q(t)−ℓ−1 q(t)−ℓ−1
+cannot hold if B is a class of size 6, by Corollary 5.12, or if it is the class P ∪ S ,
+q(t)−ℓ−1 c−1 q(t)
+by Lemma 5.10. It also cannot be a singleton; we would then have deg(B ) = 4, and
+q(t)−ℓ−1
+since A ∪B ⊊ V(G), also deg(A ) = {4}, which implies by Remark 6.2 and
+q(t)−ℓ−1 q(t)−ℓ−1 q(t)−ℓ−1
+Observation6.3thatC mustbeP ∪P ∪P , withedgesasdepictedinFigure8c. However,
+q(t)−ℓ+1 d c nP
+wethengetagraphthatiseither4-regularordisconnected. Thus, B isC . Tosatisfy
+q(t)−ℓ−1 q(t)−ℓ−1
+deg(P ∪P ) = 4, we must have P ,P ∈ E(G) and b = a+1. Now, either deg(C ) = 4 or
+a b a b q(t)−ℓ+1
+V(G) = C ∪C . The former can only be satisfied by C being P ∪P ∪P
+q(t)−ℓ−1 q(t)−ℓ+1 q(t)−ℓ+1 d c nP
+with edges as depicted in Figure 8c. However, this results in G being 4-regular or disconnected.
+Thus, V(G) = C ∪C , with C either P ∪P ∪P as depicted in Figure 8a,
+q(t)−ℓ−1 q(t)−ℓ+1 q(t)−ℓ−1 d c nP
+or P ∪S , as in Figure 8b. These graphs are depicted in Figures 10e and 10g.
+c−1 q(t)
+Finally, consider Figure 11d. Here, we have deg(P ∪ P ∪ P ) = 3, and therefore
+1 a−1 b+1
+also deg(P ∪P ) = 3. The class P ∪P has degree 2 into P ∪P ∪P , and degree 1 into
+a b a b 1 a−1 b+1
+either P ∪ P if b = a + 1, or into P if b = a + 2. In the former case, iteration q(t) − ℓ
+a b a+1
+satisfies the assumptions for iteration j in Lemma 6.4. Thus, taking j′ = ℓ′ + t = ℓ − 1 + t,
+we get C = (cid:83) P . If t = 0, then P ∪P ∪P ⊊ C has degree 2 by
+Lemma 6
+q
+.
+(
+3
+t
+,
+)−
+w
+2ℓ
+h
++
+i
+t
+le deg(
+i∈
+(cid:83)
+[1,d]∪[c,nP] i
+P ) = 3 and
+d
+ther
+c
+efore
+nP
+V(G)
+q
+=
+(t)
+(cid:83)
+−2
+n
+ℓ
+P
+−1
+P and that G is
+i∈[1,d−1]∪[c+1,nP−1] i i=1 i
+a graph whose representative string is contained in the set {S1k001k1XX11k0 | k ∈ N }. If t = 1,
+0
+then C ⊊ V(G) so deg(P ) = 3 for i ∈ [1,d] ∪ [c,n ]. The vertices P ∪ P ∪ P have
+q(t)−2ℓ−t i P d c nP
+degree 1 into P ∪ S , where other vertices in C have degree 0, and have all their
+c−1 q(t) q(t)−2ℓ−1
+neighbours within C . This implies that πq(t)−2ℓ−2\πq(t)−2ℓ−1 = {C ,P ∪ S}.
+q(t)−2ℓ−1 q(t)−2ℓ−1 c−1
+If C ̸= V(G), then deg(P ∪ S) = 3, which can only be satisfied by having edges as
+q(t)−2ℓ−2 c−1
+depicted in Figure 8b and P ∪S also adjacent to a singleton S. Here, either the singleton
+c−1 q(t)
+has degree 3 and the graph is 3-regular, or the singleton has degree greater than 3 so there are
+vertices not in C = C ∪S, yet deg(C ) = ⊥. We therefore let C =
+q(t)−2ℓ−3 q(t)−2ℓ−2 q(t)−2ℓ−3 q(t)−2ℓ−2
+V(G), in which case deg(P ∪ S) is either 2 or 4. These can be achieved by edges as in 8b,
+c−1
+with deg (P ∪S) ∈ {0,2}. We thus get three possible infinite families of graphs, either
+Pc−1∪S c−1
+represented by the set {S1k01k1XX1k1 | k ∈ N }, or by Table 4.
+2 0
+Next, we consider the case where b = a+2. Here, iteration q(t)−ℓ satisfies the assumptions
+for iteration j in Lemma 6.5, with M = P , thus yielding πq(t)−2ℓ−t\πq(t)−ℓ = {D ,E }.
+a+1 ℓ−2+t ℓ−2+t
+If t = 0, then deg(P ∪P ∪P ) = 2 by Observation 6.3, so cannot be a subset of E with
+d c nP ℓ−2+t
+degree 3. It follows then that deg(D ) = 2, so P ∈ E(G) for all pairs P ∈ πp such that
+ℓ−2+t P
+P ⊆ E \{P ∪ P }, and P ∈/ E(G) if P ⊆ D \{P }. We therefore get the graph
+ℓ−2+t a−1 b+1 ℓ−3 nP
+represented by the set {S(011)k00(110)k1X0X1(011)k0 | k ∈ N }. Consider t = 1 with the layout
+0
+of edges as depicted in Figure 8b. When C = P ∪ S ∪ D , the argument that
+q(t)−2ℓ−t c−1 q(t) l−2+t
+G cannot be a long-refinement graph is the same as that used for Figure 11c, when ℓ = 1 and
+t = 1, except that since E has degree 3, the case that yields the long-refinement graph there
+ℓ−2+t
+instead yields a 3-regular graph here. When C = P ∪S ∪E , deg(C ) =
+q(t)−2ℓ−t c−1 q(t) l−2+t q(t)−2ℓ−t
+3 and hence P ∪ S must be adjacent to a singleton, which we will denote S . If
+c−1 q(t) q(t)−2ℓ−t
+C = D , then P ∪S contradicts Lemma 4.4 having higher degree into D
+q(t)−2ℓ+1−t ℓ−2+t c−1 q(t) l−2+t
+and S . If C = E , then by Lemma 4.4, C = S ∪D ,
+q(t)−2ℓ−t q(t)−2ℓ+1−t ℓ−2+t q(t)−2ℓ−t−1 q(t)−2ℓ−t l−2+t
+and deg(D ) ≥ 3. If deg(D ) = 3, we have a 3-regular graph, whereas if deg(D ) = 4,
+ℓ−2+t ℓ−2+t ℓ−2+t
+then deg(P ) = 4 and must, by a previous argument, be adjacent to a singleton with degree
+a+1
+4 - which is not possible. Next, consider t = 1 with the layout of edges depicted in Figure 8c.
+Here, C = P ∪ S ∪ D since deg(E ) = 3. Thus C ⊆ D can
+q(t)−2ℓ−t c−1 q(t) ℓ−2+t ℓ−2+t q(t)−l+1 ℓ−2+t
+only be P ∪P ∪P or P ∪S . The latter contradicts Lemma 6.5, the former contradicts
+d c nP c−1 q(t)
+Lemma 4.4.
+29
+
+--- Page Suivante ---
+
+Having identified the graphs that correspond to both cases from Lemma 6.7, this concludes the
+case that d = ℓ. Now, since the remaining cases have d > ℓ, we henceforth have ℓ′ = ℓ and thus
+Lemma 5.11 yields
+πq(t)−ℓ−1 = π q(t) ∪{P ∪P ∪P | i ∈ [0,ℓ]}
+S d−i c+i nP−i
+∪{P | i ∈ [d−ℓ−1]∪[a+1,b−1]}∪M (8)
+i t
+We now consider the cases where d = ℓ + 1 and d = ℓ + 2 simultaneously. In Lemma 6.10,
+similarly to Lemma 6.7, we identify all the classes that may be A or B , so as to
+q(t)−ℓ−1 q(t)−ℓ−1
+determine all possible expression of πq(t)−ℓ−2 and treat them separately.
+q(t)
+Lemma 6.10. If d ∈ {ℓ+1,ℓ+2}, then {A ,B } ⊆ {P ∪P ∪P ,P }∪π .
+q(t)−ℓ−1 q(t)−ℓ−1 d−ℓ a b a+1 S
+Proof. Observe the classes in Equation 8. By Remark 6.2, C is balanced wrt all classes in
+q(t)−ℓ−1
+{P ∪P ∪P | i ∈ [0,ℓ−1]}. Degree restrictions on C and S ∪P give the same
+d−i c+i nP−i q(t)−ℓ−1 c−1
+result for S∪P if t = 1. When d = ℓ+2, Lemmas 5.1 and 5.4 imply C = P ∪P ∪P is
+c−1 q(t)−ℓ−1 2 a b
+balanced wrt P . Thus, C may only be unbalanced wrt the classes P ∪P ∪P and P ,
+1 q(t)−ℓ−1 d−ℓ a b a+1
+q(t)
+and the singletons in π .
+S
+This result allows us to divide the search for long-refinement graphs where d ∈ {ℓ+1,ℓ+2}
+into the following cases: C is either unbalanced wrt by a) two singletons, b) P and a
+q(t)−ℓ−1 a+1
+singleton, c) P ∪P ∪P and a singleton adjacent to P , d) P ∪P ∪P and a singleton
+d−ℓ a b d−ℓ d−ℓ a b
+adjacent to P ∪P , and e) P and P ∪P ∪P . We treat these cases in the next five lemmas.
+a b a+1 d−ℓ a b
+We determine that the first two cases cannot be satisfied by any long-refinement graphs.
+Lemma 6.11. Let d ∈ {ℓ+1,ℓ+2}. There is no long-refinement graph with A ,B ∈
+q(t)−ℓ−1 q(t)−ℓ−1
+q(t)
+π .
+S
+Proof. From Equation 8 and the values of A ,B , we get the following.
+q(t)−ℓ−1 q(t)−ℓ−1
+πq(t)−ℓ−2 = π q(t) \{A ,B }∪{A ∪B }
+S q(t)−ℓ−1 q(t)−ℓ−1 q(t)−ℓ−1 q(t)−ℓ−1
+∪{P ∪P ∪P | i ∈ [0,ℓ]}∪{P | i ∈ [d−ℓ−1]∪[a+1,b−1]}∪M
+d−i c+i nP−i i t
+Since |A | = |B | = 1 and C is unbalanced wrt both classes, we must have
+q(t)−ℓ−1 q(t)−ℓ−1 q(t)−ℓ−1
+P adjacent to one singleton, and P ∪ P adjacent to the other. Without loss of generality,
+d−ℓ a b
+let deg (P ) = 1 and deg (P ∪ P ) = 1. Then deg (A ) = 2
+A
+q(t)−ℓ−1
+d−ℓ B
+q(t)−ℓ−1
+a b P
+d−ℓ
+∪Pa∪P
+b
+q(t)−ℓ−1
+and deg (B ) = 4, and without loss of generality A = P ∪ P ∪ P .
+P
+d−ℓ
+∪Pa∪P
+b
+q(t)−ℓ−1 q(t)−ℓ−2 d−l a b
+By degree restrictions, B has degree 0 into B , so deg (A ) = 2. All
+q(t)−ℓ−1 q(t)−ℓ−2 B q(t)−ℓ−1
+q(t)−ℓ−2
+classes in πq(t)−ℓ are balanced wrt – and since A is a singleton, trivially connected to –
+q(t)−ℓ−1
+A ∈ πq(t)−ℓ−1. TheclassB mustthereforebeapair, sod = ℓ+2andB = P .
+q(t)−ℓ−1 q(t)−ℓ−2 q(t)−ℓ−2 1
+From this and by Lemma 4.4, we get C = P ∪P ∪P ∪P . With P adjacent to singleton
+q(t)−ℓ−3 1 2 a b 1
+A , it has degree 4, so P ∪ P ∪ P must also have degree 4. If ℓ = 0 and t = 0, the
+q(t)−ℓ−1 2 a b
+graph would be 4-regular or disconnected, so ℓ > 0 or t = 1 must hold. Thus C is either
+q(t)−ℓ
+P ∪P ∪P , or P ∪S . In either case, class C is unbalanced wrt itself and C ,
+3 a−1 b+1 3 q(t) q(t)−ℓ−3 q(t)−ℓ
+so by Lemma 4.4, C = C ∪C and thus C must also have degree 4. This
+q(t)−ℓ−4 q(t)−ℓ−3 q(t)−ℓ q(t)−ℓ
+can only occur if C is {P ,P ,P } or M , where the layout of edges is as depicted in Figure
+q(t)−ℓ d c nP t
+8c. Again, in this case, the graph is 4-regular or disconnected.
+30
+
+--- Page Suivante ---
+
+Figure 12: The long-refinement graph satisfying the prerequisites of Lemma 6.12.
+q(t)
+Lemma 6.12. Let d ∈ {ℓ + 1,ℓ + 2} and A = P and B ∈ π . Then G is
+q(t)−ℓ−1 a+1 q(t)−ℓ−1 S
+depicted in Figure 12.
+Proof. The expression for πq(t)−ℓ−1 from Equation 8 and the assumed values of A and
+q(t)−ℓ−1
+B yield the following expression for πq(t)−ℓ−2.
+q(t)−ℓ−1
+πq(t)−ℓ−2 = π q(t) \{B }∪{P ∪P ∪P | i ∈ [0,ℓ]}
+S q(t)−ℓ−1 d−i c+i nP−i
+∪{P ∪B }∪{P | i ∈ [d−ℓ−1]}∪M (9)
+a+1 q(t)−ℓ−1 i t
+Clearly C = P ∪ B is a strict subset of V(G), so we require C to be
+q(t)−ℓ−2 a+1 q(t)−ℓ−1 q(t)−ℓ−2
+unbalanced wrt two classes A and B . We will show that there is no pair of classes
+q(t)−ℓ−2 q(t)−ℓ−2
+in πq(t)−ℓ−2 that satisfy the requirements of A and B .
+q(t)−ℓ−2 q(t)−ℓ−2
+First, consider the classes in {P ∪P ∪P | i ∈ [0,ℓ]}. Observe that P ∪P ∪P
+d−i c+i nP−i d−ℓ a b
+(i = ℓ) cannot be A or B since deg (C ) = 2. Next, by Remark 6.2
+q(t)−ℓ−2 q(t)−ℓ−2 P
+d−ℓ
+∪Pa∪P
+b
+q(t)−ℓ−2
+and Observation 6.3, there are no edges between C and any class P ∪P ∪P where
+q(t)−ℓ−2 d−i c+i nP−i
+i ∈ [0,ℓ−1], so such classes are not A or B . By Lemma 5.10 and degree restrictions
+q(t)−ℓ−2 q(t)−ℓ−2
+on A and B , S ∪P ∈/ {A ,B }.
+q(t)−ℓ−1 q(t)−ℓ−1 q(t) c−1 q(t)−ℓ−2 q(t)−ℓ−2
+Observing Equation 9, this leaves us with
+q(t)
+{A ,B } ⊆ π \{B }∪{P ∪B }}∪{P | i ∈ [d−ℓ−1]}.
+q(t)−ℓ−2 q(t)−ℓ−2 S q(t)−ℓ−1 a+1 q(t)−ℓ−1 i
+LetusassumethatP = A (d = ℓ+2)andproveacontradiction. Inthiscase,deg (B )−
+1 q(t)−ℓ−2 P1 q(t)−ℓ−1
+deg (P ) must be 2, by Lemmas 4.4, 5.5, and degree restrictions on P . However, no other class
+P1 a+1 1
+q(t)
+in π \{B }∪{P ∪B } can then satisfy Lemma 4.4: trivially, singleton classes
+S q(t)−ℓ−1 a+1 q(t)−ℓ−1
+are not large enough, while deg (P ) ∈ {0,1} by degree restrictions on B .
+Pa+1∪B
+q(t)−ℓ−1
+a+1 q(t)−ℓ−1
+By this and the symmetric argument for B , P ∈/ {A ,B }. Thus, either
+q(t)−ℓ−2 1 q(t)−ℓ−2 q(t)−ℓ−2
+A ∪B is the union of two singletons S ,S′ , or of a singleton S
+q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ−2
+and P ∪B , when P ∈ E(G).
+a+1 q(t)−ℓ−1 a+1
+Both cases, within a few simple applications of Lemma 4.4, lead to the class C in the
+q(t)−ℓ−4
+first case, and C in the second case, being P ∪P ∪P ∪P with deg(P ∪P ∪P ∪P ) = 4
+q(t)−ℓ−3 1 2 a b 1 2 a b
+and therefore d = ℓ + 2. This requires the previous iteration to contain, by Lemma 4.4, either
+P ∪P ∪P ∪P ∪M with M as depicted in Figure 8b with G[M ] a complete graph, or P ∪
+1 2 a b t t t 1
+P ∪ P ∪ P ∪ P ∪ P ∪ P , with all vertices of degree 4, therefore M as depicted in Figure
+2 3 4 a b b+1 t
+8c. The latter leads to contradictions, either leading to a 4-regular graph, or leading to a class
+with two degrees after iteration 1. This statement holds for the former case when both A
+q(t)−ℓ−2
+and B are singletons. However, when A or B is P , we can have the graph
+q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ−2 a+1
+depicted in Figure 12.
+Now, we consider the cases where A = P ∪ P ∪ P and B ∈ πp. Here we
+q(t)−ℓ−1 d−ℓ a b q(t)−ℓ−1 S
+distinguish cases according to which of A or B , i.e. which of P and P ∪ P , the
+q(t)−ℓ q(t)−ℓ d−ℓ a b
+singleton B is adjacent to. Although both cases have the same expression for πq(t)−ℓ−2,
+q(t)−ℓ−1
+they require dissimilar proofs.
+31
+
+--- Page Suivante ---
+
+q(t)
+Lemma 6.13. Let d ∈ {ℓ+1,ℓ+2}, A = P ∪P ∪P , and B ∈ π with B
+q(t)−ℓ−1 d−ℓ a b q(t)−ℓ−1 S q(t)−ℓ−1
+adjacent to P ∪P . Then G is depicted in Figure 13.
+a b
+(a) (b)
+Figure 13: The two graphs satisfying the prerequisites from Lemma 6.13.
+Proof. We know by the fact that P ∈/ {A ,B }, that b = a+1. Let us first assume
+a+1 q(t)−ℓ−1 q(t)−ℓ−1
+that d = ℓ+2. Substituting 2 for d−ℓ, we then get that deg (P ) > deg (P ∪P ).
+P2∪Pa∪P
+b
+2 P2∪Pa∪P
+b
+a b
+However, no possible layout of edges satisfies this requirement without violating degree restrictions
+or Lemma 5.8. We must therefore have d = ℓ+1. There is a layout of edges that satisfies this, in
+which P ∈ E(G) and P ,P ∈/ E(G).
+1 a b
+The expression for πq(t)−ℓ−1 from Equation 8 and the values of A and B yield
+q(t)−ℓ−1 q(t)−ℓ−1
+πq(t)−ℓ−2 = π q(t) ∪{P ∪P ∪P | i ∈ [0,ℓ]}
+S d−i c+i nP−i
+∪{P | i ∈ [d−ℓ−1]∪[a+1,b−1]}∪M
+i t
+By assumption, deg (P ∪P ) = 1 and thus also deg (B ) = 4. Therefore,
+B
+q(t)−ℓ−1
+a b Pa∪P
+b
+q(t)−ℓ−1
+since C ⊊ V(G) (it must omit at least P ) then deg(P ∪P ∪P ) = 4. Note that, now,
+q(t)−ℓ−2 2 d−ℓ a b
+the class that includes pair P must either be the only other class, or must also have degree 4.
+2
+From Lemma 6.3 and Remark 6.2, it is clear that, if the latter is true, G is either 4-regular or
+disconnected. Thus, the class containing P is the only other class at iteration q(t)−ℓ−2 and can
+2
+be either P ∪S or P ∪P ∪P . This yields the two graphs in Figure 13.
+2 q(t) 2 3 5
+Lemma 6.14. Let d ∈ {ℓ+1,ℓ+2}. There is no long-refinement graph satisfying A =
+q(t)−ℓ−1
+q(t)
+P ∪P ∪P and B ∈ π with B adjacent to P .
+d−ℓ a b q(t)−ℓ−1 S q(t)−ℓ−1 d−ℓ
+Proof. From the expression for πq(t)−ℓ−1 in Equation 8 and the given values of A and
+q(t)−ℓ−1
+B , we get the expression
+q(t)−ℓ−1
+πq(t)−ℓ−2 = π q(t) \{B }∪{P ∪P ∪P | i ∈ [0,ℓ−1]}
+S q(t)−ℓ−1 d−i c+i nP−i
+∪{P ∪P ∪P ∪B }∪{P | i ∈ [d−ℓ−1]∪[a+1,b−1]}∪M . (10)
+d−ℓ a b q(t)−ℓ−2 i t
+First, assume that d = ℓ+1. Then, recalling that a > 2, we must have either ℓ > 0 or t = 1,
+implying that C ∈ {P ∪P ∪P , P ∪S} is a class in πq(t)−ℓ−2. As the singleton B
+q(t)−ℓ 2 a−1 b+1 2 q(t)−ℓ−1
+is only adjacent to P , it has degree 2 into C . Meanwhile, A has degree 3 into
+d−ℓ q(t)−ℓ−1 q(t)−ℓ−1
+C and 1 into C . However, by Remark 6.2, B shares no edges with C . This
+q(t)−ℓ−2 q(t)−ℓ q(t)−ℓ−1 q(t)−ℓ
+implies that C is unbalanced by both C and C , with A having higher
+q(t)−ℓ−2 q(t)−ℓ−2 q(t)−ℓ q(t)−ℓ−1
+degree into both, contradicting Lemma 4.4.
+Letting d = ℓ + 2, A is P ∪ P ∪ P . Consequently, C is unbalanced by P
+q(t)−ℓ−1 2 a b q(t)−ℓ−2 1
+as deg (P ∪ P ∪ P ) = 1 by Lemmas 5.1 and 5.4, whereas B has degree 0 into P by
+P1 2 a b q(t)−ℓ−1 1
+Lemma 5.5 and degree restrictions. If either ℓ > 0 or t = 1, then C is another class in
+q(t)−ℓ
+πq(t)−ℓ−2 which by Corollary 5.12 and Remark 6.2, P ∪P ∪P is adjacent to and B is not.
+2 a b q(t)−ℓ−1
+32
+
+--- Page Suivante ---
+
+This contradicts Lemma 4.4. Thus, we can only have ℓ = 0 and t = 0, in which case πq(t)−ℓ−2 =
+q(t)
+π \{B }∪{P ,P ∪P ∪P ∪B }. Wecandeducethatdeg(P ∪P ∪P ∪B ) = 3,
+S q(t)−ℓ−2 1 2 a b q(t)−ℓ−1 2 a b q(t)−ℓ−1
+sinceP ∪P ∪P couldnotbeadjacenttoanysingletonwithoutcontradictingthedegreerestrictions.
+2 a b
+Thus, we must have B adjacent to a singleton to satisfy deg(B ) = 3 and thus
+q(t)−ℓ−1 q(t)−ℓ−1
+C must be unbalanced wrt some singleton S′. Thus C = P ∪ S′ with C
+q(t)−ℓ−2 q(t)−ℓ−2 1 q(t)−ℓ−2
+unbalanced wrt C with P having degree 3 into C and S′ having degree 0. There are
+q(t)−ℓ−1 1 q(t)−ℓ−1
+no other classes that can satisfy a degree difference of 2, so we have a final contradiction.
+We now treat the final case for d ∈ {ℓ+1,ℓ+2}.
+Lemma 6.15. Let d ∈ {ℓ + 1,ℓ + 2}, A = P ∪ P ∪ P , and B = P . If
+q(t)−ℓ−1 d−ℓ a b q(t)−ℓ−1 a+1
+deg(G) = {2,3}, then G is represented by a long-refinement string in one of the following sets
+• {S1X1 X}
+2
+• {S(011)k00(110)kX1 X(011)k0 | k ∈ N }
+2 0
+• {S1k001kX1X1k0 | k ∈ N }
+0
+• {S0X1X }∪{S1k1011kX1X1k1 | k ∈ N }
+2 2 0
+If deg(G) ̸= {2,3}, then G is as represented in Figure 14 or is isomorphic to a graph in Table 5.
+(a) (b)
+Figure 14: The long-refinement graphs G with d ∈ {ℓ+1,ℓ+2}, where A = P ∪P ∪P ,
+q(t)−ℓ−1 d−ℓ a b
+B = P , and deg(G) ̸= {2,3}.
+q(t)−ℓ−1 a+1
+Proof. Given the expression for πq(t)−ℓ−1 in Equation 8 and the assumed values of A and
+q(t)−ℓ−1
+B , we get the following expression for πq(t)−ℓ−2.
+q(t)−ℓ−1
+πq(t)−ℓ−2 = π q(t) ∪{P ∪P ∪P ∪P }∪{P ∪P ∪P | i ∈ [0,ℓ−1]}
+S d−ℓ a a+1 b d−i c+i nP−i
+∪{P | i ∈ [d−ℓ−1]}∪M . (11)
+i t
+Let us start by considering d = ℓ+1. Then C is P ∪P ∪P ∪P with deg(C ) ≥ 3.
+q(t)−ℓ−2 1 a a+1 b q(t)−ℓ−2
+Since P ≺ P , we must have either ℓ > 0 or t = 1. If ℓ = 0 and t = 1 with edges as depicted
+2 a
+in Figure 8c, then deg (P ∪ P ∪ P ) − deg (P ) = 2. However, the other classes
+C 1 a b C a+1
+q(t)−ℓ q(t)−ℓ
+in πq(t)−ℓ−2 (the singletons in π q(t) , P ∪P ∪P ∪P ) cannot satisfy Lemma 4.4 to complete
+S 1 a a+1 b
+{A ,B }. In all cases where l > 0, deg (P ∪P ∪P )−deg (P ) = 1,
+q(t)−ℓ−2 q(t)−ℓ−2 C 1 a b C a+1
+q(t)−ℓ q(t)−ℓ
+by Lemmas 6.2 and 6.3. Without loss of generality, let A = C . To satisfy Lemma 4.4
+q(t)−ℓ−2 q(t)−ℓ
+B must satisfy deg (P ∪P ∪P )−deg (P ) = −1. Thus, by 6.2 and 6.3,
+q(t)−ℓ−2 B 1 a b B a+1
+q(t)−ℓ−2 q(t)−ℓ−2
+B cannotbeaclassofsize6,norM asthereisnolayoutofedgesthatsatisfiesrequirements.
+q(t)−ℓ−2 t
+q(t)
+Thus B may only be P ∪P ∪P ∪P , or in π .
+q(t)−ℓ−2 1 a a+1 b S
+33
+
+--- Page Suivante ---
+
+vertex adjacency 1 adjacency 2
+0 2k+3,2k+4,2k+7,2k+8 2k+5,2k+6,6k+13,6k+14
+1 3,4k+9,4k+10 3,4k+9,4k+10
+2 4,4k+11,4k+12 4,4k+11,4k+12
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2k+3 0,2k+1,2k+5 2k+1,2k+4,2k+5
+2k+4 0,2k+2,2k+6 2k+2,2k+3,2k+6
+2k+5 2k+3,2k+7,6k+13,6k+14 0,2k+3,2k+6,2k+7
+2k+6 2k+4,2k+8,6k+13,6k+14 0,2k+4,2k+5,2k+8
+2k+7 0,2k+5,2k+9 2k+5,2k+8,2k+9
+2k+8 0,2k+6,2k+10 2k+6,2k+7,2k+10
+4k+9 1,4k+7,4k+11 1,4k+7,4k+11
+4k+10 1,4k+8,4k+12 1,4k+8,4k+12
+4k+11 2,4k+9,4k+13 2,4k+9,4k+13
+4k+12 2,4k+10,4k+14 2,4k+10,4k+14
+6k+13 2k+5,2k+6,6k+11 0,6k+14,6k+11
+6k+14 2k+5,2k+6,6k+12 0,6k+13,6k+12
+Table 5: All infinite families of long-refinement graphs G with order 6k+15 and deg(G) = {3,4},
+where I = [3,2k+2]∪[2k+9,4k+8]∪[4k+13,6k+12], defined for k ∈ N .
+0
+Let us first assume B is P ∪ P ∪ P ∪ P . Then deg(P ) = 3, as in this case
+q(t)−ℓ−2 1 a a+1 b a+1
+P is not adjacent to a singleton. Furthermore, P has all its neighbours in its own class,
+a+1 a+1
+which means that the partition πq(t)−ℓ−2 satisfies the requirements of partition πj, which means
+(cid:16) (cid:17)
+(cid:83)
+one can apply Lemma 6.4 to yield C = C = A ∪ C . If t = 0,
+j−1−j′ q(t)−2ℓ−3−t j i∈[0,ℓ+t] q(t)−ℓ−1+i
+then by the result from Remark 6.3 that deg(P ∪ P ∪ P ) = 2, C = V(G) so we
+d c nP q(t)−2ℓ−3−t
+have exactly the graphs represented by the strings in the set {S1k001kX1X1k0 | k ∈ N }. If
+0
+t = 1, then either C = V(G) and deg(P ∪ S ) ∈ {2,4}, or C ⊊ V(G)
+q(t)−2ℓ−3−t c−1 q(t) q(t)−2ℓ−3−t
+and deg(P ∪S ) = 3. By an argument identical to that used in the proof Lemma 6.9, the
+c−1 q(t)
+former case yields exactly three infinite families of graphs – one represented by the strings in
+{S1k1011kX1X1k1 | k ∈ N }, and two represented in Table 5 – while the latter case yields none.
+2 0
+We return to the case where B ∈ π q(t) . Note that, in this case, πq(t)−ℓ−1 matches
+q(t)−ℓ−2 S
+the requirements for partition j in Lemma 6.5 with M as the singleton B . Note that
+q(t)−ℓ−2
+degB = 2, as it cannot be adjacent to the larger classes, by degree restrictions, and any
+q(t)−ℓ−2
+singletonadjacenttoB couldnotthenhavedegreegreaterthan2,leadingtoacontradiction
+q(t)−ℓ−2
+to Lemma 4.4 at the previous iteration. Now, degP can be 3 or 4 depending on whether P
+a+1 a+1
+is in E(G). Where degP = 4, we can have at most ℓ = 2 by Remark 6.2. We then get the graph
+a+1
+in Figure 14a when ℓ = 1 and the graph in Figure 14b when ℓ = 2. When degP = 3, we obtain
+a+1
+the graphs represented by the strings {S(011)k00(110)kX1 X(011)k0 | k ∈ N }.
+2 0
+Now, consider the case with d = ℓ+2 and recall the partition πq(t)−ℓ−2 (Equation 11). The
+class P is adjacent to P ∪P ∪P , but not to P , by Lemma 5.5 and degree restrictions on P .
+1 2 a b a+1 1
+By Lemma 4.4, the same cannot be true of either P ∪P ∪P or P ∪S, yet neither class can
+3 a−1 b+1 3
+be adjacent to P by Lemmas 6.2 and 6.3, respectively, so neither class exists and thus ℓ = 0
+a+1
+and t = 0. Taking, without loss of generality, A = P , we then need deg (P )−
+q(t)−ℓ−2 1 B a+1
+q(t)−ℓ−2
+deg (P ∪ P ∪ P ) = 1. This may be satisfied by any of the other classes in πq(t)−ℓ−2,
+B 2 a b
+q(t)−ℓ−2
+34
+
+--- Page Suivante ---
+
+Figure 15: The unique long-refinement graph with deg(G) = {1,3}.
+vertex adjacency 1 adjacency 2
+0 2k+7,2k+8,2k+11,2k+12 2k+5,2k+6,6k+17,6k+18
+1 3,4k+13,4k+14 3,4k+13,4k+14
+2 4,4k+15,4k+16 4,4k+15,4k+16
+odd i ∈ I i−2,i+1,i+2 i−2,i+1,i+2
+even i ∈ I i−2,i−1,i+2 i−2,i−1,i+2
+2k+7 0,2k+5,2k+9 2k+5,2k+8,2k+9
+2k+8 0,2k+6,2k+10 2k+6,2k+7,2k+10
+2k+9 2k+7,2k+11,6k+17,6k+18 0,2k+7,2k+10,2k+11
+2k+10 2k+8,2k+12,6k+17,6k+18 0,2k+8,2k+9,2k+12
+2k+11 0,2k+9,2k+13 2k+9,2k+12,2k+13
+2k+12 0,2k+10,2k+14 2k+10,2k+11,2k+14
+4k+13 1,4k+11,4k+15 1,4k+11,4k+15
+4k+14 1,4k+12,4k+16 1,4k+12,4k+16
+4k+15 2,4k+13,4k+17 2,4k+13,4k+17
+4k+16 2,4k+14,4k+18 2,4k+14,4k+18
+6k+17 2k+9,2k+10,6k+15 0,6k+18,6k+15
+6k+18 2k+9,2k+10,6k+16 0,6k+17,6k+16
+Table 6: All infinite families of long-refinement graphs G with order 6k+19 and deg(G) = {3,4},
+where I = [3,2k+6]∪[2k+13,4k+12]∪[4k+17,6k+16].
+q(t)
+B = P ∪ P ∪ P ∪ P or B ∈ π , but the former results in a 3-regular or
+q(t)−ℓ−2 2 a a+1 b q(t)−ℓ−2 S
+disconnected graph. The latter yields the long-refinement graph G(S1X1 X).
+2
+Having addressed every case from Lemma 6.10, this concludes the case for both d = ℓ+1 and
+d = ℓ+2. We now consider the remaining cases for the value of d. As per Lemma 5.13, those are
+d ∈ {ℓ+3,ℓ+4}, in which case b = a+1.
+Lemma 6.16. Let d ∈ {ℓ+3,ℓ+4}. Then G is either the graph depicted in Figure 15 or isomorphic
+to a graph from Table 6 or represented by a string in one of the following sets.
+• {S111k001kXX1k0 | k ∈ N }
+0
+• {S110XX }∪{S111k1011kXX1k1 | k ∈ N }
+2 2 0
+• {S011(011)k00(110)kXX(011)k0 | k ∈ N }
+0
+• {S11XX,S011XX,S1 11XX}
+2
+Proof. We are given that d ∈ {ℓ+3,ℓ+4} and therefore have, from Equation 8, an expression
+for πq(t)−ℓ−1. Since d > ℓ + 2, the pairs P and P are distinct. By Lemmas 5.1 and 5.4,
+d−ℓ−1 1
+35
+
+--- Page Suivante ---
+
+deg (P ) = 1 = deg (P ∪P ), whereas deg (P ) ∈ {0,2} and deg (P ) ∈ {0,2}
+P
+d−ℓ−1
+d−ℓ P1 a b P1 d−ℓ P
+d−ℓ−1
+d−ℓ
+by Lemma 5.5. Thus, by Lemma 4.4, we must have C = P ∪P and
+q(t)−ℓ−2 1 d−ℓ−1
+πq(t)−ℓ−2 = π q(t) ∪{P ∪P ∪P | i ∈ [0,ℓ]}∪{P ∪P }∪{P | i ∈ [2,d−ℓ−2]}∪M .
+S d−i c+i nP−i 1 d−ℓ−1 i t
+(12)
+By Lemma 5.5 and degree restrictions, we have deg (P ) = deg (P ) = 0.
+P1 d−ℓ P
+d−ℓ−1
+d−ℓ
+Now, we examine the neighbourhoods of P and P and their classes at iteration q(t) −
+d−ℓ−1 1
+ℓ−2. Notice that deg (P ) = 2 and deg (P ) = 1 and so P ∪P ∪P ∈
+P
+d−ℓ
+∪Pa∪P
+b
+1 P
+d−ℓ
+∪Pa∪P
+b
+d−ℓ−2 d−ℓ a b
+πq(t)−ℓ−2\πq(t)−ℓ−3 andwithoutlossofgeneralitywecandenoteitA . Thenweneedanother
+q(t)−ℓ−2
+class B such that deg (P )−deg (P ) = 1. By Lemma 5.1, Remarks 6.2
+q(t)−ℓ−2 B d−ℓ−1 B 1
+q(t)−ℓ−2 q(t)−ℓ−2
+and 6.3, and Lemma 5.10 respectively, we can discard P (when d = ℓ+4), the classes of six, and
+2
+q(t)
+where t = 1 the class C . We are left with B ∈ π or B = P ∪P . We show
+q(t) q(t)−ℓ−2 S q(t)−ℓ−2 1 d−ℓ−1
+that the former leads to a contradiction, since it would lead to C = P ∪P ∪P ∪S for
+q(t)−ℓ−3 d−ℓ a b
+some singleton S. We get a contradiction when ℓ+t > 0, as P ∪P ∪P has more neighbours in
+d−ℓ a b
+both P ∪P ∪P ∪S and C than S, contradicting Lemma 4.4. We get a contradiction when
+d−ℓ a b q(t)−ℓ
+ℓ+t = 0 because then deg (S)−deg (P ∪P ∪P ) = 1 whereas deg (S)−
+P1∪P
+d−ℓ
+P1∪P
+d−ℓ
+d−ℓ a b P1∪P
+d−ℓ
+deg (P ∪P ∪P ) = −2, contradicting Lemma 4.4. As such, we must have C =
+P1∪P
+d−ℓ
+d−ℓ a b q(t)−ℓ−3
+C ∪C , with possible edge layouts within C depicted in Figure 16. We work
+q(t)−ℓ−2 q(t)−ℓ−1 q(t)−ℓ−3
+(a) Edge layout when ℓ>0 or t=1 (b) Edge layout when ℓ=0 and t=0
+Figure 16: Diagram showing vertices C and all edges incident to it. Note the empty disks
+q(t)−ℓ−3
+representing P only when d = ℓ+4.
+2
+backward from each of the two possible expression for partition πq(t)−ℓ−3 to determine all long-
+refinementgraphsinwhichd ∈ {ℓ+3,ℓ+4}. WeknowthatC = P ∪P ∪P ∪P ∪P
+q(t)−ℓ−3 1 d−ℓ−1 d−ℓ a b
+with (up to swapping A and B) A = P ∪P and B = P ∪P ∪P . Let us
+q(t)−ℓ−2 1 d−ℓ−1 q(t)−ℓ−2 d−ℓ a b
+consider the cases according to the value of t + ℓ, which determines whether P and P are
+d−ℓ a
+subsequent pairs.
+If t + ℓ = 0 and d = ℓ + 3, then C includes all the pairs in P. B cannot be
+q(t)−ℓ−3 q(t)−ℓ−2
+adjacent to any singletons, as we would then get a vertex with degree at least 6. Thus, either
+C = V(G) and the graph is 3−regular, or C ⊊ V(G) and deg(C = 2. Either
+q(t)−ℓ−3 q(t)−ℓ−3 q(t)−ℓ−3
+is a contradiction.
+If t+ℓ = 0 and d = ℓ+4, then C includes all the pairs in P, except P . As P ∪P has
+q(t)−ℓ−3 2 1 d−ℓ
+degree 1 to P whereas the remaining vertices in C have all their neighbours in C ,
+2 q(t)−ℓ−3 q(t)−ℓ−3
+(cid:83)
+then C = C ∪P = P, by Lemma 4.4. If C = V(G), then deg(P ) ̸= 3
+q(t)−ℓ−4 q(t)−ℓ−3 2 P∈πp q(t)−ℓ−4 2
+P
+and thus we get G(S011XX). If C ⊊ V(G), then deg(P ) = 3, so P must have degree 1
+q(t)−ℓ−4 2 2
+(cid:83)
+into some singleton S and by the same argument as above, we get C = P ∪S. If
+q(t)−ℓ−5 P∈πp
+P
+C = V(G), then deg(S) ̸= 3, which is satisfied by G(S1 11XX). If C ⊊ V(G), then
+q(t)−ℓ−5 2 q(t)−ℓ−5
+deg(S) = 3, so it must itself be adjacent to a singleton, which we denote S . We cannot
+q(t)−ℓ−5
+have deg(S ) = 3 unless there are two singletons in πq(t)−ℓ−6 adjacent to S - neither
+q(t)−ℓ−5 q(t)−ℓ−5
+(cid:83)
+of which could be adjacent to P, contradicting Lemma 4.4. Thus, C = V(G) and
+P∈πp q(t)−ℓ−5
+P
+the last long-refinement graph in this case is that depicted in Figure 15.
+36
+
+--- Page Suivante ---
+
+If d = ℓ + 3 and t + ℓ > 0, then the partition πq(t)−ℓ−2 satisfies the requirements for πj in
+Lemma 6.4, since A has all its vertices in C . Applying that lemma gives us that
+q(t)−ℓ−2 q(t)−ℓ−3
+C is a superset of all the classes of C for i ∈ [0,ℓ+1] with A = C .
+q(t)−2ℓ−3−t q(t)−i q(t)−2ℓ−2−t q(t)−1+t
+If t = 0 then by Remark 6.3, A = C must have degree 2 yielding only the graphs
+q(t)−2ℓ−2−t q(t)−1+t
+represented by strings in the set {S111k001kXX1k0 | k ∈ N }. If t = 1, the edges between the
+0
+vertices of C and C can be either as in Figure 8b or as in 8c. In the former case, we
+q(t) q(t)−1
+see that if V(G) = C , then deg(P ∪ S ) can be 2 – which results in the graphs
+q(t)−2ℓ−3−t c−1 q(t)
+represented by strings {S1111k011kXX1k1 | k ∈ N } – or 3 – only if it is adjacent to a singleton
+2 0
+S with deg(S) = 3 which, without contradicting Lemma 4.4, yields only 3-regular or disconnected
+graphs – or 4 – which yields a graph in the right column of Table 6. In the latter case, the vertices
+of P ∪S have degree 4, so C = V(G) and we obtain the graphs described in the
+c−1 q(t) q(t)−2ℓ−3−t
+left column of Table 6.
+If d = ℓ+4 and t+ℓ > 0, then we can apply Lemma 6.5, with j = q(t)−ℓ−2, to show that
+πq(t)−2ℓ−3−t\πq(t)−ℓ−2 = {D ,E }.
+ℓ−1+t ℓ−1+t
+If D ∪ E = V(G), then deg(D ) ̸= deg(E ) = 3. However, we cannot
+ℓ−1+t ℓ−1+t ℓ−1+t ℓ−1+t
+achieve deg(D ) = 4 without P adjacent to some singleton, which would contradict D ∪
+ℓ−1+t 2 ℓ−1+t
+E = V(G). Thus deg(D ) = 2. If t = 0, then deg(P ∪ P ∪ P ) = 2. Thus
+ℓ−1+t ℓ−1+t d c np
+C ⊊ D , and therefore we narrow down to the graphs represented by strings in the
+q(t)−1 ℓ−1+t
+set {S011(011)k00(110)kXX(011)k0 | k ∈ N }. If t = 1, we must again have deg(D ) ∈ {2,4}.
+0 ℓ−1+t
+The latter, once again, cannot be achieved without a singleton not in D ∪E . The former
+ℓ−1+t ℓ−1+t
+leads to a stable graph.
+If D ∪E ⊊ V(G), then t must be 1 as otherwise, as previously argued C =
+ℓ−1+t ℓ−1+t q(t)−2ℓ−3−t
+D and N(D ) ⊆ D ∪E , so G is disconnected. With t = 1, we could have a
+ℓ−1+t ℓ−1+t ℓ−1+t ℓ−1+t
+singletonS adjacenttoP ∪S , orwhereP ∈ {A ,B }, adjacenttoP . The
+c−1 q(t) 2 q(t)−2ℓ−2−t q(t)−2ℓ−3−t 2
+former case can only occur when t = 1, as in Figure 8b, with P ∪S adjacent to a singleton.
+c−1 q(t)
+Without contradicting Lemma 4.4, this can only give us 3−regular or disconnected graphs. The
+latter case is also quickly dismissed: either deg(P ) is 3 – so C must be P ∪S adjacent
+2 q(t)−1+t c−1 q(t)
+to a singleton S′ yielding C = S∪S′ which causes contradictions within two applications
+q(t)−2ℓ−3−t
+of Lemma 4.4 – or it is 4 – and degS = 4, which is impossible considering the classes in partition
+πq(t)−2ℓ−3−t, without contradicting Lemma 4.4.
+This concludes our case analysis of long-refinement graphs with maximum degree at most 4.
+7 The Classification
+We now bring together the results that we have found in the Section 6 for our final classification.
+RecallNotation6.1. Thework[25]identifiedfamiliesoflong-refinementgraphsGwithdeg(G) =
+{2,3}, butleftasanopenproblemwhethertheyarecomprehensive. Here, weanswertheirquestion
+affirmatively.
+Theorem 7.1. The even-order long-refinement graphs G with deg(G) = {2,3} are exactly the ones
+represented by strings contained in the following sets:
+• {S011XX}
+• {S1k001kX1X1k0 | k ∈ N }
+0
+• {S1k11001kXX1k0 | k ∈ N }
+0
+• {S1k0011kXX1k10 | k ∈ N }
+0
+37
+
+--- Page Suivante ---
+
+• {S011(011)k00(110)kXX(011)k0 | k ∈ N }
+0
+• {S(011)k00(110)k1X0X1(011)k0 | k ∈ N }
+0
+The odd-order long-refinement graphs G with deg(G) = {2,3} are exactly the ones represented
+by strings contained in the following sets:
+• {S1 11XX}
+2
+• {S0X1X }∪{S1k1011kX1X1k1 | k ∈ N }
+2 2 0
+• {S110XX }∪{S111k1011kXX1k1 | k ∈ N }
+2 2 0
+• {S1k01k1XX1k1 | k ∈ N }
+2 0
+• {S(011)k00(110)kX1 X(011)k0 | k ∈ N }
+2 0
+Inparticular,thetheoremimpliesthatthegapsthatthefamiliesfoundin[24]leaveopencannot
+be covered with degrees 2 and 3.
+Corollary 7.2. There is no long-refinement graph G with deg(G) = {2,3} and order n ̸= 12 such
+that n mod 18 ∈ {6,12}.
+Theorem 7.1 and Corollary 7.2 completely classify the long-refinement graphs G with deg(G) =
+{2,3}. Expanding to maxdeg(G) ≤ 4, we obtain the following further parts of our classification of
+long-refinement graphs with small degrees from the results in section 6.
+Theorem 7.3. There is no long-refinement graph G with deg(G) = {1,2} or deg(G) = {1,4}.
+Theorem 7.4. Thelong-refinementgraphsGwithdeg(G) = {2,4}arepreciselytheonesinFigures
+9b, 9c, 10b, 10e, 10g, 10h, 10i, 10k, 13a, 13b, 14a, and 14b.
+Theorem 7.5. Thelong-refinementgraphsGwithdeg(G) = {3,4}arepreciselytheonesinFigures
+9a, 10a, 10c, 10d, 10f, 10j, 10l, 12 as well as Tables 4, 5, and 6.
+Theorem 7.6. The graph in Figure 15 is the only long-refinement graph G with deg(G) = {1,3}.
+While Theorems 7.3 – 7.6 are proved through an analysis of the refinement iterations in Section
+6, we now present a simple alternative proof for Theorem 7.6, which relies merely on Theorem 7.1.
+By [25, Lemma 13], a long-refinement graph G with deg(G) = {1,3} has at most two vertices
+of degree 1. We start by treating the case where G has exactly one vertex with degree 1.
+Lemma 7.7. The graph in Figure 15 is the only long-refinement graph G with deg(G) = {1,3} in
+which |{v ∈ V(G) : deg(v) = 1}| = 1.
+Proof. Let G be any long-refinement graph with deg(G) = {1,3} and the set of vertices of degree
+1 being a singleton {v }. Then the partition after the first Colour Refinement iteration on G is
+1
+π1 = {{v },V(G)\{v }}. The graph G′ := G[V(G)\{v }], i.e. the subgraph of G induced by
+G 1 1 1
+V(G)\{v }, satisfies deg(G′) = {2,3} and {v ∈ V(G′) : deg(v) = 2} = {v }, where {v } = N (v ).
+1 2 2 G 1
+Also, Colour Refinement takes n−2 iterations to terminate on G′, otherwise G would not be a
+long-refinement graph. Hence, G′ is a long-refinement graph as well, and since |V(G)| is even,
+|V(G′)| is odd. By our classification in Theorem 7.1, G′ must be G(S1 11XX), since that is the
+2
+only long-refinement graph with degrees 2 and 3 in which there is only one vertex of degree 2. So,
+by degree arguments, G must be the graph in Figure 15.
+Now we consider the situation in which there are exactly two vertices of degree 1.
+38
+
+--- Page Suivante ---
+
+Lemma 7.8. There is no long-refinement graph G with deg(G) = {1,3} in which |{v ∈ V(G) :
+deg(v) = 1}| = 2.
+Proof. Suppose G is a long-refinement graph with deg(G) = {1,3} for which {v ∈ V(G) : deg(v) =
+1} = {v ,v′} with v ̸= v′. We know that {v ,v′} ∈/ E(G), since G is connected. However,
+1 1 1 1 1 1
+now the graph G′ := (V(G),E(G)∪{{v ,v′}} is a long-refinement graph with deg(G′) = {2,3}
+1 1
+and {v ∈ V(G′) : deg(v) = 2} = {v ,v′}. The degree property is clear. To see that G′ is a
+1 1
+long-refinement graph, note that inserting the new edge does not alter the partition into degrees,
+i.e. π1. Also, since in both graphs, it holds that |N({v ,v′})| ≤ 2, the class {v ,v′} must be
+1 1 1 1
+the last class that splits (in both graphs). Furthermore, N (v ) \ {v′} = N (v ) \ {v′} and
+G 1 1 G′ 1 1
+N (v′) \ {v } = N (v′) \ {v }. This implies that πi = πi for every i ∈ N, so G′ is a long-
+G 1 1 G′ 1 1 G G′
+refinement graph if and only if G is one. By double counting edges, G (and hence also G′) has an
+even number of vertices and hence G′ is one of the graphs from the first list in Theorem 7.1. The
+only graph from that list with exactly two vertices of degree 2 is G(S011XX), but these vertices
+are not adjacent. Hence, G′ does not exist, and therefore G does not exist.
+ThisconcludestheproofofTheorem7.6,whichtogetherwithTheorem7.3yieldsthatthegraph
+in Figure 15 is the only long-refinement graph G with mindeg(G) = 1 and maxdeg(G) ≤ 4.
+8 Distinguishability of Long-Refinement Graphs
+To conclude and to address another open question from [25], we consider the situation when Colour
+Refinement is applied to two graphs G and H in parallel, for example to check whether they are
+isomorphic. Formally, Colour Refinement is applied to the graph consisting of the disjoint union
+U of G and H (ensuring that their vertex sets are disjoint). Recall that χi denotes that colouring
+U
+that Colour Refinement has computed on U after i iterations. We say that Colour Refinement
+distinguishes G and H in i iterations if {{χi (v) | v ∈ V(G)}} ̸= {{χi (v) | v ∈ V(H)}}. If there is no
+U U
+such i, we say that G and H are equivalent with respect to Colour Refinement.
+Theorem 8.1. For n ≥ 3, there is no pair of graphs G, H with |H| ≤ |G| = n that Colour
+Refinement distinguishes only after n−1 iterations.
+Proof. Graphs of different orders are distinguished within one iteration of Colour Refinement, so
+any counterexample to the theorem would have to consist of graphs G, H with |G| = |H| and both
+graphs would be long-refinement graphs. In particular, Colour Refinement computes the discrete
+partition on both graphs and, hence, the last colour class that splits in each graph is a pair P and
+G
+P , respectively. Let U be the disjoint union of G and H. Since P and P must have the same
+H G H
+colouriniterationn−2 ≥ 1, itholdsthatP ∈ E(G)ifandonlyifP ∈ E(H). Let{v ,v } := P .
+G H 1 2 G
+Since in πn−2, all vertices in V(G)\P and in V(H)\P form singleton colour classes, there has
+U G H
+to be a vertex w ∈ P that is adjacent to exactly the same colour classes from iteration n−2 as
+1 H
+v , and similarly, the second vertex w ∈ P must be adjacent to exactly the same singleton classes
+1 2 H
+as v . However, then for each C ∈ πn−2 and for i ∈ {1,2}, it holds that deg (v ) = deg (w ). But
+2 U C i C i
+then χn−1(v ) = χn−1(w ). Thus, G and H are equivalent with respect to Colour Refinement and
+U i U i
+in particular not distinguished after n−1 iterations.
+The theorem gives a negative answer to the question whether there are pairs of graphs that
+are only distinguished after the maximum possible number of iterations of Colour Refinement.
+The above argument might be pushed a little further to exclude other strong lower bounds on the
+number of iterations for distinguishability. Note, however, that it may still be possible that there
+39
+
+--- Page Suivante ---
+
+exists a constant c such that for all n ∈ N (from some start value on), there are pairs of graphs G
+and H with |G| = |H| = n which are only distinguished in n−c iterations of Colour Refinement.
+9 Conclusion
+Long-refinementgraphsaregraphswhichtakethemaximumtheoreticallypossiblenumberofColour
+Refinement iterations to stabilise. Even though the Colour Refinement procedure is simple and its
+power and mechanics are well-understood (see, for example, [24]), the fact that long-refinement
+graphs actually exist is surprising, given that this contrasts the situation for higher dimensions of
+theWeisfeiler–Lemanalgorithm. Theoriginalapproachestoshowtheirexistencewereempirical,i.e.
+to test candidate graphs [15, 25]. A theoretical analysis of the results then yielded infinite families
+of long-refinement graphs with small degrees, but also left infinitely many gaps with respect to
+graph sizes.
+In this work, we have shown that for minimal degrees, those gaps cannot be closed. More
+precisely, we have proved that Theorems 18 and 24 from [25] are actually a classification, meaning
+those graphs are the only long-refinement graphs with degrees {2,3} that exist, for arbitrarily large
+n. We have extended this to the first classification of long-refinement graphs of maximum degree 4.
+While previous searches for long-refinement graphs started from computational data, our reverse-
+engineering method is a purely theoretically-motivated approach. Our analysis shows that all
+families of long-refinement graphs with minimal degrees (i.e. with maximum degree at most 3) can
+be captured with string representations. The characterisation that falls out of this insight yields a
+simple proof that there is only one long-refinement graph with minimum degree 1 and maximum
+degree at most 4.
+As witnessed in Lemma 4.5, the graph obtained from a long-refinement graph by taking the
+complement of the edge set is again a long-refinement graph. Thus, our classification of long-
+refinement graphs with maximum degree at most 4 also immediately yields a classification of long-
+refinement graphs with minimum degree at least n − 5. Extending the analyses to maximum
+degree larger than 4 and minimum degree smaller than n−5 remains an interesting project for
+future work. The analysis in Section 5 describes at least the final five Colour Refinement iterations
+on long-refinement graphs. For the long-refinement graphs with maximum degree at most 4, it
+accounts for at least the final half of all iterations. Previous study of long-refinement graphs with
+general degree has consisted in computing possible split procedures in a brute-force-like fashion
+[15]. Assuming a relatively small number of singletons (or equivalently, a relatively high number of
+pairs) in the first iteration in which every class has size at most 2, our structural results have the
+potential to significantly reduce the search space for split procedures, as they provide additional
+constraints that the previous approach did not exploit. This would potentially allow us to compute
+larger long-refinement graphs of arbitrary degrees.
+Given the existence of infinite families of long-refinement graphs, in the light of the practical
+applications of Colour Refinement, it is an intriguing question to ask for pairs of long-refinement
+graphs that are only distinguished (i.e. receive different colourings) in the last Colour Refinement
+iteration on them. This search was initiated in [25] and has been ongoing since then. In Section
+8, we close it by showing that such graphs do not exist. Our technique to capture long-refinement
+graphs via string representations opens the door to generalisations, e.g. to the construction of
+long-refinement graphs which take long to be distinguished by Colour Refinement. Without the
+√
+requirement to be long-refinement graphs, the currently best known lower bound is n−8 n [29,
+Theorem 4.6]. The task to improve on this lower bound to n − c for a constant c (which must
+be larger than 1, due to Theorem 8.1) is particularly captivating given that such pairs of graphs
+40
+
+--- Page Suivante ---
+
+do not exist for higher dimensions of the Weisfeiler–Leman algorithm [18]. It is plausible that the
+bound of n−1 in the statement of Theorem 8.1 could be strengthened to n−c for some small c.
+For such graphs, there can be at most c−1 – hence very few – iterations in which the number of
+colours increases by more than 1, i.e. which differ from splittings in long-refinement graphs. Since
+the number of iterations is crucial for the parallelisability of the algorithm, improved upper bounds
+mean an improved complexity of a parallel implementations.
+References
+[1] Markus Anders and Pascal Schweitzer. Engineering a fast probabilistic isomorphism test. In
+Martin Farach-Colton and Sabine Storandt, editors, Proceedings of the Symposium on Al-
+gorithm Engineering and Experiments, ALENEX 2021, Virtual Conference, January 10-11,
+2021, pages 73–84. SIAM, 2021.
+[2] VikramanArvind, JohannesK¨obler, GauravRattan, andOlegVerbitsky. Graphisomorphism,
+color refinement, and compactness. Computational Complexity, 26(3):627–685, 2017.
+[3] Albert Atserias and Elitza N. Maneva. Sherali-Adams relaxations and indistinguishability in
+counting logics. SIAM J. Comput., 42(1):112–137, 2013.
+[4] Albert Atserias and Joanna Ochremiak. Definable ellipsoid method, sums-of-squares proofs,
+and the isomorphism problem. In Anuj Dawar and Erich Gr¨adel, editors, Proceedings of the
+33rd Annual ACM/IEEE Symposium on Logic in Computer Science, LICS 2018, Oxford, UK,
+July 09-12, 2018, pages 66–75. ACM, 2018.
+[5] L´aszl´o Babai. Graph isomorphism in quasipolynomial time [extended abstract]. In Daniel
+WichsandYishayMansour,editors,Proceedingsofthe48thAnnualACMSIGACTSymposium
+on Theory of Computing, STOC 2016, Cambridge, MA, USA, June 18-21, 2016, pages 684–
+697. ACM, 2016.
+[6] L´aszl´oBabai,PaulErd˝os, andStanleyM.Selkow. Randomgraphisomorphism. SIAM Journal
+on Computing, 9(3):628–635, 1980.
+[7] ChristophBerkholzandJakobNordstr¨om. Near-optimallowerboundsonquantifierdepthand
+Weisfeiler-Leman refinement steps. In Proceedings of the 31st Annual ACM/IEEE Symposium
+on Logic in Computer Science, LICS ’16, New York, NY, USA, July 5-8, 2016, pages267–276,
+2016.
+[8] Jin-Yi Cai, Martin Fu¨rer, and Neil Immerman. An optimal lower bound on the number of
+variables for graph identification. Combinatorica, 12(4):389–410, 1992.
+[9] Alain Cardon and Maxime Crochemore. Partitioning a graph in O(|A|log|A|). Theoretical
+Computer Science, 19:85–98, 1982.
+[10] PaulT.Darga, MarkH.Liffiton, KaremA.Sakallah, andIgorL.Markov. Exploitingstructure
+in symmetry detection for CNF. In Proceedings of the 41th Design Automation Conference,
+DAC 2004, San Diego, CA, USA, June 7-11, 2004, pages 530–534. ACM, 2004.
+[11] Holger Dell, Martin Grohe, and Gaurav Rattan. Lov´asz meets Weisfeiler and Leman. In
+Ioannis Chatzigiannakis, Christos Kaklamanis, D´aniel Marx, and Donald Sannella, editors,
+45th International Colloquium on Automata, Languages, and Programming, ICALP 2018, July
+41
+
+--- Page Suivante ---
+
+9-13, 2018, Prague, Czech Republic, volume 107 of LIPIcs, pages 40:1–40:14. Schloss Dagstuhl
+- Leibniz-Zentrum fu¨r Informatik, 2018.
+[12] Zdenek Dvor´ak. On recognizing graphs by numbers of homomorphisms. J. Graph Theory,
+64(4):330–342, 2010.
+[13] Martin Fu¨rer. Weisfeiler-Lehman refinement requires at least a linear number of iterations. In
+Automata, Languages and Programming, 28th International Colloquium, ICALP 2001, Crete,
+Greece, July 8-12, 2001, Proceedings,volume2076ofLecture Notes in Computer Science,pages
+322–333. Springer, 2001.
+[14] Andreas G¨obel, Leslie Ann Goldberg, and Marc Roth. The Weisfeiler-Leman dimension of
+conjunctive queries. Proc. ACM Manag. Data, 2(2):86, 2024.
+[15] Maximilian G¨odicke. The iteration number of the Weisfeiler-Lehman-algorithm. Master’s
+thesis, RWTH Aachen University, 2015.
+[16] Christopher D. Godsil. Compact graphs and equitable partitions. Linear Algebra Appl.,
+255:259–266, 1997.
+[17] MartinGroheandSandraKiefer. LogarithmicWeisfeiler-Lemanidentifiesallplanargraphs. In
+NikhilBansal,EmanuelaMerelli,andJamesWorrell,editors,48thInternationalColloquiumon
+Automata, Languages, and Programming, ICALP 2021, July 12-16, 2021, Glasgow, Scotland
+(Virtual Conference), volume 198 of LIPIcs, pages 134:1–134:20. Schloss Dagstuhl - Leibniz-
+Zentrum fu¨r Informatik, 2021.
+[18] Martin Grohe, Moritz Lichter, and Daniel Neuen. The iteration number of the Weisfeiler-
+Leman algorithm. ACM Trans. Comput. Log., 26(1):6:1–6:31, 2025.
+[19] Martin Grohe, Moritz Lichter, Daniel Neuen, and Pascal Schweitzer. Compressing CFI graphs
+and lower bounds for the Weisfeiler-Leman refinements. J. ACM, 72(3):21:1–21:27, 2025.
+[20] MartinGroheandOlegVerbitsky. Testinggraphisomorphisminparallelbyplayingagame. In
+Automata, Languages and Programming, 33rd International Colloquium, ICALP 2006, Venice,
+Italy, July 10–14, 2006, Proceedings, Part I, pages 3–14, 2006.
+[21] Neil Immerman and Eric Lander. Describing graphs: A first-order approach to graph can-
+onization. In Alan L. Selman, editor, Complexity theory retrospective, pages 59–81. Springer,
+1990.
+[22] Tommi A. Junttila and Petteri Kaski. Engineering an efficient canonical labeling tool for
+large and sparse graphs. In Proceedings of the Nine Workshop on Algorithm Engineering and
+Experiments, ALENEX 2007, New Orleans, Louisiana, USA, January 6, 2007. SIAM, 2007.
+[23] Tommi A. Junttila and Petteri Kaski. Conflict propagation and component recursion for
+canonical labeling. In Alberto Marchetti-Spaccamela and Michael Segal, editors, Theory and
+Practice of Algorithms in (Computer) Systems - First International ICST Conference, TAPAS
+2011, Rome, Italy, April 18-20, 2011. Proceedings, volume 6595 of Lecture Notes in Computer
+Science, pages 151–162. Springer, 2011.
+[24] Sandra Kiefer. Power and Limits of the Weisfeiler-Leman Algorithm. PhD thesis, RWTH
+Aachen University, Aachen, 2020.
+42
+
+--- Page Suivante ---
+
+[25] Sandra Kiefer and Brendan D. McKay. The Iteration Number of Colour Refinement. In
+Artur Czumaj, Anuj Dawar, and Emanuela Merelli, editors, 47th International Colloquium
+on Automata, Languages, and Programming (ICALP 2020), volume 168 of Leibniz Inter-
+national Proceedings in Informatics (LIPIcs), pages 73:1–73:19, Dagstuhl, Germany, 2020.
+Schloss Dagstuhl – Leibniz-Zentrum fu¨r Informatik.
+[26] Sandra Kiefer and Pascal Schweitzer. Upper bounds on the quantifier depth for graph differ-
+entiation in first-order logic. Logical Methods in Computer Science, 15(2), 2019.
+[27] SandraKiefer, PascalSchweitzer, andErkalSelman. Graphsidentifiedbylogicswithcounting.
+ACM Trans. Comput. Log., 23(1):1:1–1:31, 2022.
+[28] Johannes K¨obler and Oleg Verbitsky. From invariants to canonization in parallel. In Com-
+puter Science - Theory and Applications, Third International Computer Science Symposium
+in Russia, CSR 2008, Moscow, Russia, June 7-12, 2008, Proceedings, volume 5010 of Lecture
+Notes in Computer Science, pages 216–227. Springer, 2008.
+[29] AndreasKrebsandOlegVerbitsky. Universalcovers, colorrefinement, andtwo-variablecount-
+ing logic: Lower bounds for the depth. In Proceedings of the Thirtieth Annual ACM/IEEE
+Symposium on Logic in Computer Science, pages 689–700, 2015.
+[30] Wenchao Li, Hossein Saidi, Huascar Sanchez, Martin Sch¨af, and Pascal Schweitzer. Detecting
+similar programs via the Weisfeiler-Leman graph kernel. In Software Reuse: Bridging with
+Social-Awareness - 15th International Conference, ICSR 2016, Limassol, Cyprus, June 5-7,
+2016, Proceedings, pages 315–330, 2016.
+[31] Moritz Lichter, Ilia N. Ponomarenko, and Pascal Schweitzer. Walk refinement, walk logic, and
+the iteration number of the Weisfeiler-Leman algorithm. In Proceedings of the Thirty-Fourth
+Annual ACM/IEEE Symposium on Logic in Computer Science, pages 1–13, June 2019.
+[32] Brendan D. McKay. Practical graph isomorphism. Congressus Numerantium, 30:45–87, 1981.
+[33] Brendan D. McKay and Adolfo Piperno. Practical graph isomorphism, II. Journal of Symbolic
+Computation, 60:94–112, 2014.
+[34] Christopher Morris, Martin Ritzert, Matthias Fey, William L. Hamilton, Jan E. Lenssen,
+Gaurav Rattan, and Martin Grohe. Weisfeiler and Leman go neural: Higher-order graph
+neuralnetworks.InProceedingsoftheThirty-ThirdAAAIConferenceonArtificialIntelligence,
+January 2019.
+[35] Motakuri V. Ramana, Edward R. Scheinerman, and Daniel Ullman. Fractional isomorphism
+of graphs. Discrete Mathematics, 132(1–3):247–265, 1994.
+[36] Nino Shervashidze, Pascal Schweitzer, Erik Jan van Leeuwen, Kurt Mehlhorn, and Karsten M.
+Borgwardt. Weisfeiler-Lehmangraphkernels. Journal of Machine Learning Research,12:2539–
+2561, 2011.
+[37] Gottfried Tinhofer. A note on compact graphs. Discrete Applied Mathematics, 30(2–3):253–
+264, 1991.
+[38] SteffenvanBergerem,MartinGrohe,SandraKiefer,andLucaOeljeklaus. Simulatinglogspace-
+recursion with logarithmic quantifier depth. In 38th Annual ACM/IEEE Symposium on Logic
+43
+
+--- Page Suivante ---
+
+in Computer Science, LICS 2023, Boston, MA, USA, June 26-29, 2023, pages 1–13. IEEE,
+2023.
+[39] BorisWeisfeilerandAndreiLeman. Thereductionofagraphtocanonicalformandthealgebra
+which appears therein. NTI, Series 2, 1968. English translation by G. Ryabov available at
+https://www.iti.zcu.cz/wl2018/pdf/wl_paper_translation.pdf.
+44

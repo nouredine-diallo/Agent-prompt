@@ -1,0 +1,905 @@
+HoloCine: Holistic Generation of Cinematic Multi-Shot Long Video Narratives
+YihaoMeng1,2 HaoOuyang2 YueYu1,2 QiuyuWang2 WenWang2,3
+KaLeongCheng2 HanlinWang1,2 YixuanLi2,4 ChengChen2,5 YanhongZeng2
+YujunShen2 HuaminQu1
+1 HKUST 2 AntGroup 3 ZJU 4 CUHK 5 NTU
+Figure1. Fromatextpromptalone,HoloCinegeneratescoherentcinematicmulti-shotvideonarrativesinaholisticpass. Thefigure
+showcasesourmodel’sversatility,featuringdiverseoriginalscenes(topthreerows)andacinematichomagetoTitanic(bottomrows).All
+scenesexhibitexceptionalcharacterconsistencyandnarrativecoherence. Theexpandedfinalrowdemonstratessmoothintra-shotmotion
+andquality.Ourcodeisavailableat:https://holo-cine.github.io/.
+Abstract that generates entire scenes holistically to ensure global
+consistencyfromthefirstshottothelast. Ourarchitecture
+State-of-the-arttext-to-videomodelsexcelatgenerating achieves precise directorial control through a Window
+isolatedclipsbutfallshortofcreatingthecoherent,multi- Cross-Attention mechanism that localizes text prompts to
+shot narratives, which are the essence of storytelling. We specificshots,whileaSparseInter-ShotSelf-Attentionpat-
+bridge this “narrative gap” with HoloCine, a model tern (dense within shots but sparse between them) ensures
+5202
+tcO
+32
+]VC.sc[
+1v22802.0152:viXra
+
+--- Page Suivante ---
+
+the efficiency required for minute-scale generation. Be- nism localizes attention, directly aligning per-shot text
+yond setting a new state-of-the-art in narrative coherence, promptswiththeircorrespondingvideosegmentstoenable
+HoloCinedevelopsremarkableemergentabilities: aper- sharp, narrative-driven transitions. To overcome the com-
+sistentmemoryforcharactersandscenes, andanintuitive putational bottleneck, our Sparse Inter-Shot Self-Attention
+grasp of cinematic techniques. Our work marks a pivotal leverages a hybrid pattern: it maintains dense attention
+shift from clip synthesis towards automated filmmaking, within shots for motion continuity while using sparse
+makingend-to-endcinematiccreationatangiblefuture. connections based on compact summaries for efficient
+communication between shots. This design reduces com-
+putationalcomplexitytoanear-linearrelationshipwiththe
+1.Introduction number of shots, making minute-scale holistic generation
+feasible. Finally, to enable the training of our framework,
+The field of generative AI has witnessed extraordinary
+we developed a robust data curation pipeline to build a
+progress, with text-to-video (T2V) synthesis emerging as
+large-scale, hierarchically annotated dataset of multi-shot
+a prominent frontier. Driven by the scaling of Diffusion
+scenes.
+Models[17]andDiffusionTransformers(DiTs)[32],state-
+Extensive experiments validate the effectiveness of
+of-the-artmodels[4,27,28,41,50]cannowgeneratehigh-
+our proposed framework. HoloCine significantly
+fidelity, single-shot video clips from textual prompts. Yet,
+outperforms strong baselines across major existing
+thiscapabilityfallsshortofemulatingthestructureofmost
+paradigms—including powerful pre-trained models [41],
+visual media. Films, television series, and documentaries
+two-stage keyframe-to-video pipelines [22, 58], and
+are not single, unbroken takes. They are narratives con-
+other holistic approaches [46]. Our method establishes
+structedfromsequencesofdistinctshotseditedtogetherto
+a new state-of-the-art in long-term consistency, narrative
+tellacohesivestory. Thisdisconnectbetweencurrentgen-
+fidelity, and precise shot transition control. Ablation
+erative capabilities and the language of cinema represents
+studies further confirm the critical roles of our novel
+thenextmajorchallenge: bridgingthe“narrativegap”by
+components: Window Cross-Attention is essential for
+moving from single-clip generation to multi-shot, scene-
+achieving fine-grained directorial control, while Sparse
+levelsynthesis.
+Inter-Shot Self-Attention is vital for scalability, delivering
+Current approaches to generating longer multi-shot
+quality comparable to full attention at a fraction of the
+videos often rely on a decoupled generation paradigm.
+computational cost. Finally, our analysis reveals that
+Whether generating a video chunk-by-chunk [7, 9, 16, 34,
+HoloCine exhibits remarkable emergent capabilities.
+42, 52, 54], or first creating keyframes and then indepen-
+Theseincludeapersistentmemoryforcharactersandscene
+dently synthesizing the connecting shots [22, 47, 56–58],
+details across multiple shots and nuanced control over
+these methods model different parts of the video through
+cinematic language, suggesting the model has developed
+separateprocesses. Evenwhenconditionedoncharacteror
+a deeper, implicit understanding of visual storytelling.
+sceneinformationtoimproveconsistency[21,23,25,30],
+By enabling minute-scale holistic generation, our work
+the generation of individual shots remains largely inde-
+shifts the paradigm from isolated clips to directing entire
+pendent. This fundamental decoupling inherently limits
+cinematicscenes,pavingthewayforautomated,end-to-end
+long-rangecoherence,leadingtoprevalentissueslikeerror
+filmmaking.
+accumulationandconsistencydrift,wherevisualattributes
+such as character identity and background details degrade
+2.RelatedWork
+overtime.
+A more promising, emerging direction is the holistic
+2.1.Single-ShotVideoGeneration
+pipeline,recentlyexemplifiedbyLCT[15],wheretheentire
+multi-shot sequence is modeled jointly. This approach is The foundation of our work lies in the rapid progress of
+powerfulformaintainingglobalconsistencybutintroduces single-shot text-to-video (T2V) generation. Early models
+twoformidablechallenges. First,achievingprecisecontrol extendedGANarchitecturestothevideodomain[1,10,39,
+isdifficult, asper-shotinstructionscanbe“diluted”within 44],buttheadventofdiffusionmodelsmarkedaparadigm
+the context of the entire prompt. Second, the prohibitive shiftinqualityandcoherence[3,8,27,41,49,50].Founda-
+computationalcostoftheself-attentionmechanism, which tionalmodelslikeImagenVideo[18],Make-A-Video[38],
+scales quadratically with sequence length, makes generat- andVDM[19]demonstratedthepotentialofcascadeddif-
+inglonger,minute-scalevideospracticallyintractable. fusionand3DU-Netarchitecturestogenerateshort, high-
+In this paper, we introduce HoloCine, a novel frame- fidelityclips.TheintroductionoftheDiffusionTransformer
+work that unlocks the potential of holistic generation (DiT) architecture [32] further improved scalability and
+through two specialized architectural designs. For precise generationquality,operatingonlatentpatchesandreplacing
+directorial control, our Window Cross-Attention mecha- the U-Net’s inductive bias with the powerful self-attention
+
+--- Page Suivante ---
+
+mechanism. ModelslikeKling[28]andotheropen-source frame. While computationally manageable, this paradigm
+efforts [27, 41, 50] have shown that scaling DiT-based ispronetoconsistencydriftanderroraccumulation,where
+architecturesleadstoremarkablecapabilitiesingenerating visualfidelitydegradesasthesequencelengthens.
+5-second-longhigh-resolutionsingleshotvideos.However, To address the computational bottleneck more directly,
+these models are fundamentally designed for single shot another line of research explores efficient Transformer
+videosandlackexplicitmechanismstoconstructacoherent architectures. STA [55] utilizes localized 3D windows,
+narrative across multiple, distinct shots—the very essence processing video tile-by-tile in a manner compatible with
+ofcinematicstorytelling. FlashAttention[13]. SageAttention[53]combineselective
+tokencompressionwithasoftmax-awarepasstoprunekey
+2.2.Multi-ShotandScene-LevelVideoGeneration steps of the attention calculation. Radial Attention [29]
+employs a static O(nlogn) mask derived from spatio-
+Bridging the gap from single shots to coherent scenes is
+temporal energy decay, which enables longer video gener-
+an active area of research. One major approach is the
+ation with quality that closely resembles dense attention.
+hierarchicalpipeline[2,20,30,43,48,56],whereanLLM
+Most recent work such as Mixture of Contexts [5] has
+first decomposes a story into sequential prompts, and a
+applied similar ideas to long-context video generation by
+T2V model then generates each shot independently. To
+partitioningtokensintochunksandusingatrainablerouter
+mitigate inconsistencies, works like VideoStudio [30] and
+to select relevant context. Our Sparse Inter-Shot Self-
+MovieDreamer [56] add constraints using embeddings or
+Attentionisinspiredbythislineofworkbutisspecifically
+visual tokens, but the isolated nature of shot generation
+tailored to the unique structure of multi-shot video. We
+remains a fundamental bottleneck. Another line of work
+hypothesize that the information required for consistency
+relies on keyframe-based generation, such as Story Diffu-
+betweenshotsisdifferentfromthatrequiredwithinashot,
+sion[35],IC-LoRA[22],andCaptainCinema[47]. These
+allowingforaprincipled,structuredsparsitypatternthatis
+methodsfirstcreateasequenceofconsistentkeyframesand
+bothefficientandeffectivefornarrativesynthesis.
+then generate the video segments between them. Here,
+consistency is primarily enforced at the keyframe level,
+3.Method
+while the video infilling for each shot is still performed in
+isolation. Recognizingtheselimitations,amorepromising Our goal is to generate a coherent, multi-shot video se-
+paradigmhasrecentlyemerged:holisticgeneration[15,26, quencefromahierarchicaltextpromptinasingle,holistic
+46]. LCT[15]proposesinterleavedpositionalembeddings pass. To achieve this, we introduce HoloCine, a frame-
+withinMMDiT[14]architecturestojointlymodelallshots work built upon the powerful DiT-based video diffusion
+inasingle,unifieddiffusionprocess. Thisapproachinher- model, Wan2.2 [41]. In the following sections, we de-
+entlyenforcesglobalconsistency,representingasignificant tail our data curation and hierarchical annotation pipeline
+conceptualadvance.Aligningwiththisemergingparadigm, (Sec. 3.1), the Window Cross-Attention mechanism for
+our framework, HoloCine, generates multi-shot videos explicit shot boundary control (Sec. 3.2.1), and the Sparse
+holistically for inherent consistency. It further introduces Inter-Shot Self-Attention mechanism that makes holistic
+twospecializedmechanisms,WindowCross-Attentionand generationcomputationallyefficient(Sec.3.2.2).
+SparseInter-ShotSelf-Attention,tosimultaneouslyprovide
+precisedirectorialcontrolandcomputationalefficiencyfor 3.1.DataCurationandAnnotation
+practicalscene-levelsynthesis.
+One primary obstacle for multi-shot video generation is
+the lack of large-scale, high-quality datasets. Public video
+2.3.LongVideoGeneration
+datasets are typically composed of isolated, short video
+Generating long videos, whether single-shot or multi-shot, clips. Toaddressthis, wedevelopedacomprehensivedata
+inevitablyconfrontsthequadraticcomplexityoftheTrans- curation pipeline to process cinematic films and television
+former’sself-attentionmechanism. Thepredominantstrat- seriesintoastructured,multi-shotdataset.
+egytocircumventthisisautoregressivegeneration,wherea Shot Segmentation and Filtering. Our pipeline begins
+videoissynthesizedinsequential,overlappingchunks[7,9, by collecting a large corpus of cinematic content from
+16,34,42,52,54]. Tomitigateerroraccumulationproblem publicsources. Wethenemployashotboundarydetection
+in this paradigm, one strategy enhances robustness by algorithm[40]tosegmenteachvideointoindividualshots,
+trainingmodelstodenoisecontrollednoiseinjectedintothe recording their start and end timestamps. These clips then
+historical context (Diffusion Forcing [7]). Some methods undergo a rigorous filtering process, where we remove
+attempt to distill the entire past into a fixed-size latent subtitles using [51] and discard clips that are too short,
+vector.Forexample,TTTVideo[12]encodescontextviaan overlydark,orhavelowaestheticscores.
+MLP at inference time, while FramePack [54] compresses Multi-Shot Sample Assembly: To construct coherent
+multiple frames into a single vector to predict the next multi-shotsamples,wesequentiallygrouptemporallycon-
+
+--- Page Suivante ---
+
+N ×
+FFN
+𝐾! "#" 𝑉! "#" 𝐾$ "#" 𝑉$ "#" ...
+Window Cross Attention
+Sparse Inter-shot Self Attention
+Attn( , , ) 𝑄$
+...
+𝐾%𝑉%
+{shot 1,2,3…} frame1
+𝑄& 𝐾& 𝑉&
+[global caption] [caption 1] [caption 2] [caption 3] ...
+Tokenizer + Proj.
+Attn(𝑄!,[𝐾" #$#,𝐾! #$#],[𝑉" #$#,𝑉! #$#])
+𝐾% 𝑉%
+... 𝑄&
+𝐾& 𝑉&
+.jorP
+VK
+.jorP
+VKQ
+...
+Prompt keys / values
+Shot noisy tokens
+Visual queries ...
+Self attention
+for shot 1:
+...
+yrammuS
+1
+tohS
+2 tohS
+3
+tohS
+Shot 1 Shot 2 Shot 3
+...
+…
+Shot 1 Shot 2 Shot 3
+>tpmorp<
+Figure2. Thearchitectureofourholisticgenerationpipeline,whereallshotlatentsareprocessedjointly. TheWindowCross-Attention
+providesprecisedirectorialcontrolbyaligningeachshottoitsspecifictextprompt.TheSparseInter-shotSelf-Attentiondrasticallyreduces
+computationalcostwhilepreservinglong-rangeconsistency.
+tiguous shots from the source video to form training sam- consideration of two key aspects. First, the model needs
+ples.Thisgroupingisguidedbyatargettotalduration(e.g., explicitguidancetoalignspecificper-shotinstructionswith
+5,15,or60seconds),withshotsbeingaggregateduntilthe theircorrespondingvisualsegments. Withoutamechanism
+threshold is met within a certain tolerance. This process to localize control, the textual guidance for any given shot
+generates a diverse set of samples with varying numbers would be “diluted” by the context of the entire prompt,
+of shots, creating uniform batches for efficient training. making it difficult to execute precise control over the per-
+Thefinaldatasetcontains400ksampleswithacontrollable shot content and shot boundaries. Second, the computa-
+distributionofshotsacrossthesedurationtiers. tionalcostoffullself-attention,whichscalesquadratically
+Hierarchical Captioning: Each multi-shot sample is an- (O(L2))withthesequencelengthL,becomesaprohibitive
+notated with a hierarchical prompt structure using Gemini bottleneckforgeneratinglonger,minute-scalevideos.
+2.5 Flash [11]. A global prompt describes the overarching Our architecture directly integrates two specialized
+scene, including the characters, environment, and plot. mechanisms to address these aspects: Window Cross-
+Following this, a series of per-shot prompts detail the Attention for precise directorial control, and Sparse Inter-
+specificactions,cameramovements,andcharacterspresent ShotSelf-Attentionforcomputationalefficiency.
+in each individual shot [15]. A special [shot cut] tag
+3.2.1.WindowCross-Attention
+isinsertedbetweenper-shotpromptstoexplicitlydelineate
+The Window Cross-Attention mechanism is designed to
+shotboundaries. Thistwo-tierstructureprovidesthemodel
+provide precise directorial control, addressing two funda-
+withbothglobalcontextandfine-grained,temporallylocal-
+mental requirements simultaneously: what to generate in
+izedguidance.
+eachshotandwhentotransitionbetweenthem. Itachieves
+this by creating a localized link between segments of the
+3.2.HolisticMulti-ShotGeneration
+videoandsegmentsofthetextprompt.
+The foundation of HoloCine is its holistic generation Instead of allowing all video tokens to attend to the
+process, where the latent representations for all shots in entire text prompt, our mechanism constrains the attention
+a video are processed simultaneously within the diffusion field to enforce a localized alignment. This is achieved
+model. This joint processing, primarily through a shared by structuring the attention pattern based on the prompt’s
+self-attention mechanism, allows the model to naturally hierarchy. For the full sequence of video tokens, the
+maintain long-range consistency in aspects like character attentioneachtokencanpaytotheconcatenatedtextprompt
+identity, background, and overall style, ensuring cohesion isnotuniform;rather,itisselectivelypartitioned.LetQ be
+i
+acrossallshotboundaries. thequerytokenscorrespondingtothei-thshot. Werestrict
+While this holistic design is powerful for maintaining Q to only attend to the key-value pairs derived from the
+i
+consistency, its practical implementation requires careful globalprompt(KVtxt )anditscorrespondingi-thper-shot
+global
+
+--- Page Suivante ---
+
+prompt(KVtxt). Thisoperationisformallyexpressedas: 4.Experiments
+i
+Attention(Q ,KVtxt)=Attention (cid:0) Q , (cid:2) KVtxt ,KVtxt(cid:3)(cid:1) In this section, we present a comprehensive experimen-
+i i global i tal evaluation of our proposed framework, HoloCine.
+(1)
+Sec.4.1describesthetrainingandimplementationdetailsof
+This localized attention provides an unambiguous signal
+HoloCine. Sec. 4.2 introduce the baselines and metrics
+for the model to execute sharp, temporally-aligned shot
+for the cinematic multi-shot video generation task, and
+transitions, effectivelyallowingthetextpromptto“direct”
+demonstrateoursuperiorperformanceoverthesebaselines.
+theshotcuts.
+In Section Sec. 4.3, we analyze the effect of our key pro-
+3.2.2.SparseInter-ShotSelf-Attention posedmodules,includingtheWindowCross-Attentionand
+Sparse Inter-Shot Self-Attention mechanisms. In Sec. 4.4,
+While the holistic design enables high-quality generation,
+we discuss some advanced capabilities of our model, in-
+applying full self-attention across the entire sequence of
+cludingemergentmemorycapability. andcontrollabilityof
+video tokens is computationally prohibitive for longer
+cinematographiclanguage.
+videos. To overcome this, we propose a Sparse Inter-
+Shot Self-Attention mechanism, which drastically reduces 4.1.ImplementationDetails
+complexitywhilepreservingnecessaryinformationflow.
+Training Setup. Our framework is built upon the 14B
+Ourkeyintuitionisthatthenatureofconsistencydiffers
+parameterversionofwan2.2,apowerfulDiT-basedvideo
+within a shot versus between shots. Specifically, intra-
+diffusion model, which we adapt for the multi-shot task.
+shotconsistencydemandsdense,frame-to-frametemporal
+We train our model on our curated dataset of 400k multi-
+modelingtoensuresmoothmotionandactioncontinuity.In
+shotvideosamples. Thedatasetincludesvideosatmultiple
+contrast,inter-shotconsistencyisprimarilyconcerningthe
+duration levels (5s, 15s, and 60s) with a maximum of
+persistence of characters, environment, and style—which
+13 shots per video, and all samples are processed at a
+doesnotrequireeveryframeofoneshottoattendtoevery
+resolution of 480 × 832. The model is trained for 10k
+frame of another. Based on this, we structure our self-
+stepswithalearningrateof1×10−5 andalinearwarmup
+attentionasfollows.
+schedule. The entire training process is conducted on 128
+Intra-ShotAttention: Withineachshoti,weperformfull,
+NVIDIA H800 GPUs. To manage the significant memory
+bidirectionalself-attention. ThequerytokensQ fromshot
+i requirementsoftrainingonsuchlongvideosequences,we
+iattendtoallkey-valuepairsKV fromthesameshot.
+i employ a hybrid parallelism strategy, using Fully Sharded
+Inter-Shot Attention: To facilitate information exchange DataParallelism(FSDP)toshardthemodelparametersand
+between shots, we create a global context summary. For Context Parallelism (CP) to split the long token sequences
+each shot j, we select a small, representative subset of acrossmultipledevices.
+its key-value tokens, KV summary,j (e.g., tokens from the Attention Implementation. The implementation of our
+first frame of this shot). These summary tokens from all proposedattentionmechanismsisoptimizedforefficiency.
+shots are concatenated to form a global key-value cache, For our Sparse Inter-Shot Self-Attention, where computa-
+KV global = [KV summary,1 ,...,KV summary,Nshots ]. The query tional cost is a primary concern, we leverage the highly
+tokensQ i fromshotialsoattendtothisglobalcache. efficient varlen (variable-length) sequence functionality
+Thecompleteself-attentionforshotiisformulatedas: from FlashAttention-3[13]. For each query shot, we
+construct its corresponding Key and Value context by
+Attention(Q i ,KV)=Attention(Q i ,[KV global ,KV i ,]) concatenating its own dense local tokens with the shared
+(2) global summary tokens. These resulting variable-length
+Thisdesigndrasticallyreducescomputationalcomplex- sequencesarethenpackedintosingletensors,whichallows
+ity. If a video has N shots of length L , and each shot the GPU to compute the complex, sparse attention pattern
+s shot
+is summarized by S tokens, the total complexity of full in a single, optimized kernel launch without any overhead
+attention would be O((N L )2). Our sparse attention, from padding tokens. In contrast, for the Window Cross-
+s shot
+however, reduces this to approximately O(N × (L2 + Attention, since the text prompt sequences are short and
+s shot
+L · N · S)). Since S (e.g., the number of tokens in this operation constitutes a small fraction of the total
+shot s
+one frame) is much smaller than L , this complexity is computation,wesimplyapplyanattentionmasktorestrict
+shot
+significantlylowerandscalesmuchmorefavorablywiththe the attention region. This approach is highly effective and
+numberofshots,makingitfeasibletoholisticallygenerate incursnegligibleperformanceoverhead.
+minute-level and longer multi-shot videos. We conduct
+4.2.Comparison
+ablation studies on the method for selecting summary
+tokens, such as using the first frame, first and last frames, Settings. WecompareHoloCineagainstthreecategories
+oralearnablemechanism. of strong baselines representing the main paradigms for
+
+--- Page Suivante ---
+
+“Medium shot of the boy
+"Medium close-up of a boy “Medium close-up of woman‘s holding the book and “Medium close-up of the “Medium shot of the boy
+looking at an old book.” pensive expression.” talking to the woman.” boy holding the book.” speaking to the woman.”
+Expansion of [shot 1]
+noisuffiDyrotS
+aroL-CI
+2.2naW
+2.2naW+
+2.2naW+
+snarTteniC
+sruO
+Figure3.Qualitativecomparisononacomplexmulti-shotprompt.Ourmethodsuccessfullygeneratesacoherentsequenceofdistinctshots
+alignedwithper-shotdescriptions,whilebaselinemethodsfailinmaintainingconsistency,promptfidelity,orhandlingshottransitions.
+multi-shotlongvideogeneration: son,weutilizeourbasemodel,thewan2.2 14B,asthe
+I2Vcomponentforbothpipelines.
+• Pre-trained Video Diffusion Model. We test the capa- • Holistic Multi-Shot Generation. We compare against
+bility of the powerful pre-trained video diffusion model, CineTrans [46], a most recent work that also performs
+Wan2.2 14B[41], forthemulti-shottask. Weprovide holisticgenerationofmulti-shotvideos.
+themodelwithourfullhierarchicalprompt(concatenated
+global and per-shot descriptions) and task it with gener- To facilitate a comprehensive evaluation of the multi-
+ating the entire multi-shot sequence in one pass. This shot video generation task, we constructed a new bench-
+baseline evaluates whether a state-of-the-art model can mark dataset. We leveraged the capabilities of Gemini 2.5
+understand and execute multi-shot instructions without Pro [11]to generate100 diverse hierarchicaltext prompts,
+ourproposedarchitecturalmodifications. each containing explicit instructions for shot transitions.
+• Two-Stage Keyframe-to-Video Generation. This This test set spans a wide range of genres and narrative
+paradigm first generates a set of consistent keyframes, structures, enabling a robust assessment of a model’s abil-
+one for each shot, and then uses a powerful I2V model ity to maintain consistency and control across complex
+toanimatethemintovideoclips. Weevaluatetwostate- sequences. To ensure a fair comparison, we adapted
+of-the-art methods for the keyframe generation stage: the hierarchical prompts for the two-stage methods. We
+StoryDiffusion [58], which produces a complete multi- generated a distinct prompt for each shot by merging the
+shotimagesequence,andIC-LoRA[22],whichgenerates global context with the shot-specific instructions. This
+keyframesusingin-contextlearning. Forafaircompari- processinvolvedresolvingabstractcharacterIDtags(e.g.,
+
+--- Page Suivante ---
+
+[character1])intotheirfulltextualdescriptions,ensuringall the specified shot transitions. In contrast, our method
+methodsreceivedequivalentsemanticinformation. successfully parses the hierarchical prompt to generate a
+We note that most related works LCT [15], Mixture coherent sequence of five distinct shots. As shown, each
+of Concept [5], and Captain Cinema [47] are not open- shot precisely matches its corresponding text description
+sourced. Therefore,adirectquantitativecomparisonisnot while maintaining high character and stylistic consistency
+feasible. We will provide a qualitative comparison against throughouttheentirevideo,demonstratingtheeffectiveness
+theirpublishedresultsintheappendix. ofourholisticgenerationapproach.
+Evaluation Metrics. We evaluate the models on five ComparisonwithCommercialModels. Tofurthersituate
+crucial aspects: overall video quality, semantic consis-
+HoloCine’scapabilities,weconductedaqualitativecom-
+tency(promptadherence), intra-shotconsistency, inter-shot parisonwithleadingclosed-sourcecommercialmodels. As
+consistency, and transition control. For overall quality, illustratedinFig.4,whilemodelslikeVidu[37]andKling
+promptadherence,andintra-shotconsistency,weutilizethe 2.5 Turbo [28] generate visually impressive clips, they
+comprehensive VBench [24] benchmark. To specifically strugglewiththecoretaskofmulti-shotstorytelling. Given
+assess inter-shot consistency, we compute a ViCLIP-based a hierarchical prompt, they produce a single, continuous
+similarityscorebetweenpairsofshotsthatareannotatedto shot, failing to understand or execute the specified shot
+containthesamecharacter. Furthermore,tobetterevaluate transitions. Incontrast,HoloCinedemonstratesnarrative
+the model’s ability to follow explicit shot-cut instructions, comprehension and control on par with the latest state-
+we propose the Shot Cut Accuracy (SCA) metrics. More of-the-art model, Sora 2 [31]. Both models successfully
+detailsontheseevaluationmetricsarepresentedinSec.A. parsetheprompttogenerateacoherentsequenceofdistinct
+Thismetricholisticallyassessesshotcontrolbyquantifying shots—transitioning from a medium shot to a dramatic
+both the accuracy of the number of cuts and the temporal close-up—while maintaining high character and stylistic
+precisionoftheirplacement. consistency. This result validates that our framework’s
+abilitytocreatecomplex,directednarrativesiscomparable
+Quantitative Results. As shown in Tab. 1, our model
+totheleadingproprietarysolutionsinthefield.
+HoloCineestablishesanewstate-of-the-artbyachieving
+superior performance on the vast majority of metrics. It
+4.3.AblationStudies
+achieves the top scores across all categories central to the
+multi-shottask: TransitionControl,Inter-shotConsistency, Weperformaseriesofablationstudiestovalidateourkey
+Intra-shot Consistency, and Semantic Consistency. While architectural choices. The qualitative results are presented
+wenotethatStoryDiffusion+Wan2.2performsslightlybet- in Fig. 5. To facilitate rapid experimentation, all ablation
+ter on Aesthetic Quality, we argue that our holistic gen- studieswereconductedonthewan2.25Bmodel.
+eration method, which produces all shots within a unified Window Cross-Attention. Without our window cross-
+modeling process, is fundamentally better suited for this attention,thismodelexhibitedaseveredegradationinshot
+task. ThisarchitecturalchoiceispreciselywhyHoloCine control, as evidenced by a significantly lower Shot Cut
+excels at maintaining consistency and control, validating Accuracy (SCA) and per-shot semantic consistency score.
+itseffectivenessincreatingcoherentnarrativeswhereprior As illustrated in the top row of Fig. 5, the model fails
+paradigmshavestruggled. to execute shot cuts, ignoring prompt instructions for new
+Qualitative Results. In Fig. 3, we provide a qualitative content(e.g.,theclose-upinShot3)andremaininglocked
+comparisononacomplexnarrativeprompttoillustratethe into the initial scene. This confirms that our windowed
+superiority of our method. The pre-trained base model, attention is crucial for precise shot boundary and content
+Wan2.2, fails to comprehend the multi-shot instructions, control.
+producingonlyasingle,staticshotwithoutanytransitions. Sparse vs. Full Self-Attention. We then compare our
+The two-stage methods, while capable of generating dif- sparse self-attention to the full, dense attention baseline.
+ferentimages,strugglewithbothpromptfidelityandlong- Whilebothproducehigh-quality,consistentvideos(second
+rangeconsistency. Forexample,thepromptforthesecond and fourth rows in Fig. 5), the full attention model is
+shotis“Mediumclose-upofwoman’spensiveexpression,” computationallyprohibitiveforgeneratinglongsequences.
+yetbothStoryDiffusion+Wan2.2andIC-LoRA+Wan2.2 Our sparse attention mechanism, in contrast, provides a
+generate a medium shot of the boy and woman together. highly effective trade-off. It retains the vast majority
+Their struggle with long-range consistency is especially of the generative quality while offering a fundamental
+evident in shots 4 and 5, where the characters’ features improvementinefficiencyandscalability,makingcomplex,
+divergesignificantlyfromtheinitialshots. Thecomplexity scene-levelgenerationfeasible.
+of the prompt and the required length of the video also Inter-Shot Summary Token. A critical aspect of our
+provechallengingforCineTrans,causingsignificantimage sparse attention design is the inter-shot communication
+degradation and preventing it from correctly performing facilitated by summary tokens, where each shot attends to
+
+--- Page Suivante ---
+
+Table1.Quantitativeresults.Thebestandrunner-upareinboldandunderlined.
+Transition Inter-shot Intra-shotConsistency Aesthetic SemanticConsistency
+Method Control↑ Consistency↑ Subject↑ Background↑ Quality↑ Global↑ Shot↑
+Wan2.2 0.4843 0.6772 0.9054 0.9014 0.5568 0.1652 0.1364
+CineTrans 0.5370 0.6152 0.8990 0.8998 0.4789 0.1568 0.1159
+IC-LoRA+Wan2.2 - 0.7096 0.9421 0.9303 0.5246 0.1808 0.1692
+StoryDiffusion+Wan2.2 - 0.7364 0.8487 0.8927 0.5773 0.1453 0.1644
+HoloCine(Ours) 0.9837 0.7509 0.9448 0.9352 0.5598 0.1856 0.1837
+udiV
+obruT
+5.2
+gnilK
+2aroS
+sruO
+Figure 4. Qualitative comparison with state-of-the-art commercial models. While Vidu and Kling 2.5 Turbo fail to interpret multi-
+shot instructions and generate only a single, continuous clip, HoloCine successfully executes complex shot transitions. Our method
+demonstratesnarrativecontrolandconsistencycomparabletotheleadingclosed-sourcemodel,Sora2,accuratelyrenderingthesequence
+frommediumshotstoclose-upsasdirectedbytheprompt.
+Table2.Ablations.Thebestisinbold. 4.4.AdvancedCapabilities
+4.4.1.EmergentMemoryCapability
+Transition Inter-shot Aesthetic Semantic
+Method Control↑ Consistency↑ Quality↑ Consistency↑
+Beyond generating high-quality and coherent shots, our
+WOWINDOW 0.6266 0.7009 0.5755 0.1562
+FULLATTWINDOW 0.8923 0.7231 0.5700 0.1738 model exhibits surprising emergent memory. This capa-
+SPARSEZERO 0.9675 0.6761 0.5669 0.1642
+bilitysuggeststhemodelisnotmerelylearningsuperficial
+SPARSE 0.9736 0.7225 0.5693 0.1739
+visual transitions but is building an implicit and persistent
+representation of scenes and objects. We demonstrate this
+memoryinthreekeyaspects.
+Object/Character Permanence Across Viewpoints. Our
+the first-frame token of all other shots. To ablate this, we model maintains consistent character identity across vary-
+trained a variant where self-attention is confined strictly ing shots and angles. In Fig. 6(a), for instance, the
+withineachshot,disablingthisinformationexchange. This artist’s key features — her blonde hair, grey t-shirt, and
+results in a catastrophic loss of consistency (third row apron—remain identical across a medium shot [Shot 2], a
+in Fig. 5), where the old man’s identity and appearance profile view [Shot 3], and a subsequent smiling shot [Shot
+change drastically between shots. This demonstrates that 6],demonstratingastablecharacterrepresentation.
+our inter-shot summary token mechanism is the critical Long-rangeConsistencyandRe-appearance. Themodel
+component for maintaining narrative continuity and char- demonstrates robust long-range consistency, recalling sub-
+acterconsistencyacrosstheentirescene. jects after being interrupted by completely different shots.
+
+--- Page Suivante ---
+
+[Shot 1] [Shot 3] [Shot 6]
+[Shot 1] [Shot 3] [Shot 6]
+[Shot 1] [Shot3] [Shot 6]
+Cploousceh-u apn sdh polta ocifn [gc haa driaacmteorn1d] ’os nhtaon ad sb olupee fneinltg t raa symall
+[Shot 1] [Shot3] [Shot 6]
+,esraps
+tohs-retni
+esraps
+wodniw
+o/w
+noitnetta-fles
+lluf
+labolg
+o/w
+noitnetta
+4.4.2.ControllabilityofCinematographicLanguage
+By training on a vast corpus of cinematic data and high-
+level descriptive prompts, our model has developed a
+nuanced understanding of filmmaking techniques. Conse-
+quently, itexhibitshighfidelityininterpretingandexecut-
+ing standard cinematographic commands, enabling precise
+narrativeandstylisticcontrol.
+ShotScaleControl.Themodelaccuratelyrendersstandard
+shot scales. As shown in Fig. 7(a), given prompts for a
+[Long shot], [Medium shot], and [Close-up shot] of the
+same statue, the model generates outputs that correctly
+correspondtoestablishedcinematographicdefinitions.
+Camera Angle Control. Our model precisely follows
+the camera angle commands specified in the text prompt.
+As shown in Fig. 7(b), when prompted with [Low-angle],
+Figure5. Qualitativeresultsforourablationstudy. Wecompare [Eye-level], and [High-angle] descriptions for the same
+our full model (bottom row) against three variants. From top to
+subject, the model generates the corresponding views ac-
+bottom: removing window cross-attention prevents shot transi-
+curately. This demonstrates its ability to translate textual
+tions;afullself-attentionbaselineworkswellbutiscomputation-
+cinematographicinstructionsintocorrectgeometriccamera
+allyexpensive;andremovinginter-shotsummarytokensleadsto
+placementswithinthescene.
+acompletelossofcharacterconsistency.
+Camera Movement Control. Our model is capable of
+producing a wide range of dynamic and fluid camera
+Fig. 6(b) shows an A-B-A sequence where a professor,
+movements specified in the prompt. As demonstrated
+introduced in [Shot 1], is accurately regenerated in [Shot
+inFig.7(c),themodelaccuratelyexecutesthesecommands
+5] after a distractor shot of the library environment [Shot
+tocreatecompellingvisualnarratives. Forinstance,a[Tilt
+2]. Hisdistinctappearanceisperfectlypreserved,provinga
+up] command generates a smooth vertical camera motion,
+memorythatextendsbeyondadjacentshots.
+gracefully revealing the full height of the tree. A [Dolly
+Fine-grained Detail Persistence. Crucially, the model’s
+out] command results in the camera physically moving
+memory extends to fine-grained, non-salient details, indi-
+backward, progressively unveiling the broader context of
+cating a holistic scene understanding. As illustrated in
+theartist’sstudio. Furthermore,a[Tracking]shotcorrectly
+Fig. 6(c), a specific blue magnet (highlighted) appears in
+follows the motion of a subject, in this case, keeping the
+the background of [Shot 1]. After an intervening shot, the
+soaring eagle centered in the frame. This mastery over
+modelcorrectlyrecallsandrenderstheexactsamemagnet
+camera movement is crucial for creating professional and
+in its original position in [Shot 5], despite it not being a
+engagingcinemasequences.
+centralelementoftheprompt.
+4.5.Limitations
+While our model excels at maintaining visual consistency,
+(a) it exhibits limitations in causal reasoning. It can fail to
+[Shot 2] [Shot 3] [Shot 6] comprehendhowanactionshouldalteranobject’sphysical
+state. Fig. 8 illustrates this clearly. Given an empty glass
+[Shot1]andtheactionofwaterbeingpouredintoit[Shot
+(b)
+2], the model fails to render the logical outcome. Instead,
+[Shot 1] [Shot 2] [Shot 5] it regenerates the glass as empty in [Shot 3], prioritizing
+visual consistency with the initial shot over the physical
+(c) consequenceoftheaction. Thishighlightsakeychallenge
+forfuturework: advancingfromperceptualconsistencyto
+[Shot 1] [Shot 2] [Shot 5]
+logical,cause-and-effectreasoning.
+Figure 6. Qualitative results of our model’s emergent memory
+capability. (a)CharacterPermanence: Thesubject’sidentityand 5.Conclusion
+appearance are consistently maintained across different camera
+anglesandexpressions. (b)Long-rangeConsistency: Thesubject In this work, we bridge the “narrative gap” in text-to-
+isaccuratelyrecalledafteranunrelateddistractorshot. (c)Fine- video generation with HoloCine, a holistic framework
+grainedPersistence:Anon-salientbackgrounddetail(themagnet,
+that synthesizes entire multi-shot scenes to ensure global
+highlighted)iscorrectlypreservedacrossaninterveningshot.
+
+--- Page Suivante ---
+
+References
+(a) [1] Md.TahmeedAbdullah,SejutiRahman,ShafinRahman,and
+[Long shot] [Medium shot] [Close-up shot] Md.FokhrulIslam. VAE-GAN3D:leveragingimage-based
+semanticsfor3dzero-shotrecognition. ImageVis.Comput.,
+147:105049,2024. 2
+(b) [2] HritikBansal,YonatanBitton,MichalYarom,IdanSzpektor,
+Aditya Grover, and Kai-Wei Chang. TALC: time-aligned
+[Low-angle shot] [Eye-level shot] [High-angle shot ]
+captions for multi-scene text-to-video generation. CoRR,
+abs/2405.04682,2024. 3
+[3] Andreas Blattmann, Tim Dockhorn, Sumith Kulal, Daniel
+[Tilt up] Mendelevitch, Maciej Kilian, Dominik Lorenz, Yam Levi,
+Zion English, Vikram Voleti, Adam Letts, Varun Jampani,
+and Robin Rombach. Stable video diffusion: Scaling
+(c)
+latent video diffusion models to large datasets. CoRR,
+[Dolly out] abs/2311.15127,2023. 2
+[4] Tim Brooks, Bill Peebles, Connor Holmes, Will DePue,
+Yufei Guo, Li Jing, David Schnurr, Joe Taylor, Troy Luh-
+man, Eric Luhman, Clarence Ng, Ricky Wang, and Aditya
+[Tracking]
+Ramesh. Video generation models as world simulators,
+2024. 2
+Figure 7. Controllability of Cinematographic Language. Our
+[5] Shengqu Cai, Ceyuan Yang, Lvmin Zhang, Yuwei Guo,
+model demonstrates high fidelity in executing specific cinematic
+Junfei Xiao, Ziyan Yang, Yinghao Xu, Zhenheng Yang,
+commands. (a)ShotScale: Themodelaccuratelygenerateslong,
+AlanL.Yuille,LeonidasJ.Guibas,ManeeshAgrawala,Lu
+medium, and close-upshots. (b) CameraAngle: It correctlyin-
+Jiang,andGordonWetzstein. Mixtureofcontextsforlong
+terpretslow-angle,eye-level,andhigh-anglecommandstosetthe
+videogeneration. CoRR,abs/2508.21058,2025. 3,7
+camera’sviewpoint. (c)CameraMovement: Themodelproduces
+[6] MathildeCaron,HugoTouvron,IshanMisra,Herve´ Je´gou,
+fluid and precise camera movements as prompted, including tilt
+JulienMairal,PiotrBojanowski,andArmandJoulin.Emerg-
+up,dollyout,andtrackingshots.
+ingpropertiesinself-supervisedvisiontransformers. InInt.
+Conf.Comput.Vis.,pages9630–9640.IEEE,2021. 1
+[7] Boyuan Chen, Diego Marti Monso, Yilun Du, Max Sim-
+chowitz, Russ Tedrake, and Vincent Sitzmann. Diffusion
+[Shot 1] [Shot 2] [Shot 3] forcing: Next-token prediction meets full-sequence diffu-
+sion. InAdv.NeuralInform.Process.Syst.,2024. 2,3
+Figure 8. A failure case in causal reasoning. After an action
+[8] Haoxin Chen, Yong Zhang, Xiaodong Cun, Menghan Xia,
+(pouring water, [Shot 2]) is applied to an object (empty glass,
+Xintao Wang, Chao Weng, and Ying Shan. Videocrafter2:
+[Shot 1]), the model fails to render its logical consequence. It
+Overcomingdatalimitationsforhigh-qualityvideodiffusion
+incorrectlyrevertstotheinitialemptystatein[Shot3],prioritizing
+models. InIEEEConf.Comput.Vis.PatternRecog.,pages
+visualconsistencyovertheaction’soutcome.
+7310–7320.IEEE,2024. 2
+[9] Nan Chen, Mengqi Huang, Yihao Meng, and Zhendong
+narrative coherence. Our architecture achieves precise di-
+Mao. Longanimation: Long animation generation with
+rectorialcontrolthroughaWindowCross-Attentionmech- dynamic global-local memory. CoRR, abs/2507.01945,
+anism while overcoming prohibitive computational costs 2025. 2,3
+with a Sparse Inter-Shot Self-Attention, making minute- [10] Mengyu Chu, You Xie, Jonas Mayer, Laura Leal-Taixe´,
+scalegenerationfeasible.HoloCinenotonlyestablishesa and Nils Thuerey. Learning temporal coherence via self-
+newstate-of-the-artinconsistencyandshotcontrolbutalso supervision for gan-based video generation. ACM Trans.
+develops remarkable emergent capabilities, such as persis- Graph.,39(4):75,2020. 2
+tentmemoryforcharactersandanuancedunderstandingof [11] GheorgheComanici, Eric Bieber, Mike Schaekermann, Ice
+cinematic language. While our work identifies causal rea- Pasupat, Noveen Sachdeva, Inderjit S. Dhillon, Marcel
+soning as a key challenge for future research, HoloCine Blistein, Ori Ram, Dan Zhang, Evan Rosen, Luke Marris,
+Sam Petulla, Colin Gaffney, Asaf Aharoni, Nathan Lintz,
+represents a critical step towards the automated creation
+Tiago Cardal Pais, Henrik Jacobsson, Idan Szpektor, Nan-
+of complex visual narratives. By enabling minute-scale
+Jiang Jiang, Krishna Haridasan, Ahmed Omran, Nikunj
+holistic generation, it shifts the paradigm from isolated
+Saunshi,DaraBahri,GauravMishra,EricChu,TobyBoyd,
+clips to directing entire scenes, making end-to-end film
+Brad Hekman, Aaron Parisi, Chaoyi Zhang, Kornraphop
+generationatangibleandexcitingfuture. Kawintiranon, Tania Bedrax-Weiss, Oliver Wang, Ya Xu,
+Ollie Purkiss, Uri Mendlovic, Ila¨ı Deutel, Nam Nguyen,
+AdamLangley,FlipKorn,LuciaRossazza,AlexandreRame´,
+
+--- Page Suivante ---
+
+SagarWaghmare,HelenMiller,NathanByrd,AshrithShe- Customized storytelling video generation via multi-agent
+shan, Raia Hadsell Sangnie Bhardwaj, Pawel Janus, Tero collaboration. CoRR,abs/2411.04925,2024. 3
+Rissa, Dan Horgan, Sharon Silver, Ayzaan Wahid, Sergey [21] Kaiyi Huang, Yukun Huang, Xintao Wang, Zinan Lin,
+Brin, Yves Raimond, Klemen Kloboves, Cindy Wang, XuefeiNing,PengfeiWan,DiZhang,YuWang,andXihui
+NiteshBharadwajGundavarapu, IliaShumailov, BoWang, Liu.Filmaster:Bridgingcinematicprinciplesandgenerative
+MantasPajarskas,JoeHeyward,MartinNikoltchev,Maciej AI for automated film generation. CoRR, abs/2506.18899,
+Kula, Hao Zhou, Zachary Garrett, Sushant Kafle, Sercan 2025. 2
+Arik,AnkitaGoel,MingyaoYang,JihoPark,KojiKojima,
+[22] Lianghua Huang, Wei Wang, Zhi-Fan Wu, Yupeng Shi,
+ParsaMahmoudieh,KorayKavukcuoglu,GraceChen,Doug
+Huanzhang Dou, Chen Liang, Yutong Feng, Yu Liu, and
+Fritz, Anton Bulyenov, Sudeshna Roy, Dimitris Paparas,
+Jingren Zhou. In-context lora for diffusion transformers.
+HadarShemtov,Bo-JuenChen,RobinStrudel,DavidReit- CoRR,abs/2410.23775,2024. 2,3,6
+ter,AurkoRoy,AndreyVlasov,ChangwanRyu,ChasLeich-
+[23] Yuzhou Huang, Ziyang Yuan, Quande Liu, Qiulin Wang,
+ner,HaichuanYang,ZeldaMariet,DenisVnukov,TimSohn,
+Xintao Wang, Ruimao Zhang, Pengfei Wan, Di Zhang,
+Amy Stuart, Wei Liang, Minmin Chen, Praynaa Rawlani,
+and Kun Gai. Conceptmaster: Multi-concept video cus-
+ChristyKoh, JDCo-Reyes, GuangdaLai, PraseemBanzal,
+tomizationondiffusiontransformermodelswithouttest-time
+Dimitrios Vytiniotis, Jieru Mei, and Mu Cai. Gemini 2.5:
+tuning. CoRR,abs/2501.04698,2025. 2
+Pushingthefrontierwithadvancedreasoning,multimodality,
+[24] ZiqiHuang,YinanHe,JiashuoYu,FanZhang,ChenyangSi,
+longcontext,andnextgenerationagenticcapabilities.CoRR,
+YumingJiang,YuanhanZhang,TianxingWu,QingyangJin,
+abs/2507.06261,2025. 4,6
+Nattapol Chanpaisit, Yaohui Wang, Xinyuan Chen, Limin
+[12] Karan Dalal, Daniel Koceja, Jiarui Xu, Yue Zhao, Shihao
+Wang,DahuaLin,YuQiao,andZiweiLiu. Vbench: Com-
+Han,KaChunCheung,JanKautz,YejinChoi,YuSun,and
+prehensive benchmark suite for video generative models.
+XiaolongWang.One-minutevideogenerationwithtest-time
+In IEEE Conf. Comput. Vis. Pattern Recog., pages 21807–
+training. InIEEEConf.Comput.Vis.PatternRecog.,pages
+21818.IEEE,2024. 7,1
+17702–17711.ComputerVisionFoundation/IEEE,2025. 3
+[25] Yuming Jiang, Tianxing Wu, Shuai Yang, Chenyang Si,
+[13] TriDao, DanFu, StefanoErmon, AtriRudra, andChristo-
+Dahua Lin, Yu Qiao, Chen Change Loy, and Ziwei Liu.
+pher Re´. Flashattention: Fast and memory-efficient exact
+Videobooth: Diffusion-based video generation with image
+attention with io-awareness. Adv. Neural Inform. Process.
+prompts. InIEEEConf.Comput.Vis.PatternRecog.,pages
+Syst.,35:16344–16359,2022. 3,5
+6689–6700.IEEE,2024. 2
+[14] Patrick Esser, Sumith Kulal, Andreas Blattmann, Rahim
+[26] OzgurKara, KrishnaKumarSingh, FengLiu, DuyguCey-
+Entezari, Jonas Mu¨ller, Harry Saini, Yam Levi, Dominik
+lan,JamesM.Rehg,andTobiasHinz. Shotadapter:Text-to-
+Lorenz, Axel Sauer, Frederic Boesel, Dustin Podell, Tim
+multi-shotvideogenerationwithdiffusionmodels. InIEEE
+Dockhorn,ZionEnglish,andRobinRombach. Scalingrec-
+Conf. Comput. Vis. Pattern Recog., pages 28405–28415.
+tifiedflowtransformersforhigh-resolutionimagesynthesis.
+ComputerVisionFoundation/IEEE,2025. 3
+InInt.Conf.Mach.Learn.OpenReview.net,2024. 3
+[15] Yuwei Guo, Ceyuan Yang, Ziyan Yang, Zhibei Ma, Zhijie [27] WeijieKong,QiTian,ZijianZhang,RoxMin,ZuozhuoDai,
+Lin,ZhenhengYang,DahuaLin,andLuJiang.Longcontext JinZhou,JiangfengXiong,XinLi,BoWu,JianweiZhang,
+tuningforvideogeneration. CoRR,abs/2503.10589, 2025. KathrinaWu,QinLin,JunkunYuan,YanxinLong,Aladdin
+2,3,4,7 Wang, Andong Wang, Changlin Li, Duojun Huang, Fang
+[16] Roberto Henschel, Levon Khachatryan, Hayk Poghosyan, Yang, HaoTan, HongmeiWang, JacobSong, JiawangBai,
+DaniilHayrapetyan,VahramTadevosyan,ZhangyangWang, JianbingWu,JinbaoXue,JoeyWang,KaiWang,Mengyang
+Shant Navasardyan, and Humphrey Shi. Streamingt2v: Liu, Pengyu Li, Shuai Li, Weiyan Wang, Wenqing Yu,
+Consistent, dynamic, andextendablelongvideogeneration Xinchi Deng, Yang Li, Yi Chen, Yutao Cui, Yuanbo Peng,
+fromtext.InIEEEConf.Comput.Vis.PatternRecog.,pages ZhentaoYu,ZhiyuHe,ZhiyongXu,ZixiangZhou,Zunnan
+2568–2577.ComputerVisionFoundation/IEEE,2025. 2,3 Xu, Yangyu Tao, Qinglin Lu, Songtao Liu, Daquan Zhou,
+HongfaWang,YongYang,DiWang,YuhongLiu,JieJiang,
+[17] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising
+diffusion probabilistic models. In Adv. Neural Inform. andCaesarZhong. Hunyuanvideo:Asystematicframework
+Process.Syst.,2020. 2 forlargevideogenerativemodels. CoRR,abs/2412.03603,
+2024. 2,3
+[18] JonathanHo, WilliamChan, ChitwanSaharia, JayWhang,
+RuiqiGao, AlexeyA.Gritsenko, DiederikP.Kingma, Ben [28] Kuaishou. Kling video model. https://kling.
+Poole, Mohammad Norouzi, David J. Fleet, and Tim Sali- kuaishou.com/en,2024. 2,3,7
+mans. Imagenvideo: Highdefinitionvideogenerationwith [29] Xingyang Li, Muyang Li, Tianle Cai, Haocheng Xi, Shuo
+diffusionmodels. CoRR,abs/2210.02303,2022. 2 Yang, Yujun Lin, Lvmin Zhang, Songlin Yang, Jinbo Hu,
+[19] JonathanHo, TimSalimans, AlexeyA.Gritsenko, William Kelly Peng, Maneesh Agrawala, Ion Stoica, Kurt Keutzer,
+Chan, Mohammad Norouzi, and David J. Fleet. Video and Song Han. Radial attention: O(n log n) sparse atten-
+diffusion models. In Adv. Neural Inform. Process. Syst., tion with energy decay for long video generation. CoRR,
+2022. 2 abs/2506.19852,2025. 3
+[20] PanwenHu,JinJiang,JianqiChen,MingfeiHan,Shengcai [30] Fuchen Long, Zhaofan Qiu, Ting Yao, and Tao Mei.
+Liao, Xiaojun Chang, and Xiaodan Liang. Storyagent: Videostudio: Generatingconsistent-contentandmulti-scene
+
+--- Page Suivante ---
+
+videos.InEur.Conf.Comput.Vis.,pages468–485.Springer, Zheng, Yuntao Hong, Yupeng Shi, Yutong Feng, Zeyinzi
+2024. 2,3 Jiang, Zhen Han, Zhi-Fan Wu, and Ziyu Liu. Wan: Open
+[31] OpenAI. Sora 2 technical report. https://openai. and advanced large-scale video generative models. CoRR,
+com/research/sora-2,2025. Accessed: 2025-10-15. abs/2503.20314,2025. 2,3,6
+7 [42] Fu-YunWang, WenshuoChen, GuangluSong, Han-JiaYe,
+[32] WilliamPeeblesandSainingXie. Scalablediffusionmodels Yu Liu, and Hongsheng Li. Gen-l-video: Multi-text to
+withtransformers. InInt.Conf.Comput.Vis.,pages4172– long video generation via temporal co-denoising. CoRR,
+4182.IEEE,2023. 2 abs/2305.18264,2023. 2,3
+[33] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya [43] WenWang,CanyuZhao,HaoChen,ZhekaiChen,Kecheng
+Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Zheng, andChunhuaShen. Autostory: Generatingdiverse
+Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen storytellingimageswithminimalhumanefforts. Int.Conf.
+Krueger, and Ilya Sutskever. Learning transferable visual Comput.Vis.,133(6):3083–3104,2025. 3
+models from natural language supervision. In Int. Conf. [44] YaohuiWang,PiotrBilinski,Franc¸oisBre´mond,andAntitza
+Mach.Learn.,pages8748–8763.PMLR,2021. 1 Dantcheva. Imaginator: Conditional spatio-temporal GAN
+[34] WeimingRen,HuanYang,GeZhang,CongWei,XinrunDu, forvideogeneration. InIEEEWinterConf.Appl.Comput.
+Wenhao Huang, and Wenhu Chen. Consisti2v: Enhancing Vis.,pages1149–1158.IEEE,2020. 2
+visual consistency for image-to-video generation. Trans. [45] Yi Wang, Yinan He, Yizhuo Li, Kunchang Li, Jiashuo Yu,
+Mach.Learn.Res.,2024,2024. 2,3 Xin Ma, Xinhao Li, Guo Chen, Xinyuan Chen, Yaohui
+[35] Robin Rombach, Andreas Blattmann, Dominik Lorenz, Wang, Ping Luo, Ziwei Liu, Yali Wang, Limin Wang, and
+Patrick Esser, and Bjo¨rn Ommer. High-resolution image Yu Qiao. Internvid: A large-scale video-text dataset for
+synthesis with latent diffusion models. In IEEE Conf. multimodal understanding and generation. In Int. Conf.
+Comput. Vis. Pattern Recog., pages 10674–10685. IEEE, Learn.Represent.OpenReview.net,2024. 1
+2022. 3 [46] Xiaoxue Wu, Bingjie Gao, Yu Qiao, Yaohui Wang, and
+[36] Christoph Schuhmann. Improved aesthetic predictor. XinyuanChen. Cinetrans: Learningtogeneratevideoswith
+https://github.com/christophschuhmann/ cinematic transitions via masked diffusion models. arXiv
+improved-aesthetic-predictor,2022. 1 preprintarXiv:2508.11484,2025. 2,3,6
+[37] Shengshu Technology and Tsinghua University. Vidu: A [47] Junfei Xiao, Ceyuan Yang, Lvmin Zhang, Shengqu Cai,
+sora-level text-to-video model. https://www.vidu. Yang Zhao, Yuwei Guo, Gordon Wetzstein, Maneesh
+com,2024. Accessed:2025-10-15. 7 Agrawala, Alan L. Yuille, and Lu Jiang. Captain cinema:
+[38] UrielSinger,AdamPolyak,ThomasHayes,XiYin,JieAn, Towards short movie generation. CoRR, abs/2507.18634,
+Songyang Zhang, Qiyuan Hu, Harry Yang, Oron Ashual, 2025. 2,3,7
+OranGafni,DeviParikh,SonalGupta,andYanivTaigman. [48] Zhifei Xie, Daniel Tang, Dingwei Tan, Jacques Klein,
+Make-a-video: Text-to-video generation without text-video Tegawend F. Bissyand, and Saad Ezzini. Dreamfactory:
+data. InInt.Conf.Learn.Represent.OpenReview.net,2023. Pioneeringmulti-scenelongvideogenerationwithamulti-
+2 agentframework. CoRR,abs/2408.11788,2024. 3
+[39] Ivan Skorokhodov, Sergey Tulyakov, and Mohamed Elho- [49] JinboXing,MenghanXia,YongZhang,HaoChen,Wangbo
+seiny. Stylegan-v: A continuous video generator with the Yu,HanyuanLiu,GongyeLiu,XintaoWang,YingShan,and
+price, imagequalityandperksofstylegan2. InIEEE/CVF Tien-Tsin Wong. Dynamicrafter: Animating open-domain
+Conference on Computer Vision and Pattern Recognition, images with video diffusion priors. In Eur. Conf. Comput.
+CVPR 2022, New Orleans, LA, USA, June 18-24, 2022, Vis.,pages399–417.Springer,2024. 2
+pages3616–3626.IEEE,2022. 2 [50] ZhuoyiYang,JiayanTeng,WendiZheng,MingDing,Shiyu
+[40] Toma´sSoucekandJakubLokoc. TransnetV2: aneffective Huang,JiazhengXu,YuanmingYang,WenyiHong,Xiaohan
+deepnetworkarchitectureforfastshottransitiondetection. Zhang, Guanyu Feng, Da Yin, Yuxuan Zhang, Weihan
+InACMInt.Conf.Multimedia, pages11218–11221.ACM, Wang, Yean Cheng, Bin Xu, Xiaotao Gu, Yuxiao Dong,
+2024. 3,1 and Jie Tang. Cogvideox: Text-to-video diffusion models
+[41] Ang Wang, Baole Ai, Bin Wen, Chaojie Mao, Chen-Wei withanexperttransformer. InInt.Conf.Learn.Represent.
+Xie, Di Chen, Feiwu Yu, Haiming Zhao, Jianxiao Yang, OpenReview.net,2025. 2,3
+JianyuanZeng,JiayuWang,JingfengZhang,JingrenZhou, [51] YaoFANGUK. video-subtitle-extractor: A gui tool for
+Jinkai Wang, Jixuan Chen, Kai Zhu, Kang Zhao, Keyu extracting hard-coded subtitles from videos. https:
+Yan, Lianghua Huang, Xiaofeng Meng, Ningyi Zhang, //github.com/YaoFANGUK/video-subtitle-
+PandengLi, PingyuWu, RuihangChu, RuiliFeng, Shiwei extractor,2021. 3
+Zhang,SiyangSun,TaoFang,TianxingWang,TianyiGui, [52] Tianwei Yin, Qiang Zhang, Richard Zhang, William T.
+TingyuWeng,TongShen,WeiLin,WeiWang,WeiWang, Freeman, Fre´do Durand, Eli Shechtman, and Xun Huang.
+WenmengZhou,WenteWang,WentingShen,WenyuanYu, From slow bidirectional to fast autoregressive video diffu-
+XianzhongShi,XiaomingHuang,XinXu,YanKou,Yangyu sion models. In IEEE Conf. Comput. Vis. Pattern Recog.,
+Lv, Yifei Li, Yijing Liu, Yiming Wang, Yingya Zhang, pages 22963–22974. Computer Vision Foundation / IEEE,
+Yitong Huang, Yong Li, You Wu, Yu Liu, Yulin Pan, Yun 2025. 2,3
+
+--- Page Suivante ---
+
+[53] Jintao Zhang, Jia Wei, Haofeng Huang, Pengle Zhang,
+Jun Zhu, and Jianfei Chen. Sageattention: Accurate 8-bit
+attention for plug-and-play inference acceleration. arXiv
+preprintarXiv:2410.02367,2024. 3
+[54] LvminZhangandManeeshAgrawala. Packinginputframe
+context in next-frame prediction models for video genera-
+tion. CoRR,abs/2504.12626,2025. 2,3
+[55] PeiyuanZhang,YongqiChen,RunlongSu,HangliangDing,
+IonStoica,ZhenghongLiu,andHaoZhang. Fastvideogen-
+eration with sliding tile attention. CoRR, abs/2502.04507,
+2025. 3
+[56] Canyu Zhao, Mingyu Liu, Wen Wang, Weihua Chen,
+Fan Wang, Hao Chen, Bo Zhang, and Chunhua Shen.
+Moviedreamer: Hierarchical generation for coherent long
+visualsequences. InInt.Conf.Learn.Represent.OpenRe-
+view.net,2025. 2,3
+[57] Mingzhe Zheng, Yongqi Xu, Haojian Huang, Xuran Ma,
+YexinLiu, WenjieShu, YatianPang, FeilongTang, Qifeng
+Chen,HarryYang,andSer-NamLim.Videogen-of-thought:
+Acollaborativeframeworkformulti-shotvideogeneration.
+CoRR,abs/2412.02259,2024.
+[58] Yupeng Zhou, Daquan Zhou, Ming-Ming Cheng, Jiashi
+Feng, and Qibin Hou. Storydiffusion: Consistent self-
+attentionforlong-rangeimageandvideogeneration.InAdv.
+NeuralInform.Process.Syst.,2024. 2,6
+
+--- Page Suivante ---
+
+HoloCine: Holistic Generation of Cinematic Multi-Shot Long Video Narratives
+Supplementary Material
+Appendix weextracttherepresentationsoftheentirepromptandthe
+full video using ViCLIP [45] and compute their cosine
+A.DetailsonEvaluationmetrics
+similarity. For shot-level consistency, the video is divided
+intosegmentsbasedontheinputshotprompts,andtheco-
+We evaluate the models across five key dimensions: aes-
+sinesimilaritybetweeneachshotclipanditscorresponding
+thetic quality, semantic consistency, intra-shot consis-
+shot-levelpromptfeaturesiscalculatedusingViCLIP.
+tency (capturing subject and background stability), inter-
+shotconsistency,andtransitioncontrol.
+A.4.Intra-shotConsistency
+A.1.TransitionControlEvaluationMetrics Tocomputeintra-shotconsistency,wefirstemploythepre-
+trainedshotboundarydetectorTransNetV2[40]toidentify
+Furthermore,tocomprehensivelyevaluatethemodel’sabil-
+cutlocationswithinthegeneratedvideos. Wethencompute
+itytotofollowexplicitshot-cutinstructions,weproposethe
+subjectconsistencyandbackgroundconsistency,following
+ShotCutAccuracy(SCA)metrics,specifiedinappendixA.
+thedesignofVBench[24].
+Thismetricholisticallyassessesshotcontrolbyquantifying
+Subject Consistency. For the main subject in the video,
+both the accuracy of the number of cuts and the temporal
+we measure the stability of its visual appearance across
+precision of their placement. To compute the SCA, we
+frames. Specifically,weextractDINO[6]featuresforeach
+first apply a pre-trained shot boundary detector, TransNet
+frame and compute the average cosine similarity between
+V2 [40], to the generated video to obtain the set of cut
+consecutive frames and between each frame and the first
+locationsinthegeneratedvideos. Thesearethencompared
+frame.
+againstthegroundtruthcutlocationsspecifiedintheinput.
+BackgroundConsistency. Toevaluatethetemporalstabil-
+SCAisdefinedas:
+ityofthescenebackground,wecomputeCLIP[33]feature
+SCA=exp(−NSD) (S1) similarities across frames. A higher similarity indicates
+a smoother and more coherent background transition over
+whereNSDistheNormalizedShotDiscrepancy,represent- time.
+ing the total error relative to the video’s length in frames,
+F : A.5.Inter-shotConsistency
+total
+E +E
+NSD= matched penalty (S2) To assess consistency across different shots, a naive ap-
+F
+total proach would be to extract ViCLIP features for each shot
+E quantifies the frame-wise deviation between pre- and compute the cosine similarity between them. How-
+matched
+dicted and ground-truth cuts after a one-to-one matching ever, since different shots may depict distinct characters
+process. E is a penalty term for any missed or or scenes, this simple comparison ignores diversity and
+penalty
+extraneouscuts. Thisensuresthatmodelsarepenalizednot may lead to biased results. To address this, we identify
+only for imprecise timing but also for failing to produce the characters described in the prompt and group the
+the correct number of shots. The SCA score ranges in correspondingshotsbycharacteridentity.Wethencompute
+(0,1], where 1 indicates a perfect match. The exponential theViCLIPfeaturesimilarityamongshotsbelongingtothe
+formulationmakesthemetricparticularlysensitivetolarge same character group to obtain the inter-shot consistency
+errors,heavilypenalizingsignificanttemporaldeviations. score.
+A.2.AestheticQuality
+We assess the aesthetic and artistic value of each video
+frameusingtheLAIONaestheticpredictor[36]. Thismet-
+ricreflectshuman-perceivedqualitiessuchascomposition,
+color harmony, realism, naturalness, and overall artistic
+appealofthegeneratedframes.
+A.3.SemanticConsistency.
+We evaluate the alignment between the text prompt and
+the generated video by measuring two types of semantic
+consistency: globalandshot-level. Forglobalconsistency,

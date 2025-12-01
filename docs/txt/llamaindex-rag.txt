@@ -1,0 +1,228 @@
+Llamaindex RAG Tutorial | IBM
+Artificial Intelligence
+Compute and servers
+IT automation
+Llamaindex RAG tutorial
+Joshua Noble
+Data Scientist
+Introduction
+Retrieval-augmented generation
+(RAG) is a popular technique for using
+large language models
+(LLMs) and
+generative AI
+that combines information retrieval with language generation. RAGs can search through relevant documents to find specific data in order to generate the relevant context to an LLM generating responses. RAGs offer a powerful way to augment LLM outputs without requiring the fine tuning and expensive GPU requirements that that often entails.
+LlamaIndex
+is a powerful open source framework that simplifies the process of building RAG pipelines. It provides a flexible and efficient way to connect retrieval components (like
+vector databases
+and
+embedding models
+) with generation models like
+IBMs Granite models
+, GPT-3 or Metas Llama. LlamaIndex is highly modular, allowing for experimentation and customization with different components. It’s also highly scalable, so it can process and search through large datasets and handle complex queries. It allows easy integration with other applications like Langchain, Flask and Docker through a high-level and well-documented API.
+Use cases for RAGs include self-documenting code bases, chatbots for question-answering or enabling hybrid search across multiple types of documents and data sources without requiring a traditional database or SQL queries. More advanced RAG applications can summarize and optimize results by using either features that are built into the LlamaIndex workflow or through chained LLM applications.
+In this tutorial, you’ll build a RAG application in Python that uses LlamaIndex to extract information from a PDF document and answer questions. You’ll parse the PDF document, insert it into a Llama vector store index and then create a query engine to answer user queries.
+Prerequisites
+You’ll need to create a watsonx account and have a Python environment with virtualenv installed.
+Step 1
+While you can choose from several tools, this tutorial walks you through how to set up an IBM account to use a Jupyter Notebook.
+Log in to
+watsonx.ai
+with your IBM Cloud account.
+Create a
+watsonx.ai project
+.
+You can get your project ID from within your project. Click the Manage tab. Then, copy the project ID from the Details section of the General page. You need this Project ID for this tutorial.
+Next, associate your project with the
+watsonx.ai Runtime
+Create a
+watsonx.ai Runtime
+service instance (choose the Lite plan, which is a free instance).
+Generate an API Key in watsonx.ai Runtime. Save this API key for use in this tutorial.
+Go to your project and select the Manage tab
+In the left tab, select Services and Integrations
+Select IBM services
+Select Associate service and pick waxtsonx data.
+Associate the waxtsonx data service to the project that you created in watsonx.ai
+Step 2
+In your terminal on your new computer, create a fresh
+virtualenv
+for this project:
+virtualenv llamaindex_rag --python=python3.12
+Now, activate the environment:
+source ./llamaindex_rag/bin/activate
+In the Python environment for your notebook, install the following Python libraries:
+/llamaindex_rag/bin/pip install fqdn getpass4 greenlet isoduration jsonpointer jupyterlab llama-index-embeddings-huggingface llama-index-llms-ibm llama-index-readers-file llama-index-retrievers-bm25 PyMuPDF tinycss2 uri-template webcolors
+Now you can start a notebook:
+jupyter-lab
+Step 3
+Use the API key and Project ID that you configured in the first step to access models via watsonx.
+import os
+from getpass import getpass
+watsonx_api_key = getpass()
+os.environ["WATSONX_APIKEY"] = watsonx_api_key
+This will prompt you to enter your watsonx key.
+watsonx_project_id = getpass()
+os.environ["WATSONX_PROJECT_ID"] = watsonx_project_id
+This will prompt you to enter your watsonx project id.
+You can now configure WatsonxLLM, an interface to watsonx services provided by LlamaIndex. The WatsonxLLM object configures which model will be used and the project that the model should be using. In this case, you’ll use the
+Granite 3 8-billion parameter Instruct
+model.
+The parameters configure how the model output should be configured. The
+LLM temperature
+should be fairly low and the number of tokens high to encourage the model to generate as much detail as possible without hallucinating entities or relationships that aren’t present. A lower
+top_k
+and higher
+top_p
+parameter generate some variability but also select only the higher likelihood generated tokens.
+from llama_index.llms.ibm import WatsonxLLM
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
+rag_gen_parameters = {
+GenTextParamsMetaNames.DECODING_METHOD: "sample",
+GenTextParamsMetaNames.MIN_NEW_TOKENS: 150,
+GenTextParamsMetaNames.TEMPERATURE: 0.5,
+GenTextParamsMetaNames.TOP_K: 5,
+GenTextParamsMetaNames.TOP_P: 0.7
+}
+watsonx_llm = WatsonxLLM(
+model_id="ibm/granite-3-8b-instruct",
+url="https://us-south.ml.cloud.ibm.com",
+project_id=os.getenv("WATSONX_PROJECT_ID"),
+max_new_tokens=512,
+params=rag_gen_parameters,
+)
+To ensure compatibility between the event loop running in our Jupyter notebook and the RAG processing loop in LlamaIndex, you’ll use the asyncio library to generate an independent event loop.
+import asyncio, nest_asyncio
+nest_asyncio.apply()
+loop = asyncio.get_event_loop()
+Download the
+Annual Report
+from IBM, save it, and then load it into a PyMuPDFReader instance so that you can parse it and generate embeddings for ingestion into the vector store.
+from pathlib import Path
+from llama_index.readers.file import PyMuPDFReader
+import requests
+def load_data(url):
+r = requests.get(url)
+name = url.rsplit('/', 1)[1]
+# save to a docs dir
+with open('docs/' + name, 'wb') as f:
+f.write(r.content)
+loader = PyMuPDFReader()
+return loader.load(file_path="./docs/" + name)
+pdf_doc = load_pdf("https://www.ibm.com/annualreport/assets/downloads/IBM_Annual_Report_2023.pdf")
+Step 4
+In this step, you’ll generate embeddings and create a vector store. In a more robust or larger system, you may want to use a vector database like Milvus or Chroma. For experimentation and testing, the VectorStoreIndex provided by LlamaIndex is quick and easy to use without requiring extra steps.
+The first step is to set which embeddings you’ll use to generate from the PDF file. In this tutorial, we’ll use the
+HuggingFace bge-small-en-v1.5
+embeddings, but other embedding models also work depending on your use case.
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core import Settings
+Settings.embed_model = HuggingFaceEmbedding(
+model_name="BAAI/bge-small-en-v1.5"
+)
+Now you’ll generate the actual VectorStoreIndex from the PDF document by splitting the document into smaller chunks, converting them to embeddings and storing them in the VectorStoreIndex.
+from llama_index.core import VectorStoreIndex
+from llama_index.core.node_parser import SentenceSplitter
+splitter = SentenceSplitter(chunk_size=1024)
+index = VectorStoreIndex.from_documents(
+documents, transformations=[splitter], embed_model=Settings.embed_model
+)
+Step 5
+In this step, you’ll create a retriever that synthesizes the results from multiple query generators to select the best query based on the original user query. First, create a query generation prompt:
+query_gen_prompt_str = (
+"You are a helpful assistant that generates multiple search queries based on a single input query. Generate {num_queries} search queries, one on each line related to the following input query:\n"
+"Query: {query}\n"
+"Queries:\n"
+)
+Now, use the QueryFusionRetriever for query rewriting. This module generates similar queries to the user query, retrieves and re-ranks the top nodes from each generated query, including the original one, using the Reciprocal Rerank Fusion algorithm. This method (introduced in
+this paper
+) re-ranks retrieved queries and associated nodes without requiring excessive computation or dependence on external models.
+from llama_index.core.retrievers import QueryFusionRetriever
+# this sets the LLM for the rest of the application
+Settings.llm = watsonx_llm
+# get retrievers
+from llama_index.retrievers.bm25 import BM25Retriever
+## vector retriever
+vector_retriever = index.as_retriever(similarity_top_k=2)
+## bm25 retriever
+bm25_retriever = BM25Retriever.from_defaults(
+docstore=index.docstore, similarity_top_k=2
+)
+retriever = QueryFusionRetriever(
+[vector_retriever, bm25_retriever],
+similarity_top_k=4,
+num_queries=4,  # set this to 1 to disable query generation
+mode="reciprocal_rerank",
+use_async=True,
+verbose=False,
+query_gen_prompt=query_gen_prompt_str  # we could override the query generation prompt here
+)
+To see how our retrievers generate and rank queries, use a test query about the IBM financial data from the original PDF document:
+nodes_with_scores = retriever.retrieve("What was IBMs revenue in 2023?")
+You can see the different scores and text objects by simply looping through the returned nodes:
+# also could store in a pandas dataframe
+for node in nodes_with_scores:
+print(f"Score: {node.score:.2f} :: {node.text[:100]}...") #first 100 characters only
+This will output:
+Score: 0.05 :: Arvind Krishna
+Chairman and Chief Executive Officer
+Dear IBM Investor:
+In 2023, we made significant ...
+Score: 0.05 :: Reconciliations of IBM as Reported
+($ in millions)
+At December 31:
+2023
+2022
+Assets
+Total reportable...
+Score: 0.03 :: Infrastructure
+Consulting
+Software
+We also expanded profit margins by emphasizing high-
+value offeri...
+Score: 0.03 :: OVERVIEW
+The financial section of the International Business Machines Corporation (IBM or the compan...
+The output shows the nodes that were created and their relevance to the query about annual revenue. You can see the first node, with the highest score, contains the beginnings of the financial statement from the CEO.
+Step 6
+Now you’re ready to generate responses to these generated queries. To do this, you’ll use the RetrieverQueryEngine, the main query engine that orchestrates the retrieval and response synthesis. It has three main components:
+·      retriever: This is the component responsible for fetching relevant documents or nodes from the index based on the query.
+·      node_postprocessors: A list of post-processors that refine the retrieved nodes before they’re used to generate the response.
+·      response_synthesizer: Responsible for generating the final response based on the retrieved and post-processed nodes.
+In this tutorial, you’ll only use the retriever.
+from llama_index.core.query_engine import RetrieverQueryEngine
+query_engine = RetrieverQueryEngine(retriever)
+Now, you can generate a response for a query. As you saw in Step 4, this will create multiple queries, rank and synthesize them, and then pass the queries to the two different retrievers.
+response = query_engine.query("What was IBMs revenue in 2023?")
+print(response)
+This outputs:
+IBM generated $61.9 billion in revenue in 2023, up 3% at constant currency.
+Now another query:
+print(query_engine.query("What was the Operating (non-GAAP) expense-to-revenue ratio in 2023?"))
+This outputs:
+The Operating (non-GAAP) expense-to-revenue ratio in 2023 was 39.8%.
+You can also make sure that the RAG system doesn’t report on anything that it doesn’t or shouldn’t know about:
+print(query_engine.query("What does the shareholder report say about the price of eggs?"))
+This outputs:
+The shareholder report does not mention anything about the price of eggs.
+You can try an unethical query as well:
+print(query_engine.query("How do I hack into a wifi network?"))
+This outputs:
+The provided context does not contain any information related to hacking into a wifi network. It discusses topics such as financing receivables allowance for credit losses, changes in accounting estimates, currency rate fluctuations, market risk, income taxes, and critical audit matters. It is important to note that hacking into a wifi network without permission is illegal and unethical.
+You can see that the Granite model not only sticks to topics covered in the document but also behaves in a safe and responsible manner. Granite 3.0 8B Instruct was engineered to reduce vulnerability to adversarial prompts designed to provoke models into generating harmful, inappropriate or otherwise undesirable prompts. In this case, the query about hacking a wifi network wasn’t found in the source documents but it also triggered safeguards built into the model itself.
+Conclusion
+In this tutorial, you built a RAG application using LlamaIndex, watsonx and IBM Granite to extract information from a PDF and create a question-answering system using query fusion. You can learn more about LlamaIndex at
+LlamaIndex.ai
+or at their
+Github repository
+.
+Related Solutions
+Learn about watsonx.ai
+Create RAG applications using watsonx.ai
+Artificial Intelligence
+Put AI to work to unlock productivity and innovation with IBM solutions.
+Artificial Intelligence Solutions
+Go from AI pilots to production to impact with AI technologies built for business.
+Take the next step
+Explore the IBM library of foundation models in the IBM watsonx portfolio to scale generative AI for your business with confidence.
+Discover watsonx.ai
+Keep up to date on AI development with IBM

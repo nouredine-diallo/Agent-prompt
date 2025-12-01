@@ -1,0 +1,20 @@
+{"query": "Donne-moi la définition de RAG.", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Quels sont les avantages du chunking dans le RAG?", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Cite une source sur la déduplication dans les pipelines RAG.", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Explique le rôle de l'overlap dans le chunking.", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Quels sont les risques de la non-validation des réponses RAG?", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Donne un exemple de fallback dans un pipeline RAG.", "scenario_type": "rag", "expected_sources": ["docs/txt/RAG.txt"]}
+{"query": "Donne 3 techniques de prompt engineering.", "scenario_type": "prompt_engineering", "expected_sources": ["docs/txt/Prompt-Engineering-Lecture-Elvis.txt"]}
+{"query": "Comment structurer un meta-prompt pour extraction JSON?", "scenario_type": "prompt_engineering", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Quels sont les pièges courants du prompt engineering?", "scenario_type": "prompt_engineering", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Propose un prompt pour valider la sécurité d'une réponse.", "scenario_type": "prompt_engineering", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Donne un exemple de fuite PII dans une réponse.", "scenario_type": "security", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Comment détecter une réponse toxique?", "scenario_type": "security", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Explique comment l'agent gère les requêtes interdites.", "scenario_type": "security", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Donne un exemple de réponse JSON strict pour une extraction d'entités.", "scenario_type": "json_format", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Génère un JSON listant les sources utilisées.", "scenario_type": "json_format", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Fournis un exemple de validation de schéma JSON.", "scenario_type": "json_format", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Donne un prompt pour forcer un format JSON compact.", "scenario_type": "json_format", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Explique comment traiter une requête ambiguë.", "scenario_type": "ambiguity", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Décris une situation où plusieurs étapes sont nécessaires pour répondre.", "scenario_type": "ambiguity", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}
+{"query": "Comment l'agent gère-t-il les questions incomplètes?", "scenario_type": "ambiguity", "expected_sources": ["docs/txt/Prompt-Engineering-Guide.txt"]}

@@ -1,0 +1,877 @@
+ARGenSeg: Image Segmentation with Autoregressive
+Image Generation Model
+XiaolongWang, LixiangRu, ZiyuanHuang, KaixiangJi, DandanZheng
+JingdongChen, JunZhou
+AntGroup
+{xiaowang.wxl,rulixiang.rlx,pishi.hzy,kaixiang.jkx,yuandan.zdd}@antgroup.com
+{jingdongchen.cjd,jun.zhoujun}@antgroup.com
+General Segmentation
+USER: Please segment the <panda> in this image. USER: Please segment <trains separately>. USER: Please segment <the item in the given region>.
+Understanding-Based Segmentation Image Generation
+USER: Please segment <the girl looking at camera>/<the boy on right>. USER: Please generate a picture about a <cat>/<husky>.
+USER: Please segment the <broken part of the bottle/capsule>. USER: Please generate a picture about a <mountain>/<car>.
+Figure1: ARGenSegisaunifiedframeworkforvisualunderstanding,segmentation,andgeneration.
+Itsupportssemantic,instance,interactive,andzero-shotreasoningsegmentation,aswellasanomaly
+detection,byleveragingstrongvisualunderstandingcapabilities.
+Abstract
+We propose a novel AutoRegressive Generation-based paradigm for image
+Segmentation(ARGenSeg),achievingmultimodalunderstandingandpixel-level
+perception within a unified framework. Prior works integrating image segmen-
+tationintomultimodallargelanguagemodels(MLLMs)typicallyemployeither
+boundary points representation or dedicated segmentation heads. These meth-
+ods rely on discrete representations or semantic prompts fed into task-specific
+decoders, which limits the ability of the MLLM to capture fine-grained visual
+details. Toaddressthesechallenges,weintroduceasegmentationframeworkfor
+MLLM based on image generation, which naturally produces dense masks for
+targetobjects. WeleverageMLLMtooutputvisualtokensanddetokenizethem
+intoimagesusinganuniversalVQ-VAE,makingthesegmentationfullydependent
+39thConferenceonNeuralInformationProcessingSystems(NeurIPS2025).
+5202
+tcO
+32
+]VC.sc[
+1v30802.0152:viXra
+
+--- Page Suivante ---
+
+onthepixel-levelunderstandingoftheMLLM.Toreduceinferencelatency,weem-
+ployanext-scale-predictionstrategytogeneraterequiredvisualtokensinparallel.
+Extensiveexperimentsdemonstratethatourmethodsurpassespriorstate-of-the-art
+approachesonmultiplesegmentationdatasetswitharemarkableboostininference
+speed,whilemaintainingstrongunderstandingcapabilities.
+1 Introduction
+The emergence of large language models (LLMs) [8, 17, 52] has significantly accelerated the
+developmentofartificialgeneralintelligence(AGI)[9]. BreakthroughslikeChatGPT[40]enable
+the transformer-based [54] autoregressive framework to unify diverse tasks of natural language
+processing[1,4]. Asformultimodaltask,LLaVA[34]employsvisualadaptortomapvisualfeatures
+intotheembeddingspaceofLLMs,establishingauniversalparadigmformultimodallargelanguage
+models[33,5,15,56]. Recentstudies[48,64,49,67,51,61,2,3,22]exploretheunifiedframework
+formultimodalunderstandingandgeneration. However,integratingfundamentalvisualperception
+tasksintoaunifiedAGIframeworkremainsanopenchallenge. Whilesparse-outputtaskssuchas
+visualgroundingcanbedirectlyaddressedviatextexpression[14],tasksrequiringdenseoutpuslike
+imagesegmentationareinherentlydifficulttorepresentthroughnaturallanguage.
+PreviousmethodsthatincorporateimagesegmentationintoMLLMstypicallyfallintotwocategories.
+Thefirstdiscretizesdensemasksintoboundarypointsequences[11,42,58],whichinevitablyleadsto
+incompletesegmentationmasksandunnaturalobjectboundaries. Thesecondachievessegmentation
+throughdownstreamdedicateddecoders(e.g.,SAM[27],Mask2Former[16]),whichareconditioned
+oneithertextualprompts[12]orhiddenstates[29,45,75]generatedbyMLLMs. Thisnotonly
+resultsincomplexmodelarchitectures,butalsoleadstoinsufficientunderstandingofpixel-level
+informationforLLMduetoitsrelianceonspecializedtaskhead.
+Toaddresstheabovechallenges, weproposeARGenSeg, whichleveragestheimagegeneration-
+basedparadigmtointegrateimagesegmentationintoaunifiedMLLMframework. Toretainthe
+strongunderstandingcapabilityofMLLMs,weusecontinuousimagefeaturesastheinput. Forthe
+generationoutput,wetrainthemodeltodirectlypredictquantizedimagetokens,aligningwiththe
+next-tokenautoregressivepredictionmechanismoflanguagemodels. Weuseapre-trainedVQ-VAE
+asimagetokenizertoquantizeanddetokenizeimages,withitsvisualtokensaddedtothecodebook
+ofMLLM.ByleveragingtheunderstandingabilityofMLLM,ARGenSegiscapableofadditional
+complexreasoningsegmentation[29],anomalydetection[7,6]andotherimagesegmentationtasks
+[75]asshowninFig.1. Theimagetokenizeriskeptfrozenthroughouttraining,therebyavoidingthe
+dependenceofLLMonsubsequentdecoderswhenlearningpixel-levelinformation.
+Inreal-worldapplication,imagesegmentationoftenrequiresfastresponsetimes. Forthispurpose,
+weadoptanext-scalepredictionstrategyforimagegeneration. Ononehand,themulti-scalemask
+generationprocessalignswiththeintuitiveprocessofobjectsegmentation,whichtypicallyinvolves
+coarselocalizationfollowedbyfine-grainedboundaryrefinement. Ontheotherhand,generating
+visual tokens in parallel provides a significant efficiency advantage, achieving over 4× speedup
+comparedtosequentialgenerationmethods[19,59].
+Some methods also propose to use image generation for image segmentation. UniGS [43] uses
+diffusion model [21, 46] to achieve image segmentation. However, its U-Net structure causes
+lack of understanding ability. HiMTok [57] proposes an innovative mask tokenizer that enables
+decodingdiscreteoutputsfromtheMLLMintobinarymasksviaimagegeneration. However,the
+task-specifictokenizerlimitsitsgeneralityandextensibility. Moreover,bothofthesemethodssuffer
+fromsignificantdisadvantagesininferencespeed.
+ExtensiveexperimentsdemonstratethattheproposedARGenSegoutperformsexistingMLLM-based
+segmentation methods, while also achieving significantly faster inference. Notably, our method
+achievessuperiorperformanceusingsubstantiallylesssegmentationdatacomparedtopriorstate-
+of-the-art approach [57]. In addition, the use of a general-purpose visual tokenizer provides the
+flexibilitytoextendtheframeworktoadditionaltasks. Asademonstration,byfine-tuningonasmall
+amountofimagegenerationdata, wesuccessfullyunlocktheimagegenerationcapabilityofour
+framework,asillustratedinFig.1.
+Themaincontributionsofthispaperinclude:
+2
+
+--- Page Suivante ---
+
+• Weproposeanovelimagesegmentationframeworkbasedonaunifiedmultimodalunder-
+standingandgenerationparadigm. Toourknowledge,wearethefirsttoshowthatunified
+MLLMscanachieveSOTAsegmentationresultswithoutanyextrasegmentationheads.
+• Weleverageauniversalimagetokenizer,allowingsegmentationtofullyrelyonthepixel-
+levelvisualunderstandingoftheMLLM.Wefurthershowthatdirectimagetokenprediction
+bytheMLLMisimportantforachievinghighsegmentationaccuracy.
+• Weproposetousenext-scalepredictiontospeedupinference. Andweobservethatthe
+coarse-to-finemulti-scalemaskgenerationprocessalsoboostssegmentationrobustness.
+2 RelatedWork
+IntegratingimagesegmentationintoMLLMsnotonlyequipsthemwithfine-grainedvisualpercep-
+tion,butalsoenablesmorecomplexreasoning-basedsegmentationtasksbyleveragingunderstanding
+capabilities. However, representing segmentation masks within the MLLM framework remains
+a significant challenge. PolyFormer [35] and VistaLLM [42] represent masks as polygons using
+pointsequences,whichareeasytoexpressbutstrugglewithcomplexshapes. LISA[29]aggregates
+segmentation information using special tokens and predicts masks through a SAM [27] decoder.
+SubsequentworkssuchasGLaMM[44],PixelLM[45],GSVA[65],andPSALM[75]buildupon
+thisparadigm,andstillrelyonspecialtokensanddedicatedsegmentationdecoders. Thesemethods
+essentiallyaimtoextractsemanticembeddingsoftargetobjectsandthenobtaindensesegmenta-
+tionmasksbycomputingsimilaritywithimagefeatures. Suchrepresentationstendtoemphasize
+high-levelsemanticsratherthantruepixel-levelunderstanding. HiMTok[57]exploresanalternative
+thatremovestherelianceonspecialtokensandSAM-likedecoders. However,itstilldependsona
+dedicatedmasktokenizertrainedonbinarymasks. Moreover,theexpressivenessofthetokenizeris
+limitedandcannotbeextendedtosupportothertaskssuchasimagegeneration. Thissuggeststhat
+segmentationrepresentationinMLLMsremainsanopenchallenge,whichwethinkcanbeeffectively
+addressedthroughautoregressiveimagegeneration.
+Unified multimodal understanding and generation models have recently attracted increasing
+attentionfortheirabilitytoseamlesslyperformbothunderstandingandgenerationtaskswithina
+singleframework. Severalworks[48,20,63,51]leveragediffusionmodelsforimagegenerationby
+regressingvisualembeddingsfromMLLMoutputsandusingthemasconditionalinputs.TransFusion
+[77]andShow-O[67]unifynext-tokenpredictionanddiffusion-basedgenerationwithinasingle
+transformerframework. Chameleon[49]andEmu3[59]adoptashareddiscretevisualembedding
+spaceforbothunderstandingandgeneration,decodingimagesthroughVQ-basedtokenizers[19,71].
+Janus[61]decouplestheencoderformultimodalunderstandingandgeneration,usingdiscretevisual
+tokensforgenerationwhileretainingcontinuousvisualfeaturesforbetterunderstandingaccuracy.
+VARGPT[78]proposesnext-tokenpredictionforunderstandingandnext-scalepredictionforimage
+generation,butreliesonanadditionaltransformer-basedvisualdecoder.
+Imagetokenizationenablesdiscreteoutputsfromautoregressivemodelstobereconstructedinto
+images.VQ-VAE[53]encodesimagesintoadownsampledlatentspaceandquantizesthefeaturesinto
+discretetokenIDs,simplifyingthelearningprocessforgenerativemodels. VQGAN[19]improves
+reconstructionqualityandtrainingefficiencythroughadversarialtraining. TiTok[72]significantly
+reducesthenumberoftokensrequiredforimagerepresentation,improvinggenerationspeed,and
+furthershowsthatincreasingthenumberoflatenttokensconsistentlyenhancesreconstructionquality.
+VAR[50]reformulatesvisualautoregressivegenerationasanext-scalepredictiontask,achieving
+highefficiencywhilemaintainingarelativelylargenumberofvisualtokens.
+3 Method
+Inthispaper, weproposeanovelimagesegmentationframeworkbasedonautoregressiveimage
+generation model, using a Vector-Quantized (VQ) autoencoder [53, 19] to tokenize images into
+discrete tokens and reconstruct them from generated outputs. To address the unique challenges
+of segmentation, we introduce two key designs. (1) The MLLM is trained to directly output
+imagetokens,whichiscrucialforachievinghighpixel-levelaccuracy. (2)Weutilizeamulti-scale
+generationprocessthatperformscoarse-to-finerefinement. Thisnotonlyenhancessegmentation
+robustnessbutalsoimprovesinferenceefficiency. Thissectionfirstpresentsthebackgroundofthe
+3
+
+--- Page Suivante ---
+
+imagetokenizer(Sec.3.1),thendetailsthearchitecture(Sec.3.2),trainingprocedure(Sec.3.3),and
+inferenceprocess(Sec.3.4)ofourproposedmodel.
+3.1 Preliminary
+Vector-QuantizedAutoencoder ThestandardVQmodellearnstoencodeimagesintoalatent
+spaceandreconstructthemfromdiscretetokens. GivenaninputimageI∈RH×W×3,theencoderE
+mapsittoalatentfeaturespace:
+f =E(I), f ∈RH l ×W l ×D, (1)
+wherelisthespatialdownsamplingfactorandDdenotesthefeaturedimesion. Thelatentfeaturesf
+arethenquantizedbyavectorquantizerQintodiscretetokenindicesq ∈[V]H l ×W l :
+q =Q(f), q(i,j) =argmin∥f(i,j)−cv∥ , (2)
+2
+v∈[V]
+wherecv isthev-thembeddingvectorinthevisualcodebookC∈RV×D,and[V]denotesthesetof
+codebookindices{1,2,...,V}.
+Thereconstructionoftheimagecanbeinterpretedasdetokenizingdiscretevisualtokensintoan
+image. Inthisprocedure,thequantizedindicesq areusedtoindexthecorrespondingembedding
+fromthevisualcodebookC,producingtheestimatedlatentfeaturemapfˆ. Theestimatedfeature
+mapisthenpassedthroughthedecoderDtogeneratethereconstructedimageˆI:
+fˆ=lookup(C,q), ˆI=D(fˆ). (3)
+Multi-Scale VQ Autoencoder When using VQ-VAE for autoregressive image generation, the
+inferenceprocesstypicallyrequiresO(n2)steps. Toaddressthisinefficiency,VAR[50]introducesa
+next-scalepredictionparadigmforvisualtokengeneration.Specifically,thefeaturemapfisquantized
+intoKmulti-scaletokenmaps(r ,r ,...,r ),whereeachmapcorrespondstoadifferentresolution.
+1 2 K
+Ateachinferencestep,themodelgeneratesallh ×w tokensrequiredforthecurrentscaler in
+k k k
+parallel,repeatingthisprocessuntilr reachesthetargetresolutionof H ×W. Moreover,thecoarse-
+K l l
+to-finepredictionscanenhancethegenerationquality. Basedonthisparadigm,animageofresolution
+256×256canberepresentedusing680visualtokens,whilerequiringjustKautoregressiveinference
+steps,significantlyimprovinggenerationefficiency. Giventhefastresponserequirementsofimage
+segmentationtasks,weadoptsthisparadigmtoenableefficientautoregressiveimagegeneration.
+Discrete visual tokens
+Tokenizer Vis Projector Gen Projector
+Large Language Model
+lm head
+Encoder VAE ARGenSeg Training &
+Inference Image
+Text
+Vision Up
+Encoder Interpolation
+ViT Text
+Tokenizer Vis Projector Gen Projector
+[S]
+Large Language Model
+[S]
+Encoder VAE
+Cross-Entropy
+EAV redocnD
+Visual Embedding
+�1
+Text Token
+Visual query Embedding
+Visual Token
+[E]
+�1 �2
+�1 �2
+Segmentation
+Mask
+Figure2: ThearchitectureofARGenSeganditstrainingandinferenceprocedures. Left:ARGenSeg
+integratesimagesegmentationintotheMLLMviaanautoregressiveimagegenerationparadigm. A
+unifiedclassificationpredictionheadisusedtogeneratebothtextandvisualtokens. Right: Visual
+tokens are generated in parallel using the next-scale prediction strategy. During training, a VAE
+encoderisusedtoconstructsupervisionforcross-entropyloss. Duringinference,theVAEdecoder
+reconstructstheimagefromthepredictedvisualtokens.[S]/[E]denotes<gen_start>/<gen_end>.
+4
+
+--- Page Suivante ---
+
+3.2 Architecture
+MultimodalUnderstanding ARGenSegusesaunifiedautoregressionframeworkforimageun-
+derstandingandgenerationasshowninFig.2. Ourframeworkemploysthebuilt-intokenizerofthe
+LLMtoconverttextinputintodiscretetokenIDsandcorrespondingembeddings. Forimageinput,a
+visionencoderisusedtoextractfeatures,whicharethenmappedtotheLLM’sembeddingspace
+viaavisionprojector. AftertheconcatenatedembeddingsarefedintotheLLM,themodelperforms
+next-tokenpredictiontosequentiallygeneratetokenembeddings. Theseembeddingsarethenpassed
+through a classification head to sample discrete token IDs, which are subsequently detokenized
+intomeaningfultext. Formultimodalunderstandingtasks,decouplingtheframeworkfromimage
+generationpreservesthenativeunderstandingcapabilitiesoftheLLM.
+ImageGeneration Tointegrateimagegenerationintotheframework,weintroducespecialtokens
+<gen_start>and<gen_end>tomarkthebeginningandendofthegenerationprocess.Additionally,
+thevisualtokenIDsfromthevisualtokenizerareaddedtotheLLM’svocabularyintheformof
+<visual_token_ID>. Whenimagegenerationisrequired,theframeworkautonomouslydetermines
+whethertoinitiategenerationbasedontheinputinstruction. Uponencounteringthe<gen_start>
+token, multi-scale image generation begins, where visual tokens for each scale are predicted in
+parallel. Atk-thscale,thevisualfeaturecorrespondingtothevisualtokenmapfromtheprevious
+scaleisretrievedbylookingupthevisualcodebookCandthenupsampledtomatchtheresolution
+ofthecurrentscale. Alightweightlinearlayer,referredtoasthegenerationprojector,mapsthese
+upsampledvisualfeaturesintotheembeddingspaceofLLM,servingasinputforthenextscale. This
+designallowsone-stepparallelinferencetoobtainallvisualtokensatthecurrentscale. Importantly,
+theunifiedpredictionheadisusedtogeneratevisualtokens,whicharethendirectlyconvertedtothe
+correspondingindexIDsinthecodebookC. Onceallvisualtokensacrossscalesaregenerated,they
+aredetokenizedbythevisualtokenizertoreconstructthefinalimage.
+3.3 TrainingProcedure
+TrainingStrategy Inourframework,thevisionencoder,largelanguagemodel,visionprojector
+andclassificationpredictionheadareinitializedusingInternVL2.5[13],whilethemulti-scalevisual
+tokenizerisinitializedfromVAR[50]. Duringtraining,thevisionencoderandvisualtokenizerare
+keptfrozentoreducethemodel’srelianceondedicateddecodersforpixel-levelunderstanding. By
+leveragingpre-trainedmultimodalunderstanding,theframeworkconvergesrapidlywhentrainingon
+imagesegmentationdata.Thus,weemployasingle-stagesupervisedfinetuning(SFT)strategy,jointly
+optimizing both image segmentation and multimodal understanding data. For image generation,
+we further finetune the pre-trained ARGenSeg model using image generation data to unlock its
+text-to-imagegenerationcapabilities.
+TrainingObjective Sinceourframeworkunifiesbothtextandimagegenerationoutputswithinthe
+LLMcodebook,theentiretrainingprocessisdirectlysupervisedusingcross-entropyloss,asshownin
+Fig.2. Duringsupervisionconstruction,the<gen_start>tokenisaddedasamarkerbeforeimage
+generationbegins. Themodelisexpectedtolearnbothwhentoinitiateimagegenerationandhow
+togeneratealltherequiredvisualtokens. Theground-truthvisualtokensareobtainedusingthe
+encoderandquantizeroftheVQ-VAE.Whenconstructinginputembeddings,thevisualtokensfor
+thefirstscaleareobtainedbyusingthe<gen_start>tokenasthequery. Foreachsubsequentscale,
+theinputembeddingsarederivedbyupsamplingthevisualtokenmapr ofthepreviousscale
+k−1
+tomatchthesizeofthecurrentscale. Finally,the<gen_end>tokenisaddedtoensuretheproper
+progressionofsubsequentpredictions.
+3.4 Inference
+Duringinference,ourmodelfollowsanext-tokenpredictionstrategy,generatingoutputssequentially
+untilthe<gen_start>tokenisproduced. Thistokenthenservesasaquerytoinitiatethegeneration
+ofvisualtokensforthefirstscale. ForthesubsequentK−1scales,queryembeddingsofsizeh ×w
+k k
+areobtainedbyupsamplingandprojectingthevisualtokenmaprˆ predictedatthepreviousscale,
+k−1
+enablingparallelgenerationofallvisualtokensatthecurrentscale. Sincetheupsamplingprocess
+determinesthenumberofqueries,ourframeworknaturallyensuresalignmentbetweenthenumberof
+generatedtokensandtheinputsizerequiredbytheVQ-VAEdecoder. Oncethevisualtokensfor
+5
+
+--- Page Suivante ---
+
+Table1:Performancecomparisonwithstate-of-the-artmethodsonthreereferringimagesegmentation
+benchmarksusingcIoU.(ft)indicatesmodelsfurtherfinetunedonRefCOCO/+/gaftermixedtraining.
+RefCOCO RefCOCO+ RefCOCOg
+Paradigm Method
+val testA testB val testA testB val test
+Boundary PolyFormer-B[42] 74.8 76.6 71.1 67.6 72.9 59.3 67.8 69.1
+Point-based VistaLLM-7B[42] 74.5 76.0 72.7 69.1 73.7 64.0 69.0 70.9
+LISA-7B(ft)[29] 74.9 79.1 72.3 65.1 70.8 58.1 67.9 70.6
+PixelLM-7B[45] 73.0 76.5 68.2 66.3 71.7 58.3 69.3 70.5
+GSVA-7B[65] 76.4 77.4 72.8 64.5 67.7 58.6 71.1 72.0
+GSVA-7B(ft) 77.2 78.9 73.5 65.9 69.6 59.8 72.7 73.3
+LaSagnA-7B[60] 76.8 78.7 73.8 66.4 70.6 60.1 70.6 71.9
+VisionLLMv2[62] 76.6 79.3 74.3 64.5 69.8 61.5 70.7 71.2
+Dedicated OMG-LLAVA[73] 75.6 77.7 71.2 65.6 69.7 58.9 70.7 70.2
+Segmentation OMG-LLAVA(ft) 78.0 80.3 74.1 69.1 73.1 63.0 72.9 72.9
+Head-based GLaMM[44] 79.5 83.2 76.9 72.6 78.7 64.6 74.2 74.9
+u-LLAVA[68] 83.0 85.1 80.5 77.1 81.7 70.6 77.1 78.0
+PSALM[75] 83.6 84.7 81.6 72.9 75.5 70.1 73.8 74.4
+GroundHog-7B[74] 78.5 79.9 75.7 70.5 75.0 64.9 74.1 74.6
+SAM4MLLM-8B[42] 79.8 82.7 74.7 74.6 80.0 67.2 75.5 76.4
+LMM -8B[57] 81.1 81.2 79.2 77.1 78.8 71.5 75.8 76.7
+HiMTok
+LMM -8B(ft) 85.0 85.2 83.5 79.7 82.7 76.0 80.0 80.6
+HiMTok
+Generation ARGenSeg 82.2 84.0 80.1 77.9 81.8 73.3 78.4 79.6
+based ARGenSeg(ft) 86.3 87.5 82.7 82.3 85.8 77.0 81.7 83.5
+allK scalesareobtained,theVARtokenizerdecodesthemintothefinalimage. Toensuresmooth
+progressionofsubsequentinference,the<gen_end>tokenismanuallyadded.
+4 Experiments
+4.1 ExperimentalSetup
+Datasets AsdescribedinSec.3.3,weperformasingle-stagesupervisedfinetuningtojointlytrain
+onbothimagesegmentationandmultimodalunderstandingdata. Detailsofalldatasetsusedare
+providedinAppendixA.ThetrainingofARGenSegreliesentirelyonpubliclyavailableexternal
+datasets. Specifically,weuse402Kimagesegmentationsamples,whicharesignificantlyfewerthan
+the2.91MsamplesusedbyHiMTok[57]andconstituteastrictsubsetoftheirdata. Formultimodal
+understanding,weuse1.25Msamplesderivedfromtheopen-sourcedatasetofInternVL1.2[14].
+ImplementationDetails Ourmodelacceptsinputimagesofarbitraryresolutions,whiletheoutput
+imagesaregeneratedattheresolutionof256×256. Theimagetokenizerusesadownsamplingratio
+l=16,withafeaturedimensionD =32andavisualcodebooksizeV =4096. Themodeloperates
+withK =10scales. Duringtraining,weusetheAdamW[36]optimizerwithamaximumlearning
+rateof4×10−5andemploycosinelearningratescheduling. Thebatchsizeissetto128.
+4.2 ReferringSegmentation
+ReferringExpressionSegmentation Recentworkshaveincreasinglyfocusedonequippingmulti-
+modallargelanguagemodelswithimagesegmentationcapabilities,aimingtoleveragetheirstrong
+languageunderstandingformorecomplexsegmentationtasks. ReferringExpressionSegmentation
+(RES)requiresmodelstosegmenttargetobjectsinanimagebasedonnaturallanguagedescriptions.
+WeevaluateourapproachonstandardRESbenchmarksRefCOCO/+/g[37,70]. Followingprior
+works[29,57],weassesstwoversionsofourmodel: onetrainedonthemixeddataset,andanother
+furtherfinetunedonthein-domaintrainingsetsofRefCOCO/+/g. AsshowninTab.1,ourmethod
+consistentlyoutperformsthepreviousstate-of-the-art,HiMTok[57],acrossbothversions,despite
+trainingonfewersegmentationdata. Itisworthnotingthat,ourapproachachievessuperiorresults
+withoutrelyingonadedicatedsegmentationhead,demonstratingtheeffectivenessofourunified
+multimodalunderstandingandgenerationframework.
+6
+
+--- Page Suivante ---
+
+Table2: Performancecomparisonwithstate-of-the-artmethodsongeneralizedreferringexpression
+segmentation. *indicateszero-shotperformance.
+val testA testB
+Method Average
+cIoU gIoU cIoU gIoU cIoU gIoU
+LISA-7B[29] 38.7 32.2 52.6 48.5 44.8 39.7 42.8
+LISA-7B(ft) 61.8 61.6 68.5 66.3 60.6 58.8 62.9
+GSVA-7B[65] 61.7 63.3 69.2 70.1 60.3 61.3 64.3
+GSVA-7B(ft) 63.3 66.5 69.9 71.1 60.5 62.2 65.6
+LaSagnA*[60] 38.1 32.4 50.4 47.3 42.1 38.9 41.5
+PSALM*[75] 42.0 43.3 52.4 54.5 50.6 52.5 49.2
+GroundHog-7B[74] - 66.7 - - - - 66.7
+SAM4MLLM-8B[42] 67.8 71.9 72.2 74.2 63.4 65.3 69.1
+LMM -8B[57] 66.8 68.7 68.6 67.6 65.8 64.1 66.9
+HiMTok
+ARGenSeg 72.2 74.7 73.6 73.7 70.0 70.4 72.4
+(a) original (b) scale at (c) scale at (d) scale at
+�=4 �=5 �=6
+(e) scale at (f) scale at (g) scale at (h) scale at
+�=7 �=8 �=9 �=10
+Figure3: Multi-scalegenerationprocessofthesegmentationmask. Themodelfirstlocalizesthe
+targetobjectandthenprogressivelyrefinesitsboundaries.
+Fig.3illustratesthemulti-scalemaskgenerationprocessofARGenSeg. Themodelfirstlocates
+thetargetobject andthenprogressively refinesthesegmentationboundaries. Thiscoarse-to-fine
+reasoningprocessalignswithhumanintuitionandenhancestherobustnessofimagesegmentation.
+GeneralizedReferringExpressionSegmentation Wefurtherevaluateourmodelonthemore
+challenging gRefCOCO benchmark [32], where segmentation instructions may refer to multiple
+objectsornoneatall. AsshowninTab.2,ourmethodoutperformsallpriorapproachesthatrelyon
+dedicatedsegmentationheads,highlightingthestrongunderstandingandsegmentationcapabilitiesof
+ourunifiedframework.
+4.3 MultumodalUnderstanding
+OurmodeladoptsInternVL2.5[13]astheunderlyingMLLMandisfinetunedonbothunderstanding
+andsegmentationdata. Tofairlyassesstheeffectofaddingsegmentationsupervisiononthemodel’s
+understanding capability, we finetune a baseline usingonly understanding data. Weevaluate the
+model’sunderstandingperformanceusingtwotasks. Thefirsttaskisvisualgrounding,wherewe
+usetheRefCOCO/+/gdatasetsforreferringexpressioncomprehension(REC).AsshowninTab.3,
+our model successfully retains and even slightly enhances its grounding ability while acquiring
+segmentationcapabilities. ThesecondtaskevaluatesobjecthallucinationinMLLMsusingPOPE
+[30]asthebenchmark. ResultsinTab.3alsodemonstrateaperformanceimprovementofourmodel
+compared to the baseline. These results highlight the effectiveness of our proposed framework
+in unifying understanding and segmentation tasks. A further discussion on the understanding
+performanceisprovidedinAppendixC.1.
+7
+
+--- Page Suivante ---
+
+Table3: Multimodalunderstandingperformancecomparedwiththebaseline. *indicatesfurther
+finetuningonunderstandingdata.
+RefCOCO RefCOCO+ RefCOCOg
+Method POPE
+val testA testB val testA testB val test
+InternVL2.5-8B*[13] 89.0 92.6 84.3 83.4 89.1 76.5 83.5 85.0 86.73
+ARGenSeg 89.6 92.8 84.4 83.8 88.8 76.5 86.1 85.6 87.57
+4.4 FunctionExtension
+InteractiveSegmentation Interactivesegmentationallowsuserstoprovidediverseinputprompts
+duringsegmentationtaskstomeetvaryingapplicationneeds. WefinetuneARGenSegontheCOCO-
+Interactivedataset[75]tounlockitsinteractivesegmentationcapabilities. Duringtraining,various
+formsofinteractivepromptsareused,includingpoints,scribbles,andboundingboxes. Bounding
+boxesareprovidedastextualinputtotheMLLM,whilepointsandscribblesarerepresentedasbinary
+masksandfedinasadditionalvisualinputs. Weobservethat,buildinguponpre-trainedsegmentation
+capabilities,themodelquicklyadaptstointeractivesegmentationtasks. Qualitativeresultsareshown
+inthetopportionofFig.4,whilethequantitativeevaluationcanbefoundintheAppendixC.2.
+ImageGeneration Ourmodelleveragesauniversalimagetokenizer,enablingthepotentialfor
+image generation. We finetune ARGenSeg on 1.28M class-based samples from the ImageNet-
+Instruct-classdataset[78],usingabatchsizeof512for20k iterations. Thissuccessfullyenables
+class-conditionalimagegeneration,asillustratedinFig.1.Wethencontinuetrainingforanadditional
+30kiterationswithabatchsizeof256ontheImageNet-Instruct1270Kdataset[78],whichisbased
+oninstruction-conditionedgeneration. Theresultsofinstruction-basedimagegenerationareshown
+inthebottomofFig.4. Notably,ourmodelachievestheseresultswithoutrelyingonpre-trained
+generationmodel,usingonlyasmallamountofdataandtrainingiterations.
+Point Scribble Box
+Can you produce a Please render a I would like a crafted Can you design a I need a sketched Please craft a
+painting of a large designed photo of a figure of a great white crafted image of a figure of the ocean visualized figure of
+white house with a baseball in the grass. shark swimming in starfish on the beach. is very rocky and a large volcano in
+large porch. the ocean. has waves. the distance.
+Figure4: Top: Visualizationofinteractivesegmentation. Pointsandscribblesareprovidedasvisual
+prompts,whileboundingboxesareinputviatext. Bottom: Visualizationresultsofinstruction-based
+imagegeneration. Themodelistrainedonimagegenerationdataforonly50kiterations.
+4.5 EfficiencyAnalysis
+WecompareARGenSegwithpreviousautoregressivegenerationmodelsandMLLM-basedsegmen-
+tation methods in terms of inference time required to generate a 256×256 image or mask. All
+experimentsareconductedusingofficialimplementationsonanNVIDIAA100GPU.Segmentation
+performanceisevaluatedusingcIoUonRefCOCO-val. DetailedresultsareprovidedinTab.4.
+Compared to sequential token generation approaches such as Emu3 [59], our parallel inference
+achievesmorethan10×speedup. WhileVARGPT[78]alsoemploysVARasitsvisualtokenizer,
+8
+
+--- Page Suivante ---
+
+Table4: Computationalefficiencycomparison. Table5: Ablationstudyontheimpactofunder-
+"Num."representsthenumberofrequiredtokens. standingcapability,pretraining-stage,andgener-
+Timeistestedbysecondsperimage. ationprojectoronsegmentationperformance.
+Method Paradigm Num. cIoU Time Experiment Ref. Ref.+ Ref.g Average
+Emu3[59] VQ-GAN[19] 1024 - 59.4 Baseline 82.2 77.9 78.4 79.5
+VARGPT[78] VAR+Vis.Dec 680 - 2.64
+Only-Seg. 80.5 73.8 73.2 75.8
+PixelLM[45] Query+Seg.Dec 6 73.0 0.91
+HiMTok[57] MaskTokenizer 32 81.1 1.89 GenProjetctor 80.5 73.7 73.4 75.9
+ARGenSeg VARTokenizer 680 82.2 1.28 Pretrain 80.8 74.9 74.1 76.6
+Table6: Ablationstudyonthevisualtokenizer. Allresultsarereportedonthevalsplits,usinggIoU
+(per-sampleIoUaveragedoverthedataset)asthesegmentationmetric.
+TokenizerType Prediction RefCOCO RefCOCO+ RefCOCOg Average Time
+Single-scale next-token 82.1 71.8 65.8 73.23 5.50s
+Multi-scale next-scale 80.5 76.7 70.4 75.87 1.28s
+our method is approximately 2× more efficient, due to its simplified architecture. In contrast to
+VARGPT,ourmodeldirectlyusestheclassificationheadtopredicttokenIDsfromtheVARcodebook,
+eliminatingtheneedforanadditionaltransformer-basedvisualdecoder. PixelLM[45],aidentifier-
+basedapproach,usesonlysixtokensandadedicatedsegmentationdecoder,makingitslightlyfaster
+than ARGenSeg. However, its segmentation performance is significantly lower. While HiMTok
+[57]employsadedicatedmasktokenizertoachievenotablesegmentationperformanceusingonly
+32 visual tokens for efficiency, our method achieves superior performance while offering a clear
+advantageininferencespeed.
+4.6 AblationStudy
+AblationonUnderstandingData Wecompareourbaseline,fine-tunedonbothunderstanding
+and segmentation data, against a counterpart trained solely on segmentation data. As shown in
+Tab.5, incorporatingunderstandingdatasignificantlyimprovesperformanceonreasoning-based
+segmentation,particularlyonthesemanticallychallengingRefCOCO+/gdataset. Thishighlightsthe
+valueofunifyingsegmentationwithamultimodallargelanguagemodel.
+AblationonModelArchitectureandTrainingStrategy Weanalyzetheeffectsofmodelarchi-
+tecture and training strategy. First, to ablate the architecture, we replace our default single-layer
+generationprojectorwithatwo-layervariant. Resultsindicatethatthesimplerdesignissufficient.
+Second,toassessthetrainingstrategy,weintroduceapre-trainingphasewhereonlythegeneration
+projectoristrained,followedbyafullfine-tuningstage. AsshowninTab.5,thistwo-stageapproach
+offersonlymarginalgainsonRefCOCO+/gandlittleimpactonRefCOCO,whileincreasingtraining
+complexity. Therefore,forefficiency,ourfinalmodeladoptsadirect,single-stagefine-tuningstrategy.
+AblationonVisualTokenizer Weablateourmulti-scalevisualtokenizerbycomparingitagainsta
+single-scaletokenizer,forwhichweadoptthepre-trainedVQ-GAN[59]fromJanus[61]. Asshown
+inTab.6,usingmulti-scaleschemenotonlydemonstratesaclearspeedadvantagebutalsoimproves
+robustnessthroughitsinherentcoarse-to-finerefinementprocess. Furtherablations,includingan
+analysisofusingsemanticembeddingsinsteadofvisualtokens,areprovidedinAppendixD.
+5 Conclusion
+Inthispaper,wepresentARGenSeg,aunifiedframeworkthatintegratesimagesegmentationinto
+multimodallargelanguagemodelsthroughanimagegenerationparadigm. Toaddresstheunique
+challenges of segmentation, we design the framework so that the MLLM directly outputs image
+tokensforpixel-levelaccuracyandutilizesmulti-scaleimagegenerationforhighresponsiveness
+androbustnessthroughcoarse-to-finerefinement. Ourexperimentresultsarethefirsttoshowthat
+unified MLLM models can perform state-of-the-art segmentation without any extra task-specific
+segmentationheads,providinganeffectivetechnicalpathwayforunifiedAGI.
+9
+
+--- Page Suivante ---
+
+References
+[1] JoshAchiam,StevenAdler,SandhiniAgarwal,LamaAhmad,IlgeAkkaya,FlorenciaLeoni
+Aleman,DiogoAlmeida,JankoAltenschmidt,SamAltman,ShyamalAnadkat,etal. Gpt-4
+technicalreport. arXivpreprintarXiv:2303.08774,2023.
+[2] Inclusion AI, Biao Gong, Cheng Zou, Chuanyang Zheng, Chunluan Zhou, Canxiang Yan,
+Chunxiang Jin, Chunjie Shen, Dandan Zheng, Fudong Wang, et al. Ming-omni: A unified
+multimodalmodelforperceptionandgeneration. arXivpreprintarXiv:2506.09344,2025.
+[3] InclusionAI,BiaoGong, ChengZou, DandanZheng, HuYu, JingdongChen, JianxinSun,
+JunboZhao,JunZhou,KaixiangJi,etal. Ming-lite-uni: Advancementsinunifiedarchitecture
+fornaturalmultimodalinteraction. arXivpreprintarXiv:2505.02471,2025.
+[4] JinzeBai,ShuaiBai,YunfeiChu,ZeyuCui,KaiDang,XiaodongDeng,YangFan,WenbinGe,
+YuHan,FeiHuang,etal. Qwentechnicalreport. arXivpreprintarXiv:2309.16609,2023.
+[5] JinzeBai,ShuaiBai,ShushengYang,ShijieWang,SinanTan,PengWang,JunyangLin,Chang
+Zhou, and Jingren Zhou. Qwen-vl: A versatile vision-language model for understanding,
+localization,textreading,andbeyond. arXivpreprintarXiv:2308.12966,2023.
+[6] PaulBergmann,KilianBatzner,MichaelFauser,DavidSattlegger,andCarstenSteger. The
+mvtecanomalydetectiondataset: acomprehensivereal-worlddatasetforunsupervisedanomaly
+detection. InternationalJournalofComputerVision,129(4):1038–1059,2021.
+[7] PaulBergmann,MichaelFauser,DavidSattlegger,andCarstenSteger. Mvtecad–acomprehen-
+sivereal-worlddatasetforunsupervisedanomalydetection. InProceedingsoftheIEEE/CVF
+conferenceoncomputervisionandpatternrecognition,pages9592–9600,2019.
+[8] TomBrown,BenjaminMann,NickRyder,MelanieSubbiah,JaredDKaplan,PrafullaDhariwal,
+ArvindNeelakantan,PranavShyam,GirishSastry,AmandaAskell,etal. Languagemodelsare
+few-shotlearners. Advancesinneuralinformationprocessingsystems,33:1877–1901,2020.
+[9] SébastienBubeck,VarunChadrasekaran,RonenEldan,JohannesGehrke,EricHorvitz,Ece
+Kamar,PeterLee,YinTatLee,YuanzhiLi,ScottLundberg,etal. Sparksofartificialgeneral
+intelligence: Earlyexperimentswithgpt-4,2023.
+[10] JieCaoandJingXiao. Anaugmentedbenchmarkdatasetforgeometricquestionanswering
+throughdualparalleltextencoding. InProceedingsofthe29thinternationalconferenceon
+computationallinguistics,pages1511–1520,2022.
+[11] TingChen,SaurabhSaxena,LalaLi,Tsung-YiLin,DavidJFleet,andGeoffreyEHinton. A
+unifiedsequenceinterfaceforvisiontasks. AdvancesinNeuralInformationProcessingSystems,
+35:31333–31346,2022.
+[12] Yi-Chia Chen, Wei-Hua Li, Cheng Sun, Yu-Chiang Frank Wang, and Chu-Song Chen.
+Sam4mllm: Enhancemulti-modallargelanguagemodelforreferringexpressionsegmentation.
+InEuropeanConferenceonComputerVision,pages323–340.Springer,2024.
+[13] ZheChen,WeiyunWang,YueCao,YangzhouLiu,ZhangweiGao,ErfeiCui,JinguoZhu,Shen-
+glongYe,HaoTian,ZhaoyangLiu,etal. Expandingperformanceboundariesofopen-source
+multimodalmodelswithmodel,data,andtest-timescaling. arXivpreprintarXiv:2412.05271,
+2024.
+[14] ZheChen,WeiyunWang,HaoTian,ShenglongYe,ZhangweiGao,ErfeiCui,WenwenTong,
+Kongzhi Hu, Jiapeng Luo, Zheng Ma, et al. How far are we to gpt-4v? closing the gap to
+commercialmultimodalmodelswithopen-sourcesuites. ScienceChinaInformationSciences,
+67(12):220101,2024.
+[15] ZheChen,JiannanWu,WenhaiWang,WeijieSu,GuoChen,SenXing,MuyanZhong,Qinglong
+Zhang,XizhouZhu,LeweiLu,etal. Internvl:Scalingupvisionfoundationmodelsandaligning
+forgenericvisual-linguistictasks. InProceedingsoftheIEEE/CVFConferenceonComputer
+VisionandPatternRecognition,pages24185–24198,2024.
+10
+
+--- Page Suivante ---
+
+[16] Bowen Cheng, Ishan Misra, Alexander G Schwing, Alexander Kirillov, and Rohit Girdhar.
+Masked-attentionmasktransformerforuniversalimagesegmentation. InProceedingsofthe
+IEEE/CVFconferenceoncomputervisionandpatternrecognition,pages1290–1299,2022.
+[17] AakankshaChowdhery,SharanNarang,JacobDevlin,MaartenBosma,GauravMishra,Adam
+Roberts,PaulBarham,HyungWonChung,CharlesSutton,SebastianGehrmann,etal. Palm:
+Scalinglanguagemodelingwithpathways. JournalofMachineLearningResearch,24(240):1–
+113,2023.
+[18] ChristopherClarkandMattGardner. Simpleandeffectivemulti-paragraphreadingcomprehen-
+sion. arXivpreprintarXiv:1710.10723,2017.
+[19] PatrickEsser,RobinRombach,andBjornOmmer. Tamingtransformersforhigh-resolution
+imagesynthesis. InProceedingsoftheIEEE/CVFconferenceoncomputervisionandpattern
+recognition,pages12873–12883,2021.
+[20] YuyingGe,SijieZhao,ZiyunZeng,YixiaoGe,ChenLi,XintaoWang,andYingShan. Making
+llamaseeanddrawwithseedtokenizer. arXivpreprintarXiv:2310.01218,2023.
+[21] JonathanHo,AjayJain,andPieterAbbeel. Denoisingdiffusionprobabilisticmodels. Advances
+inneuralinformationprocessingsystems,33:6840–6851,2020.
+[22] ZiyuanHuang,DanDanZheng,ChengZou,RuiLiu,XiaolongWang,KaixiangJi,Weilong
+Chai,JianxinSun,LibinWang,YongjieLv,etal. Ming-univision: Jointimageunderstanding
+andgenerationwithaunifiedcontinuoustokenizer. arXivpreprintarXiv:2510.06590,2025.
+[23] Drew A Hudson and Christopher D Manning. Gqa: A new dataset for real-world visual
+reasoningandcompositionalquestionanswering. InProceedingsoftheIEEE/CVFconference
+oncomputervisionandpatternrecognition,pages6700–6709,2019.
+[24] KushalKafle,BrianPrice,ScottCohen,andChristopherKanan. Dvqa: Understandingdata
+visualizationsviaquestionanswering. InProceedingsoftheIEEEconferenceoncomputer
+visionandpatternrecognition,pages5648–5656,2018.
+[25] AniruddhaKembhavi,MikeSalvato,EricKolve,MinjoonSeo,HannanehHajishirzi,andAli
+Farhadi. Adiagramisworthadozenimages. InComputerVision–ECCV2016: 14thEuropean
+Conference,Amsterdam,TheNetherlands,October11–14,2016,Proceedings,PartIV14,pages
+235–251.Springer,2016.
+[26] GeewookKim,TeakgyuHong,MoonbinYim,JeongYeonNam,JinyoungPark,JinyeongYim,
+Wonseok Hwang, Sangdoo Yun, Dongyoon Han, and Seunghyun Park. Ocr-free document
+understanding transformer. In European Conference on Computer Vision, pages 498–517.
+Springer,2022.
+[27] AlexanderKirillov,EricMintun,NikhilaRavi,HanziMao,ChloeRolland,LauraGustafson,
+TeteXiao,SpencerWhitehead,AlexanderCBerg,Wan-YenLo,etal. Segmentanything. In
+ProceedingsoftheIEEE/CVFinternationalconferenceoncomputervision,pages4015–4026,
+2023.
+[28] RanjayKrishna,YukeZhu,OliverGroth,JustinJohnson,KenjiHata,JoshuaKravitz,Stephanie
+Chen, Yannis Kalantidis, Li-Jia Li, David A Shamma, et al. Visual genome: Connecting
+languageandvisionusingcrowdsourceddenseimageannotations. Internationaljournalof
+computervision,123:32–73,2017.
+[29] XinLai,ZhuotaoTian,YukangChen,YanweiLi,YuhuiYuan,ShuLiu,andJiayaJia. Lisa:
+Reasoningsegmentationvialargelanguagemodel.InProceedingsoftheIEEE/CVFConference
+onComputerVisionandPatternRecognition,pages9579–9589,2024.
+[30] YifanLi,YifanDu,KunZhou,JinpengWang,WayneXinZhao,andJi-RongWen. Evaluating
+objecthallucinationinlargevision-languagemodels. arXivpreprintarXiv:2305.10355,2023.
+[31] Tsung-YiLin,MichaelMaire,SergeBelongie,JamesHays,PietroPerona,DevaRamanan,Piotr
+Dollár,andCLawrenceZitnick. Microsoftcoco: Commonobjectsincontext. InComputer
+vision–ECCV2014: 13thEuropeanconference,zurich, Switzerland,September6-12,2014,
+proceedings,partv13,pages740–755.Springer,2014.
+11
+
+--- Page Suivante ---
+
+[32] ChangLiu,HenghuiDing,andXudongJiang. GRES:Generalizedreferringexpressionseg-
+mentation. InCVPR,2023.
+[33] Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. Improved baselines with visual
+instructiontuning.InProceedingsoftheIEEE/CVFConferenceonComputerVisionandPattern
+Recognition,pages26296–26306,2024.
+[34] HaotianLiu,ChunyuanLi,QingyangWu,andYongJaeLee.Visualinstructiontuning.Advances
+inneuralinformationprocessingsystems,36:34892–34916,2023.
+[35] JiangLiu,HuiDing,ZhaoweiCai,YutingZhang,RaviKumarSatzoda,VijayMahadevan,and
+RManmatha. Polyformer: Referringimagesegmentationassequentialpolygongeneration. In
+ProceedingsoftheIEEE/CVFconferenceoncomputervisionandpatternrecognition,pages
+18653–18663,2023.
+[36] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. arXiv preprint
+arXiv:1711.05101,2017.
+[37] JunhuaMao,JonathanHuang,AlexanderToshev,OanaCamburu,AlanLYuille,andKevin
+Murphy. Generationandcomprehensionofunambiguousobjectdescriptions. InProceedings
+oftheIEEEconferenceoncomputervisionandpatternrecognition,pages11–20,2016.
+[38] Ahmed Masry, Do Xuan Long, Jia Qing Tan, Shafiq Joty, and Enamul Hoque. Chartqa: A
+benchmarkforquestionansweringaboutchartswithvisualandlogicalreasoning.arXivpreprint
+arXiv:2203.10244,2022.
+[39] AnandMishra,ShashankShekhar,AjeetKumarSingh,andAnirbanChakraborty. Ocr-vqa:
+Visual question answering by reading text in images. In 2019 international conference on
+documentanalysisandrecognition(ICDAR),pages947–952.IEEE,2019.
+[40] OpenAI. Chatgpt. https://chat.openai.com/,2023. Accessed: 2023.
+[41] XichenPan,SatyaNarayanShukla,AashuSingh,ZhuokaiZhao,ShlokKumarMishra,Jialiang
+Wang,ZhiyangXu,JiuhaiChen,KunpengLi,FelixJuefei-Xu,etal.Transferbetweenmodalities
+withmetaqueries. arXivpreprintarXiv:2504.06256,2025.
+[42] Shraman Pramanick, Guangxing Han, Rui Hou, Sayan Nag, Ser-Nam Lim, Nicolas Ballas,
+QifanWang,RamaChellappa,andAmjadAlmahairi. Jackofalltasksmasterofmany: Design-
+inggeneral-purposecoarse-to-finevision-languagemodel. InProceedingsoftheIEEE/CVF
+ConferenceonComputerVisionandPatternRecognition,pages14076–14088,2024.
+[43] Lu Qi, Lehan Yang, Weidong Guo, Yu Xu, Bo Du, Varun Jampani, and Ming-Hsuan Yang.
+Unigs: Unifiedrepresentationforimagegenerationandsegmentation. InProceedingsofthe
+IEEE/CVFConferenceonComputerVisionandPatternRecognition,pages6305–6315,2024.
+[44] HanoonaRasheed,MuhammadMaaz,SahalShaji,AbdelrahmanShaker,SalmanKhan,Hisham
+Cholakkal,RaoMAnwer,EricXing,Ming-HsuanYang,andFahadSKhan. Glamm: Pixel
+groundinglargemultimodalmodel. InProceedingsoftheIEEE/CVFConferenceonComputer
+VisionandPatternRecognition,pages13009–13018,2024.
+[45] Zhongwei Ren, Zhicheng Huang, Yunchao Wei, Yao Zhao, Dongmei Fu, Jiashi Feng, and
+Xiaojie Jin. Pixellm: Pixel reasoning with large multimodal model. In Proceedings of the
+IEEE/CVFConferenceonComputerVisionandPatternRecognition,pages26374–26383,2024.
+[46] RobinRombach,AndreasBlattmann,DominikLorenz,PatrickEsser,andBjörnOmmer. High-
+resolution image synthesis with latent diffusion models. In Proceedings of the IEEE/CVF
+conferenceoncomputervisionandpatternrecognition,pages10684–10695,2022.
+[47] Amanpreet Singh, Vivek Natarajan, Meet Shah, Yu Jiang, Xinlei Chen, Dhruv Batra, Devi
+Parikh, and Marcus Rohrbach. Towards vqa models that can read. In Proceedings of the
+IEEE/CVFconferenceoncomputervisionandpatternrecognition,pages8317–8326,2019.
+[48] QuanSun,QiyingYu,YufengCui,FanZhang,XiaosongZhang,YuezeWang,HongchengGao,
+JingjingLiu,TiejunHuang,andXinlongWang. Emu: Generativepretraininginmultimodality.
+arXivpreprintarXiv:2307.05222,2023.
+12
+
+--- Page Suivante ---
+
+[49] ChameleonTeam. Chameleon: Mixed-modalearly-fusionfoundationmodels. arXivpreprint
+arXiv:2405.09818,2024.
+[50] KeyuTian, YiJiang, ZehuanYuan, BingyuePeng, andLiweiWang. Visualautoregressive
+modeling: Scalableimagegenerationvianext-scaleprediction. Advancesinneuralinformation
+processingsystems,37:84839–84865,2024.
+[51] Shengbang Tong, David Fan, Jiachen Zhu, Yunyang Xiong, Xinlei Chen, Koustuv Sinha,
+MichaelRabbat,YannLeCun,SainingXie,andZhuangLiu. Metamorph: Multimodalunder-
+standingandgenerationviainstructiontuning. arXivpreprintarXiv:2412.14164,2024.
+[52] HugoTouvron,ThibautLavril,GautierIzacard,XavierMartinet,Marie-AnneLachaux,Timo-
+théeLacroix,BaptisteRozière,NamanGoyal,EricHambro,FaisalAzhar,etal. Llama: Open
+andefficientfoundationlanguagemodels. arXivpreprintarXiv:2302.13971,2023.
+[53] AaronVanDenOord,OriolVinyals,etal. Neuraldiscreterepresentationlearning. Advancesin
+neuralinformationprocessingsystems,30,2017.
+[54] AshishVaswani,NoamShazeer,NikiParmar,JakobUszkoreit,LlionJones,AidanNGomez,
+ŁukaszKaiser,andIlliaPolosukhin. Attentionisallyouneed. Advancesinneuralinformation
+processingsystems,30,2017.
+[55] Andreas Veit, Tomas Matera, Lukas Neumann, Jiri Matas, and Serge Belongie. Coco-text:
+Datasetandbenchmarkfortextdetectionandrecognitioninnaturalimages. arXivpreprint
+arXiv:1601.07140,2016.
+[56] PengWang,ShuaiBai,SinanTan,ShijieWang,ZhihaoFan,JinzeBai,KeqinChen,Xuejing
+Liu,JialinWang,WenbinGe,etal. Qwen2-vl: Enhancingvision-languagemodel’sperception
+oftheworldatanyresolution. arXivpreprintarXiv:2409.12191,2024.
+[57] TaoWang,ChangxuCheng,LingfengWang,SendaChen,andWuyueZhao. Himtok: Learning
+hierarchicalmasktokensforimagesegmentationwithlargemultimodalmodel. arXivpreprint
+arXiv:2503.13026,2025.
+[58] WenhaiWang,ZheChen,XiaokangChen,JiannanWu,XizhouZhu,GangZeng,PingLuo,Tong
+Lu,JieZhou,YuQiao,etal. Visionllm: Largelanguagemodelisalsoanopen-endeddecoder
+forvision-centrictasks. AdvancesinNeuralInformationProcessingSystems,36:61501–61513,
+2023.
+[59] XinlongWang,XiaosongZhang,ZhengxiongLuo,QuanSun,YufengCui,JinshengWang,Fan
+Zhang,YuezeWang,ZhenLi,QiyingYu,etal. Emu3: Next-tokenpredictionisallyouneed.
+arXivpreprintarXiv:2409.18869,2024.
+[60] CongWei,HaoxianTan,YujieZhong,YujiuYang,andLinMa. Lasagna: Language-based
+segmentationassistantforcomplexqueries. arXivpreprintarXiv:2404.08506,2024.
+[61] ChengyueWu,XiaokangChen,ZhiyuWu,YiyangMa,XingchaoLiu,ZizhengPan,WenLiu,
+ZhendaXie,XingkaiYu,ChongRuan,etal. Janus: Decouplingvisualencodingforunified
+multimodalunderstandingandgeneration. arXivpreprintarXiv:2410.13848,2024.
+[62] JiannanWu,MuyanZhong,SenXing,ZeqiangLai,ZhaoyangLiu,ZheChen,WenhaiWang,
+XizhouZhu,LeweiLu,TongLu,etal. Visionllmv2: Anend-to-endgeneralistmultimodal
+largelanguagemodelforhundredsofvision-languagetasks. AdvancesinNeuralInformation
+ProcessingSystems,37:69925–69975,2024.
+[63] Shengqiong Wu, Hao Fei, Leigang Qu, Wei Ji, and Tat-Seng Chua. Next-gpt: Any-to-any
+multimodalllm. InForty-firstInternationalConferenceonMachineLearning,2024.
+[64] YechengWu,ZhuoyangZhang,JunyuChen,HaotianTang,DachengLi,YunhaoFang,Ligeng
+Zhu,EnzeXie,HongxuYin,LiYi,etal. Vila-u: aunifiedfoundationmodelintegratingvisual
+understandingandgeneration. arXivpreprintarXiv:2409.04429,2024.
+[65] Zhuofan Xia, Dongchen Han, Yizeng Han, Xuran Pan, Shiji Song, and Gao Huang. Gsva:
+Generalized segmentation via multimodal large language models. In Proceedings of the
+IEEE/CVFConferenceonComputerVisionandPatternRecognition,pages3858–3869,2024.
+13
+
+--- Page Suivante ---
+
+[66] EnzeXie,JunsongChen,YuyangZhao,JinchengYu,LigengZhu,YujunLin,ZhekaiZhang,
+Muyang Li, Junyu Chen, Han Cai, et al. Sana 1.5: Efficient scaling of training-time and
+inference-timecomputeinlineardiffusiontransformer,2025.
+[67] JinhengXie,WeijiaMao,ZechenBai,DavidJunhaoZhang,WeihaoWang,KevinQinghong
+Lin,YuchaoGu,ZhijieChen,ZhenhengYang,andMikeZhengShou.Show-o:Onesingletrans-
+formertounifymultimodalunderstandingandgeneration. arXivpreprintarXiv:2408.12528,
+2024.
+[68] Jinjin Xu, Liwu Xu, Yuzhe Yang, Xiang Li, Fanyi Wang, Yanchun Xie, Yi-Jie Huang, and
+YaqianLi. u-llava: Unifyingmulti-modaltasksvialargelanguagemodel. InECAI2024,pages
+618–625.IOSPress,2024.
+[69] SenqiaoYang,TianyuanQu,XinLai,ZhuotaoTian,BohaoPeng,ShuLiu,andJiayaJia. An
+improvedbaselineforreasoningsegmentationwithlargelanguagemodel. CoRR,2023.
+[70] LichengYu,PatrickPoirson,ShanYang,AlexanderCBerg,andTamaraLBerg. Modeling
+contextinreferringexpressions. InComputerVision–ECCV2016: 14thEuropeanConference,
+Amsterdam, The Netherlands, October 11-14, 2016, Proceedings, Part II 14, pages 69–85.
+Springer,2016.
+[71] LijunYu,JoséLezama,NiteshBGundavarapu,LucaVersari,KihyukSohn,DavidMinnen,
+Yong Cheng, Vighnesh Birodkar, Agrim Gupta, Xiuye Gu, et al. Language model beats
+diffusion–tokenizeriskeytovisualgeneration. arXivpreprintarXiv:2310.05737,2023.
+[72] Qihang Yu, Mark Weber, Xueqing Deng, Xiaohui Shen, Daniel Cremers, and Liang-Chieh
+Chen. Animageisworth32tokensforreconstructionandgeneration. AdvancesinNeural
+InformationProcessingSystems,37:128940–128966,2024.
+[73] TaoZhang,XiangtaiLi,HaoFei,HaoboYuan,ShengqiongWu,ShunpingJi,ChenChangeLoy,
+andShuichengYan. Omg-llava: Bridgingimage-level,object-level,pixel-levelreasoningand
+understanding. AdvancesinNeuralInformationProcessingSystems,37:71737–71767,2024.
+[74] YichiZhang,ZiqiaoMa,XiaofengGao,SuhailaShakiah,QiaoziGao,andJoyceChai. Ground-
+hog: Grounding large language models to holistic segmentation. In Proceedings of the
+IEEE/CVFconferenceoncomputervisionandpatternrecognition,pages14227–14238,2024.
+[75] ZhengZhang,YeyaoMa,EnmingZhang,andXiangBai. Psalm: Pixelwisesegmentationwith
+largemulti-modalmodel. InEuropeanConferenceonComputerVision,pages74–91.Springer,
+2024.
+[76] Bolei Zhou, Hang Zhao, Xavier Puig, Sanja Fidler, Adela Barriuso, and Antonio Torralba.
+Sceneparsingthroughade20kdataset. InProceedingsoftheIEEEconferenceoncomputer
+visionandpatternrecognition,pages633–641,2017.
+[77] ChuntingZhou,LiliYu,ArunBabu,KushalTirumala,MichihiroYasunaga,LeonidShamis,
+JacobKahn,XuezheMa,LukeZettlemoyer,andOmerLevy. Transfusion: Predictthenext
+tokenanddiffuseimageswithonemulti-modalmodel. arXivpreprintarXiv:2408.11039,2024.
+[78] XianweiZhuang,YuxinXie,YufanDeng,LimingLiang,JinghanRu,YuguoYin,andYuexian
+Zou. Vargpt: Unifiedunderstandingandgenerationinavisualautoregressivemultimodallarge
+languagemodel. arXivpreprintarXiv:2501.12327,2025.
+14
+
+--- Page Suivante ---
+
+Appendix of ARGenSeg
+A ImplementationDetails
+Datasets Thedatasetsusedforimagesegmentation,multimodalunderstanding,andimagegenera-
+tionarelistedinTab.7. Toensureafaircomparison,weexclusivelyusesubsetsofthedataemployed
+bythepreviousstate-of-the-artmethod,HiMTok[57]. Specifically,wetrainon402Ksegmentation
+samplescomparedtoHiMTok’s2.91M,and1.25Mmultimodalunderstandingsamplescomparedto
+HiMTok’s4.2M.Imagegenerationdataareusedonlyintheoptionalfunction-extensionstage.
+Table7: Trainingdatausedinourexperiments.
+Task Datasets
+Image ADE20K(20K)[76],COCO-Panoptic(118K)[31],gRefCOCO(79K)[32],
+Segmentation RefCOCO/+/g(127K)[37,70],LISA++Inst.Seg(58K)[69]
+AI2D[25],ChartQA[38],COCO-Text[55],DocVQA[18],LLaVA-150K[34],
+Multimodal
+GQA[23],DVQA[24],OCR-VQA[39],TextVQA[47],SynthDoG-EN[26],
+Understanding
+InternVL-SA1B-Caption[14],VisualGenome[28],GeoQA+[10]
+ImageGeneration ImageNet-Instruct-class[78],ImageNet-Instruct1270K[78]
+InferenceDetails Duringinference,wegetvisualoutputsexclusivelyfromthelogitscorresponding
+to visual tokens in the MLLM codebook. This constraint ensures compatibility with the visual
+tokenizerandenablessuccessfulreconstructionoftheimage. Forimagesegmentationtasks, we
+adoptadeterministicargmaxsamplingstrategytoobtainthepredictedvisualtokens. Forimage
+generationtasks,weapplyclassifier-freeguidance(CFG)tocomputetheoutputdistributionover
+visualtokens,followedbytop-ksamplingtoenhancethediversityandqualityofgeneratedimages.
+B AdditionalQualitativeResults
+Multi-scale Image Generation We provide visualization of segmenting similar objects in the
+sameimageusingdifferentinstructions,asshowninFig.5. Fromthemulti-scalemaskgeneration
+process,itisevidentthatourmodelcancorrectlyunderstandandlocalizethetargetbasedonthe
+giveninstructions. Theabilitytocorrectlyfollowdistinctsegmentationcommandsindicatesthat
+ARGenSegpossessesarobustunderstandingofbothspatialpositionsandsemanticrelationships.
+ComparisonwithSingle-scaleGeneration WecompareourmethodwithHiMTok[57],treating
+it as a representative single-scale generative segmentation approach. We conducted a thorough
+evaluation on the test set and visualized cases where ARGenSeg succeeds while HiMTok fails.
+As shown in Fig. 6, these cases reveal two primary advantages of our coarse-to-fine, multi-scale
+generationscheme: (1)RobustTargetIdentificationinMulti-objectScenarios. Theinitialcoarse
+localizationstageeffectivelyidentifiesthetargetobjectevenwhenmultiplesimilarobjectsarepresent.
+(2)EnhancedMaskQualitythroughProgressiveRefinement. Followingtargetidentification,the
+multi-scalerefinementprocessprogressivelyimprovesmaskprecisionforhigher-qualitysegmentation.
+Forinstance,inthecaseofapartiallyoccludedteddybear,bothHiMTokandourcoarselocalization
+stageinitiallysegmentonlyavisiblepart. However,ourmodel’ssubsequentfine-grainedrefinement
+successfullyreconstructstheentireobjectwhilecorrectlyexcludingtheoccluder.
+C AdditionalQuantitativeResults
+C.1 PerformanceonMultimodalUnderstanding
+WefurtherassessthemultimodalunderstandingcapabilitiesofARGenSeg. AsshowninTab.8,the
+inclusionofsegmentationdatadoesnotcausethemodeltoloseitsreasoningcapability. Whilewe
+15
+
+--- Page Suivante ---
+
+computer on right side of picture
+laptop next to cat
+Figure5: Visualizationofusingdifferentsegmentationinstructionsinthesameimage.
+Ground Truth
+HiMTok ARGenSeg: <orange in front slight right of center>
+Ground Truth
+HiMTok ARGenSeg: <bear the child is hugging>
+Figure6: Comparisonbetweenmulti-scaleandsingle-scalegenerativesegmentationapproach. The
+exampleshighlightscenarioswherethemulti-scaleapproachexcels.
+16
+
+--- Page Suivante ---
+
+observeslightperformancedropsonsomebenchmarks,weattributethisminordegradationnottothe
+segmentationtaskitself,buttothesignificantlysmallerandlower-qualityunderstandingcorpusused
+forfine-tuning(1.25Mvs.the16.3MsamplesusedforInternVL-2.5[13]).Tovalidatethishypothesis,
+weconductedacontrolexperiment: fine-tuningInternVL-2.5solelyonthesameunderstandingdata
+foranincreasingnumberofsteps. Theperformancedeclinedmonotonically,mirroringthetrend
+observedwithjointsegmentationtrainingandthusconfirmingourattribution.
+Table8: Multimodalunderstandingresultsacrossbenchmarks.
+Method POPE TextVQA VQAv2 MMMU-val AI2D
+InternVL2.5-ft-1ep 86.73 63.54 80.40 43.7 78.7
+InternVL2.5-ft-4ep 86.01 59.73 79.28 36.8 74.8
+ARGenSeg 87.57 56.98 77.87 33.4 69.6
+C.2 ResultsonInteractiveSegmentation
+To ensure a fair comparison with HiMTok, which was Table9: Quantitativeresultsoninterac-
+nottrainedoninteractive-segmentationdata,weomitted tivesegmentation. TheresultsforSAM
+thistaskfromourmainexperiments. Here,weevaluate and PSALM are sourced directlyfrom
+ourmodelontheCOCO-Interactivebenchmark[75],re- thePSALMpaper.
+porting the cIoU metric. It is worth noting that while
+PSALM[75]wasfine-tunedfor10epochsaccordingtoits Method Point Scribble Box
+officialimplementation,ourmodelisfine-tunedforonlya
+SAM-B[27] 33.6 – 68.7
+singleepochduetocomputationalconstraints. Asshown
+SAM-L[27] 37.7 – 71.6
+inTab.9,ARGenSegsignificantlyoutperformsSAM[27]
+PSALM[75] 74.0 80.0 80.9
+in interactive segmentation. Moreover, it achieves per-
+formancecomparabletoPSALMwithsubstantiallyless ARGenSeg 65.6 68.6 79.1
+fine-tuning,whichunderscoresthestronggeneralization
+capabilitiesofourmodel.
+D AdditionalAblationStudies
+Table10: AblationstudyofMLLMbackbonesandimagegenerationstrategies. Thesegmentation
+performanceismeasuredincIoU.
+Method Backbone GenerationStrategy RefCOCO RefCOCO+ RefCOCOg
+HiMTok[57] InternVL-2.5 Single-scaleVQ 81.1 77.1 75.8
+ARGenSeg-LLaVA LLaVA–1.5 Multi-scaleVQ 72.7 68.3 69.1
+ARGenSeg-InternVL InternVL-2.5 Multi-scaleVQ 82.2 77.9 78.4
+ARGenSeg-DiT InternVL-2.5 DiffusionHead 59.0 62.7 64.1
+D.1 AblationonMLLMBackbone
+Ourapproach,whichintegratesaVQVAEcodebookintotheMLLM’stokenspace,isdesignedtobe
+model-agnostic. Todemonstratethisportability,wereplacedthedefaultInternVL-2.5backbonewith
+LLaVA-1.5[33],aLLaMA-2-basedMLLM.AsshowninTab.10,ourpipelinesuccessfullyimparts
+segmentationcapabilitiestoLLaVA-1.5.
+AsestablishedinSec.4.6,referringsegmentationperformanceishighlycorrelatedwiththeMLLM’s
+underlying understanding ability. Consequently, given LLaVA-1.5’s weaker understanding capa-
+bilities compared to InternVL-2.5, the resulting segmentation performance is expectedly lower.
+Nevertheless,Tab.10showsthatwiththesamepowerfulInternVL-2.5backbone,ourmethodout-
+performsHiMTok. Thisconfirmsthatourperformancegainsareinherenttoourapproachandnot
+merelyabyproductofastrongerbackbone.
+17
+
+--- Page Suivante ---
+
+TiD-geSneGRA
+LVnretnI-geSneGRA
+Figure 7: Comparison between direct visual token generation and DiT-based generation. The
+DiT-basedapproach,whichusessemanticembeddingsfromtheMLLM,struggleswithpixel-level
+accuracy,leadingtoartifactslikespatialshiftsandimpreciseboundaries.
+D.2 AblationonImageGenerationStrategy
+Tofurthervalidateourchoiceofgenerationstrategy,weexploreanalternativeapproachwherethe
+MLLMoutputssemanticembeddingstoaseparatediffusionhead(DiT)forsegmentation,inspired
+byMetaQuery[41]. Specifically,weconfiguretheMLLMtogeneratelearnablequeries,whichare
+thenmappedtothefeaturespaceofthepre-trainedSANA-1.51.6B[66]viaaconnectormodule.
+Thisalternativestrategy,labeledasARGenSeg-DiTinTab.10,ledtoasevereperformancedegrada-
+tion. AsshowinFig.7,whilethemodelcouldroughlylocalizethetargetregion,thegeneratedmasks
+suffered from significant artifacts, such as spatial shifts and inflation, indicating poor pixel-level
+accuracy. ThisexperimentunderscorestheimportanceoftheMLLMdirectlygeneratingdiscrete
+imagetokenstomaintainthehighpixel-levelprecisioncrucialforsegmentationtasks.
+E Limitations
+Thispaperproposesanovelimagesegmentationparadigmbasedonautoregressiveimagegeneration,
+integratingmultimodalunderstanding,generation,andimagesegmentationintoaunifiedframework.
+Ourmodeldemonstratesstrongperformanceacrossarangeofsegmentationtasks,andfurthershows
+thepotentialtoextendtomorecomplexscenarios,suchasinteractivesegmentationandtext-to-image
+generation. Theunifiedframeworkalsoshowspromiseforexpandingtobroadertasks,suchasimage
+editinganddepthestimation. However,duetoresourceconstraints,exploringtheseextensionsis
+beyondthescopeofthiswork,andweconsiderthemaspromisingdirectionsforfutureresearch.
+F BroaderImpacts
+Thisworkcontributestothedevelopmentofunifiedmultimodalframeworksbyintegratingdense
+imagesegmentationintotheunifiedmultimodalunderstandingandgenerationmodels. Theproposed
+frameworkmay inspirefuture researchtowardmore generalizable, modular, andefficient visual-
+languagemodelsthatrequirefewertask-specificcomponents. Potentialapplicationsincludehuman-
+robotinteraction,assistivevisionsystems,andreal-worldvisualunderstandingunderlowsupervision.
+However,likemostlarge-scalemodels,ARGenSegmayinheritbiasesfrompre-trainedcomponents
+ordatasets. Careshouldbetakentoevaluatefairnessandrobustnesswhendeployingitinreal-world
+scenarios,especiallyinsensitivedomainssuchashealthcareorsurveillance.
+18

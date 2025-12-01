@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
+<title>Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot</title>
+<!--Generated on Tue Jun 17 15:41:50 2025 by LaTeXML (version 0.8.8) http://dlmf.nist.gov/LaTeXML/.-->
+<meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+<link href="/static/browse/0.3.4/css/ar5iv.0.7.9.min.css" rel="stylesheet" type="text/css"/>
+<link href="/static/browse/0.3.4/css/ar5iv-fonts.0.7.9.min.css" rel="stylesheet" type="text/css"/>
+<link href="/static/browse/0.3.4/css/latexml_styles.css" rel="stylesheet" type="text/css"/>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.3/html2canvas.min.js"></script>
+<script src="/static/browse/0.3.4/js/addons_new.js"></script>
+<script src="/static/browse/0.3.4/js/feedbackOverlay.js"></script>
+<base href="/html/2506.14641v1/"/></head>
+<body>
+<nav class="ltx_page_navbar">
+<nav class="ltx_TOC">
+<ol class="ltx_toclist">
+<li class="ltx_tocentry ltx_tocentry_section"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S1" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">1 </span>Introduction</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S2" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">2 </span>Related Work</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S3" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">3 </span>Experimental Setup</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S4" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">4 </span>Exemplars Help Mitigate Evaluation Bias</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_section">
+<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">5 </span>CoT Exemplars can’t improve reasoning ability of strong models</span></a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.SS1" title="In 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">5.1 </span>The Impact of the retrieval method</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.SS2" title="In 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">5.2 </span>The Impact of exemplars Is Determined by the Model’s Intrinsic Capability</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.SS3" title="In 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">5.3 </span>Is traditional CoT exemplars too easy for strong models?</span></a></li>
+</ol>
+</li>
+<li class="ltx_tocentry ltx_tocentry_section">
+<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">6 </span>Why CoT exemplars is not useful for strong models?</span></a>
+<ol class="ltx_toclist ltx_toclist_section">
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.SS1" title="In 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">6.1 </span>Ablation Study on Noisy Exemplars</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.SS2" title="In 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">6.2 </span>Attention Visualization</span></a></li>
+</ol>
+</li>
+<li class="ltx_tocentry ltx_tocentry_section"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S7" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">7 </span>Discussion and Conclusion</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_appendix">
+<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1" title="In Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A </span>Experimental Details</span></a>
+<ol class="ltx_toclist ltx_toclist_appendix">
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS1" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.1 </span>Model Details</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS2" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.2 </span>Data Details</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS3" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.3 </span>Implementation Details</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS4" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.4 </span>Inherent Biases in the Experiments</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS5" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.5 </span>Details of Attention Visualization and Supplementary Results</span></a></li>
+<li class="ltx_tocentry ltx_tocentry_subsection"><a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS6" title="In Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_title"><span class="ltx_tag ltx_tag_ref">A.6 </span>Input Examples</span></a></li>
+</ol>
+</li>
+</ol></nav>
+</nav>
+<div class="ltx_page_main">
+<div class="ltx_page_content">
+<article class="ltx_document">
+<h1 class="ltx_title ltx_title_document">Revisiting Chain-of-Thought Prompting: Zero-shot 
+<br class="ltx_break"/>Can Be Stronger than Few-shot</h1>
+<div class="ltx_authors">
+<span class="ltx_creator ltx_role_author">
+<span class="ltx_personname">
+Xiang Cheng<sup class="ltx_sup" id="id1.1.id1">1</sup>,
+ Chengyan Pan<sup class="ltx_sup" id="id2.2.id2">1</sup>,
+ Minjun Zhao<sup class="ltx_sup" id="id3.3.id3">2</sup>,
+ Deyang Li<sup class="ltx_sup" id="id4.4.id4">2</sup>,
+<br class="ltx_break"/><span class="ltx_text ltx_font_bold" id="id5.5.id5"> Fangchao Liu<sup class="ltx_sup" id="id5.5.id5.1">2</sup>,
+ Xinyu Zhang<sup class="ltx_sup" id="id5.5.id5.2">2</sup>,
+ Xiao Zhang<sup class="ltx_sup" id="id5.5.id5.3">1</sup>,
+ Yong Liu<sup class="ltx_sup" id="id5.5.id5.4">1</sup></span>
+<br class="ltx_break"/><sup class="ltx_sup" id="id6.6.id6">1</sup>Gaoling School of Artificial Intelligence, Renmin University of China
+<br class="ltx_break"/><sup class="ltx_sup" id="id7.7.id7">2</sup>Huawei Poisson Lab
+<br class="ltx_break"/><span class="ltx_text ltx_font_typewriter" id="id8.8.id8">{chengxiang1,2023100836,zhangx89,liuyonggsai}@ruc.edu.cn
+<br class="ltx_break"/>{zhaominjun1,lideyang2,liufangchao,zhangxinyu35}@huawei.com</span>
+</span><span class="ltx_author_notes"><span class="ltx_text ltx_font_bold" id="id9.9.id1">  Corresponding author.</span></span></span>
+</div>
+<div class="ltx_abstract">
+<h6 class="ltx_title ltx_title_abstract">Abstract</h6>
+<p class="ltx_p" id="id10.id1">In-Context Learning (ICL) is an essential emergent ability of Large Language Models (LLMs), and recent studies introduce Chain-of-Thought (CoT) to exemplars of ICL to enhance the reasoning capability, especially in mathematics tasks. However, given the continuous advancement of model capabilities, it remains unclear whether CoT exemplars still benefit recent, stronger models in such tasks. Through systematic experiments, we find that for recent strong models such as the Qwen2.5 series, adding traditional CoT exemplars does not improve reasoning performance compared to Zero-Shot CoT. Instead, their primary function is to align the output format with human expectations. We further investigate the effectiveness of enhanced CoT exemplars, constructed using answers from advanced models such as <span class="ltx_text ltx_font_typewriter" id="id10.id1.1">Qwen2.5-Max</span> and <span class="ltx_text ltx_font_typewriter" id="id10.id1.2">DeepSeek-R1</span>. Experimental results indicate that these enhanced exemplars still fail to improve the model’s reasoning performance. Further analysis reveals that models tend to ignore the exemplars and focus primarily on the instructions, leading to no observable gain in reasoning ability. Overall, our findings highlight the limitations of the current ICL+CoT framework in mathematical reasoning, calling for a re-examination of the ICL paradigm and the definition of exemplars.</p>
+</div>
+<div class="ltx_para ltx_noindent" id="p1">
+<div class="ltx_block ltx_align_bottom" id="p1.1">
+<p class="ltx_p" id="p1.1.1"><span class="ltx_text ltx_font_bold" id="p1.1.1.1">Revisiting Chain-of-Thought Prompting: Zero-shot 
+<br class="ltx_break"/>Can Be Stronger than Few-shot</span></p>
+<br class="ltx_break ltx_centering"/>
+<p class="ltx_p ltx_align_center" id="p1.1.2" style="width:433.6pt;"><span class="ltx_text ltx_inline-block" id="p1.1.2.1" style="width:0.0pt;">
+<span class="ltx_tabular ltx_align_top" id="p1.1.2.1.1">
+<span class="ltx_tbody">
+<span class="ltx_tr" id="p1.1.2.1.1.1.1">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.1.1.1"><span class="ltx_text ltx_font_bold" id="p1.1.2.1.1.1.1.1.1">
+Xiang Cheng<sup class="ltx_sup" id="p1.1.2.1.1.1.1.1.1.1">1</sup>,
+ Chengyan Pan<sup class="ltx_sup" id="p1.1.2.1.1.1.1.1.1.2">1</sup>,
+ Minjun Zhao<sup class="ltx_sup" id="p1.1.2.1.1.1.1.1.1.3">2</sup>,
+ Deyang Li<sup class="ltx_sup" id="p1.1.2.1.1.1.1.1.1.4">2</sup>,</span></span></span>
+<span class="ltx_tr" id="p1.1.2.1.1.2.2">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.2.2.1"><span class="ltx_text ltx_font_bold" id="p1.1.2.1.1.2.2.1.1"> Fangchao Liu<sup class="ltx_sup" id="p1.1.2.1.1.2.2.1.1.1">2</sup>,
+ Xinyu Zhang<sup class="ltx_sup" id="p1.1.2.1.1.2.2.1.1.2">2</sup>,
+ Xiao Zhang<sup class="ltx_sup" id="p1.1.2.1.1.2.2.1.1.3">1</sup>,
+ Yong Liu<sup class="ltx_sup" id="p1.1.2.1.1.2.2.1.1.4">1</sup><span class="ltx_note ltx_role_thanks" id="p1.1.2.1.1.2.2.1.1.5"><sup class="ltx_note_mark">†</sup><span class="ltx_note_outer"><span class="ltx_note_content"><sup class="ltx_note_mark">†</sup><span class="ltx_note_type">thanks: </span>  Corresponding author.</span></span></span></span></span></span>
+<span class="ltx_tr" id="p1.1.2.1.1.3.3">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.3.3.1"><sup class="ltx_sup" id="p1.1.2.1.1.3.3.1.1">1</sup>Gaoling School of Artificial Intelligence, Renmin University of China</span></span>
+<span class="ltx_tr" id="p1.1.2.1.1.4.4">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.4.4.1"><sup class="ltx_sup" id="p1.1.2.1.1.4.4.1.1">2</sup>Huawei Poisson Lab</span></span>
+<span class="ltx_tr" id="p1.1.2.1.1.5.5">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.5.5.1"><span class="ltx_text ltx_font_typewriter" id="p1.1.2.1.1.5.5.1.1">{chengxiang1,2023100836,zhangx89,liuyonggsai}@ruc.edu.cn</span></span></span>
+<span class="ltx_tr" id="p1.1.2.1.1.6.6">
+<span class="ltx_td ltx_align_center" id="p1.1.2.1.1.6.6.1"><span class="ltx_text ltx_font_typewriter" id="p1.1.2.1.1.6.6.1.1">{zhaominjun1,lideyang2,liufangchao,zhangxinyu35}@huawei.com</span></span></span>
+</span>
+</span></span></p>
+<br class="ltx_break ltx_centering"/>
+</div>
+</div>
+<section class="ltx_section" id="S1">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">1 </span>Introduction</h2>
+<figure class="ltx_figure" id="S1.F1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_landscape" height="584" id="S1.F1.g1" src="x1.png" width="831"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 1: </span>Accuracy under different prompting settings on GSM8K (top) and MATH (bottom). We observe that the Zero-shot setting consistently achieves strong performance, suggesting that the model may not attend to the CoT exemplars. See Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5" title="5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">5</span></a> for the full experimental results.</figcaption>
+</figure>
+<div class="ltx_para" id="S1.p1">
+<p class="ltx_p" id="S1.p1.1">As Large Language Models (LLMs) continues to scale, LLMs exhibit emergent In-Context Learning (ICL) capabilities <cite class="ltx_cite ltx_citemacro_cite">Brown et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib3" title="">2020</a>)</cite>, enabling them to perform target tasks by conditioning on a few exemplars without any additional parameter updates. Furthermore, the use of Chain-of-Thought (CoT) exemplars <cite class="ltx_cite ltx_citemacro_cite">Wei et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib33" title="">2022</a>)</cite> in ICL guides models to reason step-by-step. This approach is commonly referred to as <span class="ltx_text ltx_font_italic" id="S1.p1.1.1">Few-shot CoT</span>. <cite class="ltx_cite ltx_citemacro_citet">Kojima et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib15" title="">2022</a>)</cite> further showed that simply appending the instruction “Let’s think step by step” can trigger multi-step reasoning even without exemplars, giving rise to the <span class="ltx_text ltx_font_italic" id="S1.p1.1.2">Zero-shot CoT</span> paradigm, an overview of them is shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S2.F2" title="Figure 2 ‣ 2 Related Work ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">2</span></a>.</p>
+</div>
+<div class="ltx_para" id="S1.p2">
+<p class="ltx_p" id="S1.p2.1">Existing research primarily focuses on how the quality, order, and number of exemplars influence ICL performance, proposing various strategies for exemplar construction and selection to enhance model performance across different task settings <cite class="ltx_cite ltx_citemacro_cite">Lu et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib21" title="">2022</a>); Chen et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib4" title="">2023</a>); Kim et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib14" title="">2022</a>); Purohit et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib26" title="">2024</a>)</cite>. In addition, several studies have investigated the underlying mechanisms and influencing factors of ICL from either theoretical or empirical perspectives <cite class="ltx_cite ltx_citemacro_cite">Ren and Liu (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib27" title="">2024</a>); Xie et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib36" title="">2022</a>); Min et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib24" title="">2022</a>); Wei et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib34" title="">2023</a>); Wang et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib32" title="">2023</a>)</cite>. However, most of these strategies and experimental conclusions are based on earlier, weaker models. As foundation models become increasingly powerful, it is necessary to revisit a central question: <span class="ltx_text ltx_font_italic" id="S1.p2.1.1">In mathematical reasoning tasks, can CoT exemplars still improve the reasoning performance of recent strong models?</span></p>
+</div>
+<div class="ltx_para" id="S1.p3">
+<p class="ltx_p" id="S1.p3.1">In this paper, we aim to investigate the actual role of CoT exemplars in mathematical reasoning tasks. We conduct systematic experiments on two representative math reasoning datasets, GSM8K <cite class="ltx_cite ltx_citemacro_cite">Cobbe et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib5" title="">2021</a>)</cite> and MATH <cite class="ltx_cite ltx_citemacro_cite">Hendrycks et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib11" title="">2021</a>)</cite>, using several recent open-source LLMs. We first identify a common evaluation bias in open-source evaluation frameworks <cite class="ltx_cite ltx_citemacro_cite">Contributors (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib6" title="">2023</a>); Lambert et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib17" title="">2024</a>)</cite> in GSM8K, which significantly <span class="ltx_text ltx_font_bold" id="S1.p3.1.1">underestimates the performance of Zero-shot CoT</span>, as discussed in Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S4" title="4 Exemplars Help Mitigate Evaluation Bias ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">4</span></a>. After correcting for this issue, we compare Few-shot CoT with Zero-shot CoT prompting. Our results show that recent strong models already exhibit strong reasoning capabilities under the Zero-shot CoT setting, and the primary role of Few-shot CoT exemplars is to <span class="ltx_text ltx_font_bold" id="S1.p3.1.2">align the output format with human expectations</span>. Subsequent analysis confirms that <span class="ltx_text ltx_font_bold" id="S1.p3.1.3">adding traditional CoT exemplars does not improve reasoning performance</span> (See Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.SS1" title="5.1 The Impact of the retrieval method ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">5.1</span></a>). Inspired by recent advances in reasoning models with more sophisticated capabilities <cite class="ltx_cite ltx_citemacro_cite">Guo et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib10" title="">2025</a>); Jaech et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib13" title="">2024</a>)</cite>, we then examine the effectiveness of enhanced CoT demonstrations constructed using answers generated by advanced models such as <span class="ltx_text ltx_font_typewriter" id="S1.p3.1.4">Qwen2.5-Max</span> and <span class="ltx_text ltx_font_typewriter" id="S1.p3.1.5">DeepSeek-R1</span>. Experimental results indicate that, regardless of enhancement, models tend to ignore the content of exemplars in mathematical reasoning tasks and fail to acquire advanced capabilities such as self-reflection (See Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.SS3" title="5.3 Is traditional CoT exemplars too easy for strong models? ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">5.3</span></a>). As a result in figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S1.F1" title="Figure 1 ‣ 1 Introduction ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">1</span></a>, <span class="ltx_text ltx_font_bold" id="S1.p3.1.6">CoT exemplars do not lead to improved reasoning performance in recent models</span>.</p>
+</div>
+<div class="ltx_para" id="S1.p4">
+<p class="ltx_p" id="S1.p4.1">To summarize, our main empirical findings in mathematical reasoning tasks are as follows:</p>
+<ol class="ltx_enumerate" id="S1.I1">
+<li class="ltx_item" id="S1.I1.i1" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">1.</span>
+<div class="ltx_para" id="S1.I1.i1.p1">
+<p class="ltx_p" id="S1.I1.i1.p1.1">The primary function of CoT exemplars is to align the output format, and this effect persists regardless of the model’s reasoning ability.</p>
+</div>
+</li>
+<li class="ltx_item" id="S1.I1.i2" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">2.</span>
+<div class="ltx_para" id="S1.I1.i2.p1">
+<p class="ltx_p" id="S1.I1.i2.p1.1">Traditional CoT exemplars do not enhance the reasoning performance of strong models, although they may benefit weaker models.</p>
+</div>
+</li>
+<li class="ltx_item" id="S1.I1.i3" style="list-style-type:none;">
+<span class="ltx_tag ltx_tag_item">3.</span>
+<div class="ltx_para" id="S1.I1.i3.p1">
+<p class="ltx_p" id="S1.I1.i3.p1.1">Enhanced CoT exemplars also fail to improve reasoning ability in strong models, as these models tend to ignore the CoT content.</p>
+</div>
+</li>
+</ol>
+</div>
+</section>
+<section class="ltx_section" id="S2">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">2 </span>Related Work</h2>
+<figure class="ltx_figure" id="S2.F2"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_landscape" height="323" id="S2.F2.g1" src="x2.png" width="830"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 2: </span>An overview of ICL and CoT prompting. The figure illustrates the Few-shot CoT setting, where the model performs reasoning based on provided demonstrations and a test question. When no demonstrations are given, the setting corresponds to Zero-shot CoT.</figcaption>
+</figure>
+<figure class="ltx_figure" id="S2.F3"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_landscape" height="166" id="S2.F3.g1" src="x3.png" width="830"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 3: </span>Accuracy of different models on the GSM8K dataset under varying numbers of exemplars. <span class="ltx_text ltx_font_typewriter" id="S2.F3.3.1">Few-shot</span> examples are taken from <cite class="ltx_cite ltx_citemacro_citet">Wei et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib33" title="">2022</a>)</cite>. Only <span class="ltx_text ltx_font_typewriter" id="S2.F3.4.2">Zero-shot-fixed</span> applies evaluation bias correction, as described in Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S4" title="4 Exemplars Help Mitigate Evaluation Bias ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">4</span></a>; all other settings retain uncorrected results for comparison.</figcaption>
+</figure>
+<figure class="ltx_figure" id="S2.F4"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_landscape" height="160" id="S2.F4.g1" src="x4.png" width="830"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 4: </span>Accuracy of different models on the GSM8K dataset under various ablation settings. <span class="ltx_text ltx_font_typewriter" id="S2.F4.4.1">Replace_Q</span> denotes replacing the question in each exemplars with “xxx”. <span class="ltx_text ltx_font_typewriter" id="S2.F4.5.2">Replace_QA</span> replaces both the question and answer with “xxx” but retains the final phrase “So the answer is …”. <span class="ltx_text ltx_font_typewriter" id="S2.F4.6.3">Replace_ALL</span> replaces the question, answer, and the final phrase with “xxx”. See figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F16" title="Figure 16 ‣ A.6 Input Examples ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">16</span></a>, <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F17" title="Figure 17 ‣ A.6 Input Examples ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">17</span></a>, and <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F18" title="Figure 18 ‣ A.6 Input Examples ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">18</span></a> for input examples, respectively. Other settings follow those in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S2.F3" title="Figure 3 ‣ 2 Related Work ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">3</span></a>.</figcaption>
+</figure>
+<div class="ltx_para" id="S2.p1">
+<p class="ltx_p" id="S2.p1.1"><span class="ltx_text ltx_font_bold" id="S2.p1.1.1">CoT Prompting</span>  ICL enables LLMs to perform tasks without fine-tuning <cite class="ltx_cite ltx_citemacro_cite">Brown et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib3" title="">2020</a>)</cite>, but it often falls short in complex reasoning scenarios. To address this, CoT prompting <cite class="ltx_cite ltx_citemacro_cite">Wei et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib33" title="">2022</a>)</cite> introduces intermediate reasoning steps to guide model outputs. Building on CoT, researchers have proposed various extensions to enhance reasoning capabilities. For instance, Tree-of-Thought <cite class="ltx_cite ltx_citemacro_cite">Yao et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib38" title="">2023</a>)</cite> generalizes CoT to tree-structured reasoning, while Graph-of-Thought <cite class="ltx_cite ltx_citemacro_cite">Besta et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib2" title="">2024</a>)</cite> further expands it to graph-based structures. The Least-to-Most framework <cite class="ltx_cite ltx_citemacro_cite">Zhou et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib42" title="">2023</a>)</cite> decomposes complex problems into simpler subproblems and solves them sequentially.</p>
+</div>
+<div class="ltx_para" id="S2.p2">
+<p class="ltx_p" id="S2.p2.1"><span class="ltx_text ltx_font_bold" id="S2.p2.1.1">Exemplar Selection</span>  In addition to improving CoT itself, numerous studies have explored how exemplar quality, quantity, diversity, and ordering affect ICL performance <cite class="ltx_cite ltx_citemacro_cite">Lu et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib21" title="">2022</a>); Li et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib20" title="">2023</a>); Ma et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib22" title="">2023</a>); Zhang et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib41" title="">2022</a>)</cite>. A variety of exemplar selection strategies have been proposed. <cite class="ltx_cite ltx_citemacro_citet">Fu et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib8" title="">2023</a>)</cite> recommend selecting exemplars with higher reasoning complexity (i.e., involving more intermediate steps), while <cite class="ltx_cite ltx_citemacro_citet">Hongjin et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib12" title="">2022</a>)</cite> emphasize diversity and introduce the VoteK algorithm. Other representative methods include DPP <cite class="ltx_cite ltx_citemacro_cite">Ye et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib39" title="">2023a</a>)</cite>, which formulates selection as a subset optimization problem; MMR <cite class="ltx_cite ltx_citemacro_cite">Ye et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib40" title="">2023b</a>)</cite>, which balances relevance and diversity via marginal relevance scoring; and EXPLORA <cite class="ltx_cite ltx_citemacro_cite">Purohit et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib26" title="">2024</a>)</cite>, which evaluates exemplar subsets without relying on confidence score from models.</p>
+</div>
+<div class="ltx_para" id="S2.p3">
+<p class="ltx_p" id="S2.p3.1"><span class="ltx_text ltx_font_bold" id="S2.p3.1.1">Understanding CoT Prompting</span>  Beyond methodology, a growing body of research has sought to understand the mechanisms behind ICL and CoT prompting. Theoretical investigations <cite class="ltx_cite ltx_citemacro_cite">Dai et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib7" title="">2023</a>); Li et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib19" title="">2024</a>); Ren and Liu (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib27" title="">2024</a>); Mahankali et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib23" title="">2023</a>)</cite> offer insights into the learning dynamics of ICL, while empirical studies probe the effectiveness of CoT. For instance, <cite class="ltx_cite ltx_citemacro_citet">Min et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib24" title="">2022</a>)</cite> suggest that exemplars primarily provide distributional rather than semantic information—though their analysis is limited to classification tasks. In the context of reasoning, <cite class="ltx_cite ltx_citemacro_citet">Levy et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib18" title="">2024</a>)</cite> report that longer input contexts may hurt performance, and <cite class="ltx_cite ltx_citemacro_citet">Sprague et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib28" title="">2025</a>)</cite> find that the benefits of CoT are mainly confined to mathematical and logical reasoning.</p>
+</div>
+<div class="ltx_para" id="S2.p4">
+<p class="ltx_p" id="S2.p4.1">Our work complements these lines of research through a systematic empirical study on mathematical reasoning. While prior studies have provided important insights, they are mostly based on earlier and weaker models, whose conclusions may not fully extend to recent, stronger models. We find that, for recent strong models, CoT exemplars primarily function to align output format rather than enhance reasoning ability. This challenges the prevailing assumption that CoT-based ICL reliably improves performance in math reasoning tasks.</p>
+</div>
+</section>
+<section class="ltx_section" id="S3">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">3 </span>Experimental Setup</h2>
+<div class="ltx_para" id="S3.p1">
+<p class="ltx_p" id="S3.p1.1"><span class="ltx_text ltx_font_bold" id="S3.p1.1.1">Models</span>  To thoroughly validate our conclusions, we evaluate a variety of open-source language models, including the Qwen2.5 series (ranging from 0.5B to 72B parameters) <cite class="ltx_cite ltx_citemacro_cite">Yang et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib37" title="">2024</a>)</cite>, the LLaMA3 series (1B to 70B) <cite class="ltx_cite ltx_citemacro_cite">Grattafiori et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib9" title="">2024</a>)</cite>, the Gemma2 series (2B and 9B) <cite class="ltx_cite ltx_citemacro_cite">Team et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib29" title="">2024</a>)</cite>, and Ministral-8B  <cite class="ltx_cite ltx_citemacro_cite">Mistral AI (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib25" title="">2024</a>)</cite>. In addition, to examine the effectiveness of CoT prompting on earlier and weaker models, we include LLaMA2-7B <cite class="ltx_cite ltx_citemacro_cite">Touvron et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib30" title="">2023</a>)</cite> and Qwen-7B <cite class="ltx_cite ltx_citemacro_cite">Bai et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib1" title="">2023</a>)</cite> for comparative analysis. All models used in our experiments are instruction-tuned variants. More details can be found in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS1" title="A.1 Model Details ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.1</span></a>.</p>
+</div>
+<div class="ltx_para" id="S3.p2">
+<p class="ltx_p" id="S3.p2.1"><span class="ltx_text ltx_font_bold" id="S3.p2.1.1">Datasets</span>  We focus on mathematical reasoning tasks and conduct experiments on two datasets of varying difficulty: GSM8K <cite class="ltx_cite ltx_citemacro_cite">Cobbe et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib5" title="">2021</a>)</cite> and MATH <cite class="ltx_cite ltx_citemacro_cite">Hendrycks et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib11" title="">2021</a>)</cite>. To ensure accuracy, we perform inference and evaluation on the full test sets of both datasets and report the complete results. More details can be found in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS2" title="A.2 Data Details ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.2</span></a>.</p>
+</div>
+<div class="ltx_para" id="S3.p3">
+<p class="ltx_p" id="S3.p3.1"><span class="ltx_text ltx_font_bold" id="S3.p3.1.1">Environment and Hyperparameters</span>
+We utilize the open-source inference framework OpenCompass <cite class="ltx_cite ltx_citemacro_cite">Contributors (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib6" title="">2023</a>)</cite> and <span class="ltx_text ltx_font_typewriter" id="S3.p3.1.2">vLLM</span> <cite class="ltx_cite ltx_citemacro_cite">Kwon et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib16" title="">2023</a>)</cite> as the backend to run all experiments. Notably, all experiments incorporate a CoT instruction in the prompt: "Please reason step by step, and put your final answer within \boxed{}." For reproducibility, all experiments are conducted using a fixed random seed of 42. Notably, since greedy decoding is deterministic, the fixed seed does not influence the inference results under a fixed hardware setup. Hence, we do not report the mean or standard deviation of the results. More details can be found in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS3" title="A.3 Implementation Details ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.3</span></a>.</p>
+</div>
+<figure class="ltx_figure" id="S3.F5">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_figure_panel ltx_img_landscape" height="138" id="S3.F5.g1" src="x5.png" width="830"/></div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_figure_panel ltx_img_landscape" height="138" id="S3.F5.g2" src="x6.png" width="830"/></div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 5: </span>Accuracy of different models under various retrieval methods with a fixed number of 8 retrieved exemplars. The top figure shows results on the MATH dataset, and the bottom figure shows results on the GSM8K dataset.</figcaption>
+</figure>
+</section>
+<section class="ltx_section" id="S4">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">4 </span>Exemplars Help Mitigate Evaluation Bias</h2>
+<div class="ltx_para" id="S4.p1">
+<p class="ltx_p" id="S4.p1.1"><span class="ltx_text ltx_font_bold" id="S4.p1.1.1">Evaluation Bias in GSM8K</span>  Existing evaluation frameworks for GSM8K (e.g., OpenCompass <cite class="ltx_cite ltx_citemacro_cite">Contributors (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib6" title="">2023</a>)</cite>, Open-Instruct <cite class="ltx_cite ltx_citemacro_cite">Lambert et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib17" title="">2024</a>)</cite>) typically extract <span class="ltx_text ltx_font_bold" id="S4.p1.1.2">the last number</span> from model outputs as the predicted answer. However, in Zero-shot CoT prompting, answers are often enclosed in “<span class="ltx_text ltx_font_typewriter" id="S4.p1.1.3">\boxed{}</span>" expressions. This mismatch leads to misjudgments during evaluation, as illustrated in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F20" title="Figure 20 ‣ A.6 Input Examples ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">20</span></a>. To address this, we modify the evaluation script to extract the number inside <span class="ltx_text ltx_font_typewriter" id="S4.p1.1.4">\boxed{}</span>, reducing artificially low accuracy caused by output-format misalignment. We consider this a form of evaluation bias that affects fair assessment, either due to oversight or simplification.</p>
+</div>
+<div class="ltx_para" id="S4.p2">
+<p class="ltx_p" id="S4.p2.1"><span class="ltx_text ltx_font_bold" id="S4.p2.1.1">Exemplars Aid Format Alignment</span>  As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S2.F3" title="Figure 3 ‣ 2 Related Work ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">3</span></a>, after correcting the evaluation method, the <span class="ltx_text ltx_font_typewriter" id="S4.p2.1.2">Zero_shot_fixed</span> setting yields substantial gains, surpassing all others. This indicates that the original poor performance of <span class="ltx_text ltx_font_typewriter" id="S4.p2.1.3">Zero_shot</span> stems not from reasoning limitations, but from output-evaluation mismatch. Moreover, <span class="ltx_text ltx_font_typewriter" id="S4.p2.1.4">Few_shot</span> consistently outperforms <span class="ltx_text ltx_font_typewriter" id="S4.p2.1.5">Zero_shot</span>, suggesting that exemplars help standardize output format and improve answer extraction. Thus, in math reasoning tasks, the primary benefit of exemplars lies in aligning the model’s output format. Interestingly, for Mistral-8B, exemplars can induce overfitting to simplified reasoning paths, diminishing their effectiveness.</p>
+</div>
+<div class="ltx_para" id="S4.p3">
+<p class="ltx_p" id="S4.p3.1"><span class="ltx_text ltx_font_bold" id="S4.p3.1.1">Complete Answer Structure is Key Factor</span>  Ablation results in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S2.F4" title="Figure 4 ‣ 2 Related Work ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">4</span></a> show a consistent performance drop as more content is masked—from <span class="ltx_text ltx_font_typewriter" id="S4.p3.1.2">Replace_Q</span> to <span class="ltx_text ltx_font_typewriter" id="S4.p3.1.3">Replace_QA</span> to <span class="ltx_text ltx_font_typewriter" id="S4.p3.1.4">Replace_All</span>. This highlights the importance of preserving the full answer structure for effective format alignment. Even partial cues (e.g., “So the answer is …”) prove beneficial, whereas fully removing informative content reverts performance to the <span class="ltx_text ltx_font_typewriter" id="S4.p3.1.5">Zero_shot</span> baseline. This confirms that exemplars primarily guide answer formatting rather than reasoning itself.</p>
+</div>
+</section>
+<section class="ltx_section" id="S5">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">5 </span>CoT Exemplars can’t improve reasoning ability of strong models</h2>
+<div class="ltx_para" id="S5.p1">
+<p class="ltx_p" id="S5.p1.1">The preceding sections have shown that the primary contribution of exemplars lies in aligning the output format rather than enhancing reasoning ability. However, since we previously used a fixed set of 8 exemplars, an open question remains: <span class="ltx_text ltx_font_italic" id="S5.p1.1.1">Can exemplars improve the reasoning ability of recent LLMs if we consider different impact factors such as retrieval method, model’s intrinsic ability and the quality of exemplars?</span></p>
+</div>
+<section class="ltx_subsection" id="S5.SS1">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">5.1 </span>The Impact of the retrieval method</h3>
+<div class="ltx_para" id="S5.SS1.p1">
+<p class="ltx_p" id="S5.SS1.p1.1">In this section, we revisit the classical CoT prompting paradigm, where in-context exemplars are retrieved from the training set of the original dataset. This setup aligns with prior work and allows us to evaluate whether recent LLMs still benefit from exemplars under this traditional configuration. To ensure consistency, we <span class="ltx_text ltx_font_bold" id="S5.SS1.p1.1.1">apply our corrected evaluation method</span> across a variety of models and compare their performance on GSM8K and MATH using several established exemplar selection strategies, including Complexity-based <cite class="ltx_cite ltx_citemacro_cite">Fu et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib8" title="">2023</a>)</cite>, Fast-Votek <cite class="ltx_cite ltx_citemacro_cite">Hongjin et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib12" title="">2022</a>)</cite>, DPP <cite class="ltx_cite ltx_citemacro_cite">Ye et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib39" title="">2023a</a>)</cite>, MMR <cite class="ltx_cite ltx_citemacro_cite">Ye et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib40" title="">2023b</a>)</cite>, and EXPLORA <cite class="ltx_cite ltx_citemacro_cite">Purohit et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib26" title="">2024</a>)</cite>, along with simple TopK and Random baselines.</p>
+</div>
+<figure class="ltx_figure" id="S5.F6">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_figure_panel ltx_img_landscape" height="138" id="S5.F6.g1" src="x7.png" width="830"/></div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_figure_panel ltx_img_landscape" height="138" id="S5.F6.g2" src="x8.png" width="830"/></div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 6: </span>Accuracy of different weaker models under various retrieval methods with a fixed number of 8 retrieved exemplars. The top figure shows results on the MATH dataset, and the bottom figure shows results on the GSM8K dataset.</figcaption>
+</figure>
+<div class="ltx_para" id="S5.SS1.p2">
+<p class="ltx_p" id="S5.SS1.p2.1"><span class="ltx_text ltx_font_bold" id="S5.SS1.p2.1.1">Retrieval-Based Methods Fall Short of Zero-Shot Performance</span>  We uniformly retrieve 8 exemplars for each selection method and report the results in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S3.F5" title="Figure 5 ‣ 3 Experimental Setup ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">5</span></a>. Across most configurations—regardless of model or dataset— <span class="ltx_text ltx_font_typewriter" id="S5.SS1.p2.1.2">Few-shot</span> performance with retrieval-based methods is comparable to or worse than the <span class="ltx_text ltx_font_typewriter" id="S5.SS1.p2.1.3">Zero-shot</span> baseline. This observation suggests that for advanced language models, in-context exemplars do not enhance reasoning ability, but primarily function is align output formats. Notably, there are a few exceptions. For example, LLaMA3.1-8B exhibits marginal improvements under the 8-shot setting. However, we attribute this to inherent experimental variance rather than genuine reasoning gains. A detailed analysis is provided in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS4" title="A.4 Inherent Biases in the Experiments ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.4</span></a>.</p>
+</div>
+<div class="ltx_para" id="S5.SS1.p3">
+<p class="ltx_p" id="S5.SS1.p3.1"><span class="ltx_text ltx_font_bold" id="S5.SS1.p3.1.1">Varying the Number of Exemplars Still Fails to Surpass Zero-Shot</span>  Given that using 8 retrieved exemplars often fails to outperform the Zero-shot baseline, we further investigate the impact of varying the number of in-context exemplars. As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.F7" title="Figure 7 ‣ 5.1 The Impact of the retrieval method ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">7</span></a>, Zero-shot prompting achieves the highest accuracy in most settings. Nevertheless, certain retrieval methods occasionally yield slightly better performance, particularly on GSM8K. For example, the Complexity-based retrieval method marginally outperforms Zero-shot when retrieving 4 or 6 exemplars on two different models. However, the improvements are minimal—around 0.2% in accuracy. It can be reasonably attributed to inherent evaluation variance. Such small fluctuations are more likely to occur on relatively simpler datasets like GSM8K. In contrast, on the more challenging MATH dataset, nearly all retrieval-based configurations consistently underperform relative to the Zero-shot baseline.</p>
+</div>
+<div class="ltx_para" id="S5.SS1.p4">
+<p class="ltx_p" id="S5.SS1.p4.1">Overall, these results reinforce the conclusion that Zero-shot prompting remains the most effective approach in the vast majority of cases. This supports the emerging perspective that traditional CoT prompting paradigms no longer significantly enhance the reasoning capabilities of recent LLMs.</p>
+</div>
+<figure class="ltx_figure" id="S5.F7">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_figure_panel ltx_img_landscape" height="366" id="S5.F7.g1" src="x9.png" width="830"/></div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_figure_panel ltx_img_landscape" height="441" id="S5.F7.g2" src="x10.png" width="830"/></div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 7: </span>Accuracy variation with different numbers of retrieved exemplars under various retrieval methods, evaluated using Qwen2.5-7B and Qwen2.5-72B. The top figure shows results on the MATH dataset, and the bottom figure shows results on the GSM8K dataset.</figcaption>
+</figure>
+</section>
+<section class="ltx_subsection" id="S5.SS2">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">5.2 </span>The Impact of exemplars Is Determined by the Model’s Intrinsic Capability</h3>
+<figure class="ltx_figure" id="S5.F8"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_landscape" height="184" id="S5.F8.g1" src="x11.png" width="830"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 8: </span>Accuracy under different numbers of exemplars when using DeepSeek R1 responses(marked as R1-nshot) and Qwen2.5-max responses(marked as Qwen-nshot) as exemplars. The left figure shows results on the MATH dataset, and the right figure shows results on the GSM8K dataset.</figcaption>
+</figure>
+<div class="ltx_para" id="S5.SS2.p1">
+<p class="ltx_p" id="S5.SS2.p1.1">In the previous experiments, we observed that in-context exemplars do not enhance the reasoning ability of recent models such as Qwen2.5 series. <em class="ltx_emph ltx_font_italic" id="S5.SS2.p1.1.1">Does this contradict earlier findings from exemplar selection studies, such as those by Fu et al. <cite class="ltx_cite ltx_citemacro_cite">Fu et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib8" title="">2023</a>)</cite>?</em> To further investigate the role of exemplars, we conducted experiments on relatively weaker models. Specifically, we evaluated a set of smaller but recent models (LLaMA3.2-1B, LLaMA3.2-3B, Qwen2.5-0.5B, Qwen2.5-1.5B), as well as several older models (LLaMA3-8B, LLaMA2-7B, Qwen-7B). The same prompt templates were used as in previous experiments, and all model responses were post-processed to eliminate evaluation artifacts and isolate the true effect of exemplars.</p>
+</div>
+<div class="ltx_para" id="S5.SS2.p2">
+<p class="ltx_p" id="S5.SS2.p2.1">Since all outputs were corrected prior to evaluation, the only potential benefit of in-context exemplars in this experiment lies in improving reasoning ability, not output alignment. As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.F6" title="Figure 6 ‣ 5.1 The Impact of the retrieval method ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">6</span></a>, model performance varies significantly. For relatively strong models such as LLaMA3.2-3B and Qwen2.5-1.5B, the <span class="ltx_text ltx_font_typewriter" id="S5.SS2.p2.1.1">Zero_shot</span> setting yields the highest accuracy, indicating that adding exemplars does not improve reasoning . This is consistent with our findings on stronger models, reaffirming that for capable models, exemplars primarily serve as output format guides rather than improve reasoning.</p>
+</div>
+<div class="ltx_para" id="S5.SS2.p3">
+<p class="ltx_p" id="S5.SS2.p3.1">However, for weaker models (e.g., LLaMA3.2-1B) and older models with larger parameter counts (e.g., LLaMA2-7B and Qwen-7B), we observe a significant improvement in accuracy when exemplars are provided. This suggests that for such models, in-context exemplars indeed help augment reasoning by supplying intermediate steps that the model struggles to generate on its own. We hypothesize that these weaker or older models lack the complex reasoning patterns that more recent models have acquired through pretraining and instruction tuning, and thus rely more heavily on external exemplars.</p>
+</div>
+<div class="ltx_para" id="S5.SS2.p4">
+<p class="ltx_p" id="S5.SS2.p4.1">Therefore, we conclude that the effectiveness of CoT exemplars depends on the model’s inherent capabilities. Traditional CoT exemplars do not improve the reasoning ability of already-strong models but can play a supportive role for weaker models. Hence, our findings are not in conflict with previous work; rather, they offer a complementary perspective by showing that the utility of exemplars is model-dependent.</p>
+</div>
+</section>
+<section class="ltx_subsection" id="S5.SS3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">5.3 </span>Is traditional CoT exemplars too easy for strong models?</h3>
+<figure class="ltx_figure" id="S5.F9">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_figure_panel ltx_img_landscape" height="144" id="S5.F9.g1" src="x12.png" width="830"/></div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_figure_panel ltx_img_landscape" height="177" id="S5.F9.g2" src="x13.png" width="830"/></div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 9: </span>Ablation study on noise injection for three types of exemplars, shown from left to right: exemplars answered by Qwen-max, exemplars answered by R1, and traditional CoT (Chain-of-Thought) exemplars. The top figure shows results on the MATH dataset, and the bottom figure shows results on the GSM8K dataset. <span class="ltx_text ltx_font_typewriter" id="S5.F9.5.1">Base</span> denotes the original exemplars without noise. <span class="ltx_text ltx_font_typewriter" id="S5.F9.6.2">Noise50</span> randomly replaces 50% of the tokens with “XXX”. <span class="ltx_text ltx_font_typewriter" id="S5.F9.7.3">Shuffle</span> completely shuffles the words. <span class="ltx_text ltx_font_typewriter" id="S5.F9.8.4">Replace-xxx</span> replaces all words with “XXX”.</figcaption>
+</figure>
+<div class="ltx_para" id="S5.SS3.p1">
+<p class="ltx_p" id="S5.SS3.p1.1">Previous experiments suggest that traditional CoT prompting strategies are largely ineffective for current open-source LLMs. A natural intuition is that the implicit reasoning paths embedded in standard CoT exemplars may be less sophisticated than the models’ own Zero-shot reasoning capabilities. This raises an important question: <span class="ltx_text ltx_font_italic" id="S5.SS3.p1.1.1">can enhanced CoT exemplars benefit these strong models?</span></p>
+</div>
+<div class="ltx_para" id="S5.SS3.p2">
+<p class="ltx_p" id="S5.SS3.p2.1">With the emergence of high-performing Reasoning Large Language Models (RLLMs) such as OpenAI o1 <cite class="ltx_cite ltx_citemacro_cite">Jaech et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib13" title="">2024</a>)</cite> and DeepSeek R1 <cite class="ltx_cite ltx_citemacro_cite">Guo et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib10" title="">2025</a>)</cite>, Long Chain of Thought have shown potential in guiding model reasoning. Motivated by this, we consider two enhanced settings: (1) using responses from DeepSeek-R1 as exemplars, and (2) using responses from a stronger LLM, Qwen2.5-Max, as exemplars. We conduct experiments across the Qwen2.5 family of models (7B, 14B, and 72B). Detailed examples of the input formats are provided in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS6" title="A.6 Input Examples ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.6</span></a>.</p>
+</div>
+<div class="ltx_para" id="S5.SS3.p3">
+<p class="ltx_p" id="S5.SS3.p3.1"><span class="ltx_text ltx_font_bold" id="S5.SS3.p3.1.1">Quality Helps, but Zero-Shot Still Dominates</span>  For each enhanced configuration, we further vary the number of exemplars. Due to the relatively long responses generated by DeepSeek-R1, we accordingly limit the number of exemplars to a maximum of four shots to ensure comparability in input length. The corresponding results are shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.F8" title="Figure 8 ‣ 5.2 The Impact of exemplars Is Determined by the Model’s Intrinsic Capability ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">8</span></a>. We observe that enhanced exemplars generally outperform the standard 8-shot CoT setting. In certain configurations, performance may even exceed that of the Zero-shot baseline, such as Qwen2.5-72B on the MATH dataset with the Qwen-6shot setting. Nevertheless, Zero-shot prompting consistently achieves strong accuracy across both datasets without introducing additional context overhead. These findings indicate that while improving exemplar quality is indeed helpful, the reasoning capability of modern large language models is already sufficiently strong that changes in exemplar formatting yield only limited or no improvement over Zero-shot prompting.</p>
+</div>
+</section>
+</section>
+<section class="ltx_section" id="S6">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">6 </span>Why CoT exemplars is not useful for strong models?</h2>
+<div class="ltx_para" id="S6.p1">
+<p class="ltx_p" id="S6.p1.1">In this section, we further investigate the reasons behind the ineffectiveness of CoT exemplars. We begin with ablation studies, followed by an analysis of attention visualization results.</p>
+</div>
+<section class="ltx_subsection" id="S6.SS1">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">6.1 </span>Ablation Study on Noisy Exemplars</h3>
+<div class="ltx_para" id="S6.SS1.p1">
+<p class="ltx_p" id="S6.SS1.p1.1">To further investigate why exemplars fail to improve performance, we conduct ablation experiments across three types of CoT exemplars: Traditional CoT, R1-enhanced CoT (from DeepSeek-R1), and Qwen2.5-Max-enhanced CoT. Specifically, for the R1-enhanced configuration, we use 4-shot exemplars, while 8-shot is used for the other settings. We introduce varying levels of noise into the exemplars and evaluate their impact on model performance. Experiments are conducted on the Qwen2.5 series (7B, 14B, and 72B) across both the GSM8K and MATH datasets.</p>
+</div>
+<div class="ltx_para" id="S6.SS1.p2">
+<p class="ltx_p" id="S6.SS1.p2.1"><span class="ltx_text ltx_font_bold" id="S6.SS1.p2.1.1">Exemplars Are Not Crucial for Recent LLMs</span>  As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.F9" title="Figure 9 ‣ 5.3 Is traditional CoT exemplars too easy for strong models? ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">9</span></a>, we observe that in most settings, adding noise to the exemplars does not lead to significant performance degradation. This is especially evident for the larger Qwen2.5-72B model, where even the <span class="ltx_text ltx_font_typewriter" id="S6.SS1.p2.1.2">Noise50</span> configuration can match or slightly outperform the <span class="ltx_text ltx_font_typewriter" id="S6.SS1.p2.1.3">Base</span> setting. These findings suggest that the models may selectively ignore the exemplars and instead rely on their intrinsic reasoning ability. Thus, the performance observed under Few-shot settings may not arise from the informative content of the exemplars, but rather from the model’s inherent Zero-shot capabilities.</p>
+</div>
+</section>
+<section class="ltx_subsection" id="S6.SS2">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">6.2 </span>Attention Visualization</h3>
+<figure class="ltx_figure" id="S6.F10">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="S6.F10.sf1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="583" id="S6.F10.sf1.g1" src="extracted/6547873/figures/d1-p2-q1-LCoT_Layer_27_Head_0_clip.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(a) </span>R1-CoT-1shot</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="S6.F10.sf2"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="581" id="S6.F10.sf2.g1" src="extracted/6547873/figures/d4-p2-q1-CoT-8shot_Layer_27_Head_0_clip.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(b) </span>CoT-8shot</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="S6.F10.sf3"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="585" id="S6.F10.sf3.g1" src="extracted/6547873/figures/d2-p2-q1-LCoT-xxx_Layer_27_Head_0_clip.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(c) </span>R1-CoT-Replace-XXX</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="S6.F10.sf4"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="579" id="S6.F10.sf4.g1" src="extracted/6547873/figures/d3-p2-q1-LCoT-shuffle_Layer_27_Head_0_clip.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(d) </span>R1-CoT-Shuffle</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 10: </span>Attention visualizations under various settings. The red line indicates the end of the exemplar section, and the green line marks the end of the entire input. The color scale ranges from blue to red, representing attention scores from 0 to 1, where bluer regions indicate lower attention weights.</figcaption>
+</figure>
+<div class="ltx_para" id="S6.SS2.p1">
+<p class="ltx_p" id="S6.SS2.p1.1">The previous results suggest that neither standard CoT prompts nor enhanced exemplars substantially improve model reasoning, and that models may not actively attend to these exemplars during inference. To investigate this further, we analyze the attention distribution of the Qwen2.5-7B model on GSM8K under Few-shot settings. Transformer-based models <cite class="ltx_cite ltx_citemacro_cite">Vaswani et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib31" title="">2017</a>)</cite> rely on multi-head self-attention, where each head in each layer computes a separate attention matrix. We randomly select a test instance and visualize head 0 in the final (27th) layer. Full visualizations are provided in Appendix <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.SS5" title="A.5 Details of Attention Visualization and Supplementary Results ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">A.5</span></a>.</p>
+</div>
+<div class="ltx_para" id="S6.SS2.p2">
+<p class="ltx_p" id="S6.SS2.p2.1">As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.F10" title="Figure 10 ‣ 6.2 Attention Visualization ‣ 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">10</span></a>, the lower-left region of the attention map—corresponding to the exemplar section—consistently exhibits low scores (blue), while the upper-left region, representing intra-example dependencies, displays stronger attention. The red and green lines mark the ends of the exemplar section and input sequence, respectively; generation begins after the green line.Each attention row reflects how a generated token attends to prior tokens. The weak attention to the exemplars (before the red line) and strong focus on the prompt and test question (between the red and green line) indicate that the model largely ignores exemplars during inference, relying more on the prompt template.</p>
+</div>
+<div class="ltx_para" id="S6.SS2.p3">
+<p class="ltx_p" id="S6.SS2.p3.1">Comparing Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.F10.sf1" title="In Figure 10 ‣ 6.2 Attention Visualization ‣ 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">10(a)</span></a> and Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.F10.sf3" title="In Figure 10 ‣ 6.2 Attention Visualization ‣ 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">10(c)</span></a>, we observe slightly higher attention to exemplars in R1-CoT-1shot. However, this does not yield meaningful accuracy gains (see Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S5.F9" title="Figure 9 ‣ 5.3 Is traditional CoT exemplars too easy for strong models? ‣ 5 CoT Exemplars can’t improve reasoning ability of strong models ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">9</span></a>), reinforcing that enhanced exemplars have minimal impact on reasoning performance and are largely disregarded by the model.</p>
+</div>
+</section>
+</section>
+<section class="ltx_section" id="S7">
+<h2 class="ltx_title ltx_title_section">
+<span class="ltx_tag ltx_tag_section">7 </span>Discussion and Conclusion</h2>
+<div class="ltx_para" id="S7.p1">
+<p class="ltx_p" id="S7.p1.1">In this paper, we investigate the role of CoT exemplars in mathematical reasoning tasks with recent strong models within the ICL paradigm. We show that the previously reported low accuracy of the <span class="ltx_text ltx_font_typewriter" id="S7.p1.1.1">zero_shot</span> setting stems from limitations in the evaluation script. After correcting the answer extraction process, the <span class="ltx_text ltx_font_typewriter" id="S7.p1.1.2">zero_shot_fixed</span> setting consistently outperforms few-shot CoT prompting. Our findings reveal that: (1) the primary function of exemplars is to align output format; (2) while exemplars benefit weaker models, they fail to enhance the reasoning ability of stronger models. We further explore enhanced CoT exemplar settings and observe moderate improvements over traditional examples. However, ablation studies show that even with noisy or irrelevant exemplars, model accuracy remains stable, indicating that: (3) strong models rely more on prompt templates than on exemplar content. Finally, attention visualizations support this conclusion by demonstrating weak attention to exemplar tokens. Overall, our study highlights the limitations of current ICL+CoT paradigm in mathematical reasoning and calls for a reevaluation of the role of CoT exemplars. We hope our work offers new insights and empirical grounding for future research.</p>
+</div>
+<div class="ltx_para" id="S7.p2">
+<p class="ltx_p" id="S7.p2.1"><span class="ltx_text ltx_font_bold" id="S7.p2.1.1">Are Existing Evaluation Frameworks Reliable?</span>  As discussed in Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S4" title="4 Exemplars Help Mitigate Evaluation Bias ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">4</span></a>, OpenCompass <cite class="ltx_cite ltx_citemacro_cite">Contributors (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib6" title="">2023</a>)</cite> evaluates GSM8K performance by extracting only the final digit from model outputs. This evaluation imposes strict constraints on output format, potentially overlooking genuine reasoning ability. While such an evaluation may be suitable for measuring output format consistency, it can misrepresent a model’s reasoning capabilities. Hence, if the research goal is to evaluate reasoning rather than formatting, care must be taken to avoid evaluation-induced bias. We advocate that future studies place particular emphasis on the potential bias introduced by evaluation frameworks and carefully design experiments to ensure faithful assessment of model behavior.</p>
+</div>
+<div class="ltx_para" id="S7.p3">
+<p class="ltx_p" id="S7.p3.1"><span class="ltx_text ltx_font_bold" id="S7.p3.1.1">Why Does CoT Prompting Fail for Strong Models?</span>  As shown in Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.SS1" title="6.1 Ablation Study on Noisy Exemplars ‣ 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">6.1</span></a>, injecting various levels of noise into exemplars does not significantly degrade performance. Furthermore, attention visualization in Section <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S6.SS2" title="6.2 Attention Visualization ‣ 6 Why CoT exemplars is not useful for strong models? ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">6.2</span></a> reveals that models allocate minimal attention to the exemplar region. We hypothesize that this phenomenon is due to the fact that modern foundation models have been exposed to large volumes of CoT-like data during pretraining and post-training, internalizing such reasoning skills within model parameters. Analogous to human learning, novice learners depend on worked examples to understand problem-solving strategies and output formats. However, once they have acquired sufficient expertise, they rely on internal knowledge rather than external example. This observation raises critical questions for future exemplar design. For example, what role should exemplars play for RLLMs? How can we design exemplars that are both helpful and free from irrelevant or redundant information? Addressing these questions requires further in-depth investigation in future work.</p>
+</div>
+</section>
+<section class="ltx_section" id="Sx1">
+<h2 class="ltx_title ltx_title_section">Limitations</h2>
+<div class="ltx_para" id="Sx1.p1">
+<p class="ltx_p" id="Sx1.p1.1">This study looks at CoT prompting for mathematical reasoning. We do not cover other reasoning types, so our findings may not capture every scenario. Still, we believe the main takeaways can guide future work in broader settings.</p>
+</div>
+<div class="ltx_para" id="Sx1.p2">
+<p class="ltx_p" id="Sx1.p2.1">We reveal the potential limitations of current ICL and CoT prompting frameworks in mathematical reasoning. Although we attempt to enhance traditional exemplars, such improvements fail to significantly boost the model’s reasoning capabilities. As such, we do not propose specific solutions to this issue. Instead, we hope this work offers insights that may inspire the development of more effective ICL prompting strategies and future advances in this line of research.</p>
+</div>
+</section>
+<section class="ltx_bibliography" id="bib">
+<h2 class="ltx_title ltx_title_bibliography">References</h2>
+<ul class="ltx_biblist">
+<li class="ltx_bibitem" id="bib.bib1">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Bai et al. (2023)</span>
+<span class="ltx_bibblock">
+Jinze Bai, Shuai Bai, Yunfei Chu, Zeyu Cui, Kai Dang, Xiaodong Deng, Yang Fan, Wenbin Ge, Yu Han, Fei Huang, and 1 others. 2023.
+
+</span>
+<span class="ltx_bibblock">Qwen technical report.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib1.1.1">arXiv preprint arXiv:2309.16609</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib2">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Besta et al. (2024)</span>
+<span class="ltx_bibblock">
+Maciej Besta, Nils Blach, Ales Kubicek, Robert Gerstenberger, Michal Podstawski, Lukas Gianinazzi, Joanna Gajda, Tomasz Lehmann, Hubert Niewiadomski, Piotr Nyczyk, and 1 others. 2024.
+
+</span>
+<span class="ltx_bibblock">Graph of thoughts: Solving elaborate problems with large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib2.1.1">Proceedings of the AAAI Conference on Artificial Intelligence</em>, volume 38, pages 17682–17690.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib3">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Brown et al. (2020)</span>
+<span class="ltx_bibblock">
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, and 1 others. 2020.
+
+</span>
+<span class="ltx_bibblock">Language models are few-shot learners.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib3.1.1">Advances in neural information processing systems</em>, 33:1877–1901.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib4">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Chen et al. (2023)</span>
+<span class="ltx_bibblock">
+Wei-Lin Chen, Cheng-Kuang Wu, Yun-Nung Chen, and Hsin-Hsi Chen. 2023.
+
+</span>
+<span class="ltx_bibblock">Self-ICL: Zero-shot in-context learning with self-generated demonstrations.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib4.1.1">Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing</em>, pages 15651–15662, Singapore. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib5">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Cobbe et al. (2021)</span>
+<span class="ltx_bibblock">
+Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, and 1 others. 2021.
+
+</span>
+<span class="ltx_bibblock">Training verifiers to solve math word problems.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib5.1.1">arXiv preprint arXiv:2110.14168</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib6">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Contributors (2023)</span>
+<span class="ltx_bibblock">
+OpenCompass Contributors. 2023.
+
+</span>
+<span class="ltx_bibblock">Opencompass: A universal evaluation platform for foundation models.
+
+</span>
+<span class="ltx_bibblock"><a class="ltx_ref ltx_url ltx_font_typewriter" href="https://github.com/open-compass/opencompass" title="">https://github.com/open-compass/opencompass</a>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib7">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Dai et al. (2023)</span>
+<span class="ltx_bibblock">
+Damai Dai, Yutao Sun, Li Dong, Yaru Hao, Shuming Ma, Zhifang Sui, and Furu Wei. 2023.
+
+</span>
+<span class="ltx_bibblock">Why can GPT learn in-context? language models secretly perform gradient descent as meta-optimizers.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib7.1.1">Findings of the Association for Computational Linguistics: ACL 2023</em>, pages 4005–4019, Toronto, Canada. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib8">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Fu et al. (2023)</span>
+<span class="ltx_bibblock">
+Yao Fu, Hao Peng, Ashish Sabharwal, Peter Clark, and Tushar Khot. 2023.
+
+</span>
+<span class="ltx_bibblock">Complexity-based prompting for multi-step reasoning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib8.1.1">The Eleventh International Conference on Learning Representations</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib9">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Grattafiori et al. (2024)</span>
+<span class="ltx_bibblock">
+Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, and 1 others. 2024.
+
+</span>
+<span class="ltx_bibblock">The llama 3 herd of models.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib9.1.1">arXiv preprint arXiv:2407.21783</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib10">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Guo et al. (2025)</span>
+<span class="ltx_bibblock">
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, and 1 others. 2025.
+
+</span>
+<span class="ltx_bibblock">Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib10.1.1">arXiv preprint arXiv:2501.12948</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib11">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Hendrycks et al. (2021)</span>
+<span class="ltx_bibblock">
+Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. 2021.
+
+</span>
+<span class="ltx_bibblock">Measuring mathematical problem solving with the MATH dataset.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib11.1.1">Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 2)</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib12">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Hongjin et al. (2022)</span>
+<span class="ltx_bibblock">
+SU Hongjin, Jungo Kasai, Chen Henry Wu, Weijia Shi, Tianlu Wang, Jiayi Xin, Rui Zhang, Mari Ostendorf, Luke Zettlemoyer, Noah A Smith, and 1 others. 2022.
+
+</span>
+<span class="ltx_bibblock">Selective annotation makes language models better few-shot learners.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib12.1.1">The Eleventh International Conference on Learning Representations</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib13">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Jaech et al. (2024)</span>
+<span class="ltx_bibblock">
+Aaron Jaech, Adam Kalai, Adam Lerer, Adam Richardson, Ahmed El-Kishky, Aiden Low, Alec Helyar, Aleksander Madry, Alex Beutel, Alex Carney, and 1 others. 2024.
+
+</span>
+<span class="ltx_bibblock">Openai o1 system card.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib13.1.1">arXiv preprint arXiv:2412.16720</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib14">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Kim et al. (2022)</span>
+<span class="ltx_bibblock">
+Hyuhng Joon Kim, Hyunsoo Cho, Junyeob Kim, Taeuk Kim, Kang Min Yoo, and Sang-goo Lee. 2022.
+
+</span>
+<span class="ltx_bibblock">Self-generated in-context learning: Leveraging auto-regressive language models as a demonstration generator.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib14.1.1">arXiv preprint arXiv:2206.08082</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib15">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Kojima et al. (2022)</span>
+<span class="ltx_bibblock">
+Takeshi Kojima, Shixiang Shane Gu, Machel Reid, Yutaka Matsuo, and Yusuke Iwasawa. 2022.
+
+</span>
+<span class="ltx_bibblock">Large language models are zero-shot reasoners.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib15.1.1">Advances in neural information processing systems</em>, 35:22199–22213.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib16">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Kwon et al. (2023)</span>
+<span class="ltx_bibblock">
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph Gonzalez, Hao Zhang, and Ion Stoica. 2023.
+
+</span>
+<span class="ltx_bibblock">Efficient memory management for large language model serving with pagedattention.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib16.1.1">Proceedings of the 29th Symposium on Operating Systems Principles</em>, pages 611–626.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib17">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Lambert et al. (2024)</span>
+<span class="ltx_bibblock">
+Nathan Lambert, Jacob Morrison, Valentina Pyatkin, Shengyi Huang, Hamish Ivison, Faeze Brahman, Lester James V. Miranda, Alisa Liu, Nouha Dziri, Shane Lyu, Yuling Gu, Saumya Malik, Victoria Graf, Jena D. Hwang, Jiangjiang Yang, Ronan Le Bras, Oyvind Tafjord, Chris Wilhelm, Luca Soldaini, and 4 others. 2024.
+
+</span>
+<span class="ltx_bibblock">Tülu 3: Pushing frontiers in open language model post-training.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib18">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Levy et al. (2024)</span>
+<span class="ltx_bibblock">
+Mosh Levy, Alon Jacoby, and Yoav Goldberg. 2024.
+
+</span>
+<span class="ltx_bibblock">Same task, more tokens: the impact of input length on the reasoning performance of large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib18.1.1">Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)</em>, pages 15339–15353, Bangkok, Thailand. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib19">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Li et al. (2024)</span>
+<span class="ltx_bibblock">
+Shuai Li, Zhao Song, Yu Xia, Tong Yu, and Tianyi Zhou. 2024.
+
+</span>
+<span class="ltx_bibblock">The closeness of in-context learning and weight shifting for softmax regression.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib19.1.1">Advances in Neural Information Processing Systems</em>, 37:62584–62616.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib20">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Li et al. (2023)</span>
+<span class="ltx_bibblock">
+Xiaonan Li, Kai Lv, Hang Yan, Tianyang Lin, Wei Zhu, Yuan Ni, Guotong Xie, Xiaoling Wang, and Xipeng Qiu. 2023.
+
+</span>
+<span class="ltx_bibblock">Unified demonstration retriever for in-context learning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib20.1.1">Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)</em>, pages 4644–4668, Toronto, Canada. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib21">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Lu et al. (2022)</span>
+<span class="ltx_bibblock">
+Yao Lu, Max Bartolo, Alastair Moore, Sebastian Riedel, and Pontus Stenetorp. 2022.
+
+</span>
+<span class="ltx_bibblock">Fantastically ordered prompts and where to find them: Overcoming few-shot prompt order sensitivity.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib21.1.1">Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)</em>, pages 8086–8098, Dublin, Ireland. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib22">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ma et al. (2023)</span>
+<span class="ltx_bibblock">
+Huan Ma, Changqing Zhang, Yatao Bian, Lemao Liu, Zhirui Zhang, Peilin Zhao, Shu Zhang, Huazhu Fu, Qinghua Hu, and Bingzhe Wu. 2023.
+
+</span>
+<span class="ltx_bibblock"><a class="ltx_ref ltx_href" href="https://openreview.net/forum?id=D8oHQ2qSTj" title="">Fairness-guided few-shot prompting for large language models</a>.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib22.1.1">Thirty-seventh Conference on Neural Information Processing Systems</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib23">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Mahankali et al. (2023)</span>
+<span class="ltx_bibblock">
+Arvind Mahankali, Tatsunori B Hashimoto, and Tengyu Ma. 2023.
+
+</span>
+<span class="ltx_bibblock">One step of gradient descent is provably the optimal in-context learner with one layer of linear self-attention.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib23.1.1">arXiv preprint arXiv:2307.03576</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib24">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Min et al. (2022)</span>
+<span class="ltx_bibblock">
+Sewon Min, Xinxi Lyu, Ari Holtzman, Mikel Artetxe, Mike Lewis, Hannaneh Hajishirzi, and Luke Zettlemoyer. 2022.
+
+</span>
+<span class="ltx_bibblock">Rethinking the role of demonstrations: What makes in-context learning work?
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib24.1.1">Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing</em>, pages 11048–11064, Abu Dhabi, United Arab Emirates. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib25">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Mistral AI (2024)</span>
+<span class="ltx_bibblock">
+Mistral AI. 2024.
+
+</span>
+<span class="ltx_bibblock">Un Ministral, des Ministraux.
+
+</span>
+<span class="ltx_bibblock"><a class="ltx_ref ltx_url ltx_font_typewriter" href="https://mistral.ai/news/ministraux" title="">https://mistral.ai/news/ministraux</a>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib26">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Purohit et al. (2024)</span>
+<span class="ltx_bibblock">
+Kiran Purohit, Venktesh V, Raghuram Devalla, Krishna Mohan Yerragorla, Sourangshu Bhattacharya, and Avishek Anand. 2024.
+
+</span>
+<span class="ltx_bibblock">EXPLORA: Efficient exemplar subset selection for complex reasoning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib26.1.1">Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing</em>, pages 5367–5388, Miami, Florida, USA. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib27">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ren and Liu (2024)</span>
+<span class="ltx_bibblock">
+Ruifeng Ren and Yong Liu. 2024.
+
+</span>
+<span class="ltx_bibblock">Towards understanding how transformers learn in-context through a representation learning lens.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib27.1.1">The Thirty-eighth Annual Conference on Neural Information Processing Systems</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib28">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Sprague et al. (2025)</span>
+<span class="ltx_bibblock">
+Zayne Rea Sprague, Fangcong Yin, Juan Diego Rodriguez, Dongwei Jiang, Manya Wadhwa, Prasann Singhal, Xinyu Zhao, Xi Ye, Kyle Mahowald, and Greg Durrett. 2025.
+
+</span>
+<span class="ltx_bibblock"><a class="ltx_ref ltx_href" href="https://openreview.net/forum?id=w6nlcS8Kkn" title="">To cot or not to cot? chain-of-thought helps mainly on math and symbolic reasoning</a>.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib28.1.1">The Thirteenth International Conference on Learning Representations</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib29">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Team et al. (2024)</span>
+<span class="ltx_bibblock">
+Gemma Team, Morgane Riviere, Shreya Pathak, Pier Giuseppe Sessa, Cassidy Hardin, Surya Bhupatiraju, Léonard Hussenot, Thomas Mesnard, Bobak Shahriari, Alexandre Ramé, and 1 others. 2024.
+
+</span>
+<span class="ltx_bibblock">Gemma 2: Improving open language models at a practical size.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib29.1.1">arXiv preprint arXiv:2408.00118</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib30">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Touvron et al. (2023)</span>
+<span class="ltx_bibblock">
+Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, and 1 others. 2023.
+
+</span>
+<span class="ltx_bibblock">Llama 2: Open foundation and fine-tuned chat models.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib30.1.1">arXiv preprint arXiv:2307.09288</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib31">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Vaswani et al. (2017)</span>
+<span class="ltx_bibblock">
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. 2017.
+
+</span>
+<span class="ltx_bibblock">Attention is all you need.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib31.1.1">Advances in neural information processing systems</em>, 30.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib32">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wang et al. (2023)</span>
+<span class="ltx_bibblock">
+Boshi Wang, Sewon Min, Xiang Deng, Jiaming Shen, You Wu, Luke Zettlemoyer, and Huan Sun. 2023.
+
+</span>
+<span class="ltx_bibblock"><a class="ltx_ref ltx_href" href="https://openreview.net/forum?id=L9UMeoeU2i" title="">Towards understanding chain-of-thought prompting: An empirical study of what matters</a>.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib32.1.1">ICLR 2023 Workshop on Mathematical and Empirical Understanding of Foundation Models</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib33">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wei et al. (2022)</span>
+<span class="ltx_bibblock">
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, and 1 others. 2022.
+
+</span>
+<span class="ltx_bibblock">Chain-of-thought prompting elicits reasoning in large language models.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib33.1.1">Advances in neural information processing systems</em>, 35:24824–24837.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib34">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wei et al. (2023)</span>
+<span class="ltx_bibblock">
+Jerry Wei, Jason Wei, Yi Tay, Dustin Tran, Albert Webson, Yifeng Lu, Xinyun Chen, Hanxiao Liu, Da Huang, Denny Zhou, and 1 others. 2023.
+
+</span>
+<span class="ltx_bibblock">Larger language models do in-context learning differently.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib34.1.1">arXiv preprint arXiv:2303.03846</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib35">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Wolf et al. (2020)</span>
+<span class="ltx_bibblock">
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, and 3 others. 2020.
+
+</span>
+<span class="ltx_bibblock">Transformers: State-of-the-art natural language processing.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib35.1.1">Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations</em>, pages 38–45, Online. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib36">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Xie et al. (2022)</span>
+<span class="ltx_bibblock">
+Sang Michael Xie, Aditi Raghunathan, Percy Liang, and Tengyu Ma. 2022.
+
+</span>
+<span class="ltx_bibblock">An explanation of in-context learning as implicit bayesian inference.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib36.1.1">International Conference on Learning Representations</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib37">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Yang et al. (2024)</span>
+<span class="ltx_bibblock">
+An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, and 1 others. 2024.
+
+</span>
+<span class="ltx_bibblock">Qwen2. 5 technical report.
+
+</span>
+<span class="ltx_bibblock"><em class="ltx_emph ltx_font_italic" id="bib.bib37.1.1">arXiv preprint arXiv:2412.15115</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib38">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Yao et al. (2023)</span>
+<span class="ltx_bibblock">
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Thomas L. Griffiths, Yuan Cao, and Karthik R Narasimhan. 2023.
+
+</span>
+<span class="ltx_bibblock">Tree of thoughts: Deliberate problem solving with large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib38.1.1">Thirty-seventh Conference on Neural Information Processing Systems</em>.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib39">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ye et al. (2023a)</span>
+<span class="ltx_bibblock">
+Jiacheng Ye, Zhiyong Wu, Jiangtao Feng, Tao Yu, and Lingpeng Kong. 2023a.
+
+</span>
+<span class="ltx_bibblock">Compositional exemplars for in-context learning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib39.1.1">International Conference on Machine Learning</em>, pages 39818–39833. PMLR.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib40">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Ye et al. (2023b)</span>
+<span class="ltx_bibblock">
+Xi Ye, Srinivasan Iyer, Asli Celikyilmaz, Veselin Stoyanov, Greg Durrett, and Ramakanth Pasunuru. 2023b.
+
+</span>
+<span class="ltx_bibblock">Complementary explanations for effective in-context learning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib40.1.1">Findings of the Association for Computational Linguistics: ACL 2023</em>, pages 4469–4484, Toronto, Canada. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib41">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhang et al. (2022)</span>
+<span class="ltx_bibblock">
+Yiming Zhang, Shi Feng, and Chenhao Tan. 2022.
+
+</span>
+<span class="ltx_bibblock">Active example selection for in-context learning.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib41.1.1">Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing</em>, pages 9134–9148, Abu Dhabi, United Arab Emirates. Association for Computational Linguistics.
+
+</span>
+</li>
+<li class="ltx_bibitem" id="bib.bib42">
+<span class="ltx_tag ltx_role_refnum ltx_tag_bibitem">Zhou et al. (2023)</span>
+<span class="ltx_bibblock">
+Denny Zhou, Nathanael Schärli, Le Hou, Jason Wei, Nathan Scales, Xuezhi Wang, Dale Schuurmans, Claire Cui, Olivier Bousquet, Quoc V Le, and Ed H. Chi. 2023.
+
+</span>
+<span class="ltx_bibblock">Least-to-most prompting enables complex reasoning in large language models.
+
+</span>
+<span class="ltx_bibblock">In <em class="ltx_emph ltx_font_italic" id="bib.bib42.1.1">The Eleventh International Conference on Learning Representations</em>.
+
+</span>
+</li>
+</ul>
+</section>
+<section class="ltx_appendix" id="A1">
+<h2 class="ltx_title ltx_title_appendix">
+<span class="ltx_tag ltx_tag_appendix">Appendix A </span>Experimental Details</h2>
+<section class="ltx_subsection" id="A1.SS1">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.1 </span>Model Details</h3>
+<div class="ltx_para" id="A1.SS1.p1">
+<p class="ltx_p" id="A1.SS1.p1.1">All models used in our experiments are instruction-tuned variants. Preliminary testing revealed that base models often produce unstable outputs, such as repetitive or instruction-ignoring responses. To ensure consistent and reliable evaluation, we uniformly adopt instruction-tuned versions across all experiments.</p>
+</div>
+</section>
+<section class="ltx_subsection" id="A1.SS2">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.2 </span>Data Details</h3>
+<div class="ltx_para" id="A1.SS2.p1">
+<p class="ltx_p" id="A1.SS2.p1.1">We evaluate models on two mathematical reasoning benchmarks of varying difficulty: GSM8K <cite class="ltx_cite ltx_citemacro_cite">Cobbe et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib5" title="">2021</a>)</cite> and MATH <cite class="ltx_cite ltx_citemacro_cite">Hendrycks et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib11" title="">2021</a>)</cite>. GSM8K contains 1,319 grade-school word problems, typically requiring 3–4 simple reasoning steps. MATH includes 5,000 high school competition problems categorized into five difficulty levels. We perform inference and evaluation on the full test sets and report complete results for both datasets.</p>
+</div>
+</section>
+<section class="ltx_subsection" id="A1.SS3">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.3 </span>Implementation Details</h3>
+<div class="ltx_para" id="A1.SS3.p1">
+<p class="ltx_p" id="A1.SS3.p1.1">All experiments are conducted using the OpenCompass <cite class="ltx_cite ltx_citemacro_cite">Contributors (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib6" title="">2023</a>)</cite> framework. We employ <span class="ltx_text ltx_font_typewriter" id="A1.SS3.p1.1.1">vLLM</span> <cite class="ltx_cite ltx_citemacro_cite">Kwon et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib16" title="">2023</a>)</cite> as the backend to enable efficient, parallelized inference without sacrificing accuracy. Unless otherwise specified, all prompts include the instruction: <span class="ltx_text ltx_font_italic" id="A1.SS3.p1.1.2">“Please reason step by step, and put your final answer within \boxed</span>{}<span class="ltx_text ltx_font_italic" id="A1.SS3.p1.1.3">.”</span> For reproducibility purposes, every experiment was performed using a predetermined random seed (42). It’s important to highlight that because greedy decoding produces deterministic outputs, this fixed seed has no impact on inference results given identical hardware configurations. Consequently, we have not included statistical measures (e.g., mean or standard deviation) in our results reporting.</p>
+</div>
+</section>
+<section class="ltx_subsection" id="A1.SS4">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.4 </span>Inherent Biases in the Experiments</h3>
+<div class="ltx_para" id="A1.SS4.p1">
+<p class="ltx_p" id="A1.SS4.p1.1">In this section, we examine inherent biases in the experimental process. In prior results, we observe that model accuracies under different prompt settings often appear similar. For instance, on GSM8K, LLaMA3.1-8B achieves nearly identical performance in both zero-shot and 8-shot settings (see Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#S3.F5" title="Figure 5 ‣ 3 Experimental Setup ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">5</span></a>).</p>
+</div>
+<div class="ltx_para" id="A1.SS4.p2">
+<p class="ltx_p" id="A1.SS4.p2.1">To probe deeper, we analyze the overlap of incorrectly predicted samples across settings. As shown in Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F11" title="Figure 11 ‣ A.4 Inherent Biases in the Experiments ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">11</span></a>, while overall accuracy is similar, the error overlap is limited: only 91 shared errors, with 92 unique to zero-shot and 91 unique to 8-shot. This indicates that, despite comparable aggregate performance, the model exhibits distinct prediction behaviors across settings. Similar patterns hold for other models (see Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F12" title="Figure 12 ‣ A.4 Inherent Biases in the Experiments ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">12</span></a>), suggesting a non-trivial divergence in error distributions.</p>
+</div>
+<div class="ltx_para" id="A1.SS4.p3">
+<p class="ltx_p" id="A1.SS4.p3.1">We attribute this to variation in in-context exemplars, which can subtly influence the model’s internal activations and reasoning paths—introducing an <span class="ltx_text ltx_font_bold" id="A1.SS4.p3.1.1">inherent bias</span>. Such biases are widespread and hard to eliminate entirely. Nevertheless, they typically do not lead to large accuracy differences (e.g., a one-sample gap in the above case), implying that aggregate accuracy remains a valid metric for evaluating prompt effectiveness and influence.</p>
+</div>
+<figure class="ltx_figure" id="A1.F11">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F11.sf1">
+<p class="ltx_p ltx_align_center" id="A1.F11.sf1.1"><span class="ltx_text ltx_framed ltx_framed_rectangle" id="A1.F11.sf1.1.1" style="border-color: #000000;"><img alt="Refer to caption" class="ltx_graphics ltx_img_square" height="842" id="A1.F11.sf1.1.1.g1" src="x14.png" width="830"/></span></p>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(a) </span>Zero-shot, 8-shot, and Complex</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F11.sf2">
+<p class="ltx_p ltx_align_center" id="A1.F11.sf2.1"><span class="ltx_text ltx_framed ltx_framed_rectangle" id="A1.F11.sf2.1.1" style="border-color: #000000;"><img alt="Refer to caption" class="ltx_graphics ltx_img_square" height="823" id="A1.F11.sf2.1.1.g1" src="x15.png" width="829"/></span></p>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(b) </span>Zero-shot, 8-shot, and 4-shot</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 11: </span>Error distributions for LLaMA3.1-8B under different prompt settings.</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F12">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F12.sf1">
+<p class="ltx_p ltx_align_center" id="A1.F12.sf1.1"><span class="ltx_text ltx_framed ltx_framed_rectangle" id="A1.F12.sf1.1.1" style="border-color: #000000;"><img alt="Refer to caption" class="ltx_graphics ltx_img_square" height="842" id="A1.F12.sf1.1.1.g1" src="x16.png" width="830"/></span></p>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(a) </span>Zero-shot, 8-shot, and Complex</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F12.sf2">
+<p class="ltx_p ltx_align_center" id="A1.F12.sf2.1"><span class="ltx_text ltx_framed ltx_framed_rectangle" id="A1.F12.sf2.1.1" style="border-color: #000000;"><img alt="Refer to caption" class="ltx_graphics ltx_img_square" height="842" id="A1.F12.sf2.1.1.g1" src="x17.png" width="830"/></span></p>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(b) </span>Zero-shot, 8-shot, and 4-shot</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 12: </span>Error distributions for Qwen2.5-7B under different prompt settings.</figcaption>
+</figure>
+</section>
+<section class="ltx_subsection" id="A1.SS5">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.5 </span>Details of Attention Visualization and Supplementary Results</h3>
+<div class="ltx_para" id="A1.SS5.p1">
+<p class="ltx_p" id="A1.SS5.p1.1">This section details the attention visualization procedure and presents additional attention distribution results.</p>
+</div>
+<div class="ltx_para" id="A1.SS5.p2">
+<p class="ltx_p" id="A1.SS5.p2.1">Directly visualizing raw attention matrices from the <span class="ltx_text ltx_font_typewriter" id="A1.SS5.p2.1.1">transformers</span> interface <cite class="ltx_cite ltx_citemacro_cite">Wolf et al. (<a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#bib.bib35" title="">2020</a>)</cite> often produces distorted outputs due to extreme value ranges, obscuring actual attention patterns. To mitigate this, we apply a normalization pipeline as described in Algorithm <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#alg1" title="Algorithm 1 ‣ A.5 Details of Attention Visualization and Supplementary Results ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">1</span></a>.</p>
+</div>
+<div class="ltx_para" id="A1.SS5.p3">
+<p class="ltx_p" id="A1.SS5.p3.3">Specifically, we add a small constant <math alttext="\epsilon" class="ltx_Math" display="inline" id="A1.SS5.p3.1.m1.1"><semantics id="A1.SS5.p3.1.m1.1a"><mi id="A1.SS5.p3.1.m1.1.1" xref="A1.SS5.p3.1.m1.1.1.cmml">ϵ</mi><annotation-xml encoding="MathML-Content" id="A1.SS5.p3.1.m1.1b"><ci id="A1.SS5.p3.1.m1.1.1.cmml" xref="A1.SS5.p3.1.m1.1.1">italic-ϵ</ci></annotation-xml><annotation encoding="application/x-tex" id="A1.SS5.p3.1.m1.1c">\epsilon</annotation><annotation encoding="application/x-llamapun" id="A1.SS5.p3.1.m1.1d">italic_ϵ</annotation></semantics></math> for numerical stability, apply a logarithmic transformation to compress the dynamic range, clip values to <math alttext="[-\tau,0]" class="ltx_Math" display="inline" id="A1.SS5.p3.2.m2.2"><semantics id="A1.SS5.p3.2.m2.2a"><mrow id="A1.SS5.p3.2.m2.2.2.1" xref="A1.SS5.p3.2.m2.2.2.2.cmml"><mo id="A1.SS5.p3.2.m2.2.2.1.2" stretchy="false" xref="A1.SS5.p3.2.m2.2.2.2.cmml">[</mo><mrow id="A1.SS5.p3.2.m2.2.2.1.1" xref="A1.SS5.p3.2.m2.2.2.1.1.cmml"><mo id="A1.SS5.p3.2.m2.2.2.1.1a" xref="A1.SS5.p3.2.m2.2.2.1.1.cmml">−</mo><mi id="A1.SS5.p3.2.m2.2.2.1.1.2" xref="A1.SS5.p3.2.m2.2.2.1.1.2.cmml">τ</mi></mrow><mo id="A1.SS5.p3.2.m2.2.2.1.3" xref="A1.SS5.p3.2.m2.2.2.2.cmml">,</mo><mn id="A1.SS5.p3.2.m2.1.1" xref="A1.SS5.p3.2.m2.1.1.cmml">0</mn><mo id="A1.SS5.p3.2.m2.2.2.1.4" stretchy="false" xref="A1.SS5.p3.2.m2.2.2.2.cmml">]</mo></mrow><annotation-xml encoding="MathML-Content" id="A1.SS5.p3.2.m2.2b"><interval closure="closed" id="A1.SS5.p3.2.m2.2.2.2.cmml" xref="A1.SS5.p3.2.m2.2.2.1"><apply id="A1.SS5.p3.2.m2.2.2.1.1.cmml" xref="A1.SS5.p3.2.m2.2.2.1.1"><minus id="A1.SS5.p3.2.m2.2.2.1.1.1.cmml" xref="A1.SS5.p3.2.m2.2.2.1.1"></minus><ci id="A1.SS5.p3.2.m2.2.2.1.1.2.cmml" xref="A1.SS5.p3.2.m2.2.2.1.1.2">𝜏</ci></apply><cn id="A1.SS5.p3.2.m2.1.1.cmml" type="integer" xref="A1.SS5.p3.2.m2.1.1">0</cn></interval></annotation-xml><annotation encoding="application/x-tex" id="A1.SS5.p3.2.m2.2c">[-\tau,0]</annotation><annotation encoding="application/x-llamapun" id="A1.SS5.p3.2.m2.2d">[ - italic_τ , 0 ]</annotation></semantics></math> to suppress outliers, and finally normalize to the <math alttext="[0,1]" class="ltx_Math" display="inline" id="A1.SS5.p3.3.m3.2"><semantics id="A1.SS5.p3.3.m3.2a"><mrow id="A1.SS5.p3.3.m3.2.3.2" xref="A1.SS5.p3.3.m3.2.3.1.cmml"><mo id="A1.SS5.p3.3.m3.2.3.2.1" stretchy="false" xref="A1.SS5.p3.3.m3.2.3.1.cmml">[</mo><mn id="A1.SS5.p3.3.m3.1.1" xref="A1.SS5.p3.3.m3.1.1.cmml">0</mn><mo id="A1.SS5.p3.3.m3.2.3.2.2" xref="A1.SS5.p3.3.m3.2.3.1.cmml">,</mo><mn id="A1.SS5.p3.3.m3.2.2" xref="A1.SS5.p3.3.m3.2.2.cmml">1</mn><mo id="A1.SS5.p3.3.m3.2.3.2.3" stretchy="false" xref="A1.SS5.p3.3.m3.2.3.1.cmml">]</mo></mrow><annotation-xml encoding="MathML-Content" id="A1.SS5.p3.3.m3.2b"><interval closure="closed" id="A1.SS5.p3.3.m3.2.3.1.cmml" xref="A1.SS5.p3.3.m3.2.3.2"><cn id="A1.SS5.p3.3.m3.1.1.cmml" type="integer" xref="A1.SS5.p3.3.m3.1.1">0</cn><cn id="A1.SS5.p3.3.m3.2.2.cmml" type="integer" xref="A1.SS5.p3.3.m3.2.2">1</cn></interval></annotation-xml><annotation encoding="application/x-tex" id="A1.SS5.p3.3.m3.2c">[0,1]</annotation><annotation encoding="application/x-llamapun" id="A1.SS5.p3.3.m3.2d">[ 0 , 1 ]</annotation></semantics></math> interval. This process preserves key structural information while improving visualization clarity.</p>
+</div>
+<div class="ltx_para" id="A1.SS5.p4">
+<p class="ltx_p" id="A1.SS5.p4.1">Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F14" title="Figure 14 ‣ A.5 Details of Attention Visualization and Supplementary Results ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">14</span></a> shows attention maps across all layers of Qwen2.5-7B on GSM8K dataset, averaged across heads per layer. Figure <a class="ltx_ref" href="https://arxiv.org/html/2506.14641v1#A1.F13" title="Figure 13 ‣ A.5 Details of Attention Visualization and Supplementary Results ‣ Appendix A Experimental Details ‣ Revisiting Chain-of-Thought Prompting: Zero-shot Can Be Stronger than Few-shot"><span class="ltx_text ltx_ref_tag">13</span></a> displays corresponding results on MATH dataset. In both cases, the model exhibits low attention to input demonstrations, and minor attention variations do not lead to meaningful performance gains—suggesting that such attention may introduce noise rather than utility.</p>
+</div>
+<figure class="ltx_float ltx_float_algorithm ltx_framed ltx_framed_top" id="alg1">
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_float"><span class="ltx_text ltx_font_bold" id="alg1.6.1.1">Algorithm 1</span> </span> Scaling Pipeline for Attention Matrix Visualization</figcaption><div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_1">
+<p class="ltx_p ltx_figure_panel" id="alg1.4"><span class="ltx_text ltx_font_bold" id="alg1.4.1">Input</span>: Attention matrix <math alttext="attention\in\mathbb{R}^{n\times n}" class="ltx_Math" display="inline" id="alg1.1.m1.1"><semantics id="alg1.1.m1.1a"><mrow id="alg1.1.m1.1.1" xref="alg1.1.m1.1.1.cmml"><mrow id="alg1.1.m1.1.1.2" xref="alg1.1.m1.1.1.2.cmml"><mi id="alg1.1.m1.1.1.2.2" xref="alg1.1.m1.1.1.2.2.cmml">a</mi><mo id="alg1.1.m1.1.1.2.1" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.3" xref="alg1.1.m1.1.1.2.3.cmml">t</mi><mo id="alg1.1.m1.1.1.2.1a" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.4" xref="alg1.1.m1.1.1.2.4.cmml">t</mi><mo id="alg1.1.m1.1.1.2.1b" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.5" xref="alg1.1.m1.1.1.2.5.cmml">e</mi><mo id="alg1.1.m1.1.1.2.1c" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.6" xref="alg1.1.m1.1.1.2.6.cmml">n</mi><mo id="alg1.1.m1.1.1.2.1d" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.7" xref="alg1.1.m1.1.1.2.7.cmml">t</mi><mo id="alg1.1.m1.1.1.2.1e" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.8" xref="alg1.1.m1.1.1.2.8.cmml">i</mi><mo id="alg1.1.m1.1.1.2.1f" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.9" xref="alg1.1.m1.1.1.2.9.cmml">o</mi><mo id="alg1.1.m1.1.1.2.1g" xref="alg1.1.m1.1.1.2.1.cmml">⁢</mo><mi id="alg1.1.m1.1.1.2.10" xref="alg1.1.m1.1.1.2.10.cmml">n</mi></mrow><mo id="alg1.1.m1.1.1.1" xref="alg1.1.m1.1.1.1.cmml">∈</mo><msup id="alg1.1.m1.1.1.3" xref="alg1.1.m1.1.1.3.cmml"><mi id="alg1.1.m1.1.1.3.2" xref="alg1.1.m1.1.1.3.2.cmml">ℝ</mi><mrow id="alg1.1.m1.1.1.3.3" xref="alg1.1.m1.1.1.3.3.cmml"><mi id="alg1.1.m1.1.1.3.3.2" xref="alg1.1.m1.1.1.3.3.2.cmml">n</mi><mo id="alg1.1.m1.1.1.3.3.1" lspace="0.222em" rspace="0.222em" xref="alg1.1.m1.1.1.3.3.1.cmml">×</mo><mi id="alg1.1.m1.1.1.3.3.3" xref="alg1.1.m1.1.1.3.3.3.cmml">n</mi></mrow></msup></mrow><annotation-xml encoding="MathML-Content" id="alg1.1.m1.1b"><apply id="alg1.1.m1.1.1.cmml" xref="alg1.1.m1.1.1"><in id="alg1.1.m1.1.1.1.cmml" xref="alg1.1.m1.1.1.1"></in><apply id="alg1.1.m1.1.1.2.cmml" xref="alg1.1.m1.1.1.2"><times id="alg1.1.m1.1.1.2.1.cmml" xref="alg1.1.m1.1.1.2.1"></times><ci id="alg1.1.m1.1.1.2.2.cmml" xref="alg1.1.m1.1.1.2.2">𝑎</ci><ci id="alg1.1.m1.1.1.2.3.cmml" xref="alg1.1.m1.1.1.2.3">𝑡</ci><ci id="alg1.1.m1.1.1.2.4.cmml" xref="alg1.1.m1.1.1.2.4">𝑡</ci><ci id="alg1.1.m1.1.1.2.5.cmml" xref="alg1.1.m1.1.1.2.5">𝑒</ci><ci id="alg1.1.m1.1.1.2.6.cmml" xref="alg1.1.m1.1.1.2.6">𝑛</ci><ci id="alg1.1.m1.1.1.2.7.cmml" xref="alg1.1.m1.1.1.2.7">𝑡</ci><ci id="alg1.1.m1.1.1.2.8.cmml" xref="alg1.1.m1.1.1.2.8">𝑖</ci><ci id="alg1.1.m1.1.1.2.9.cmml" xref="alg1.1.m1.1.1.2.9">𝑜</ci><ci id="alg1.1.m1.1.1.2.10.cmml" xref="alg1.1.m1.1.1.2.10">𝑛</ci></apply><apply id="alg1.1.m1.1.1.3.cmml" xref="alg1.1.m1.1.1.3"><csymbol cd="ambiguous" id="alg1.1.m1.1.1.3.1.cmml" xref="alg1.1.m1.1.1.3">superscript</csymbol><ci id="alg1.1.m1.1.1.3.2.cmml" xref="alg1.1.m1.1.1.3.2">ℝ</ci><apply id="alg1.1.m1.1.1.3.3.cmml" xref="alg1.1.m1.1.1.3.3"><times id="alg1.1.m1.1.1.3.3.1.cmml" xref="alg1.1.m1.1.1.3.3.1"></times><ci id="alg1.1.m1.1.1.3.3.2.cmml" xref="alg1.1.m1.1.1.3.3.2">𝑛</ci><ci id="alg1.1.m1.1.1.3.3.3.cmml" xref="alg1.1.m1.1.1.3.3.3">𝑛</ci></apply></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="alg1.1.m1.1c">attention\in\mathbb{R}^{n\times n}</annotation><annotation encoding="application/x-llamapun" id="alg1.1.m1.1d">italic_a italic_t italic_t italic_e italic_n italic_t italic_i italic_o italic_n ∈ blackboard_R start_POSTSUPERSCRIPT italic_n × italic_n end_POSTSUPERSCRIPT</annotation></semantics></math> with non-negative entries 
+<br class="ltx_break"/><span class="ltx_text ltx_font_bold" id="alg1.4.2">Hyperparameters</span>: Small constant <math alttext="\epsilon=10^{-7}" class="ltx_Math" display="inline" id="alg1.2.m2.1"><semantics id="alg1.2.m2.1a"><mrow id="alg1.2.m2.1.1" xref="alg1.2.m2.1.1.cmml"><mi id="alg1.2.m2.1.1.2" xref="alg1.2.m2.1.1.2.cmml">ϵ</mi><mo id="alg1.2.m2.1.1.1" xref="alg1.2.m2.1.1.1.cmml">=</mo><msup id="alg1.2.m2.1.1.3" xref="alg1.2.m2.1.1.3.cmml"><mn id="alg1.2.m2.1.1.3.2" xref="alg1.2.m2.1.1.3.2.cmml">10</mn><mrow id="alg1.2.m2.1.1.3.3" xref="alg1.2.m2.1.1.3.3.cmml"><mo id="alg1.2.m2.1.1.3.3a" xref="alg1.2.m2.1.1.3.3.cmml">−</mo><mn id="alg1.2.m2.1.1.3.3.2" xref="alg1.2.m2.1.1.3.3.2.cmml">7</mn></mrow></msup></mrow><annotation-xml encoding="MathML-Content" id="alg1.2.m2.1b"><apply id="alg1.2.m2.1.1.cmml" xref="alg1.2.m2.1.1"><eq id="alg1.2.m2.1.1.1.cmml" xref="alg1.2.m2.1.1.1"></eq><ci id="alg1.2.m2.1.1.2.cmml" xref="alg1.2.m2.1.1.2">italic-ϵ</ci><apply id="alg1.2.m2.1.1.3.cmml" xref="alg1.2.m2.1.1.3"><csymbol cd="ambiguous" id="alg1.2.m2.1.1.3.1.cmml" xref="alg1.2.m2.1.1.3">superscript</csymbol><cn id="alg1.2.m2.1.1.3.2.cmml" type="integer" xref="alg1.2.m2.1.1.3.2">10</cn><apply id="alg1.2.m2.1.1.3.3.cmml" xref="alg1.2.m2.1.1.3.3"><minus id="alg1.2.m2.1.1.3.3.1.cmml" xref="alg1.2.m2.1.1.3.3"></minus><cn id="alg1.2.m2.1.1.3.3.2.cmml" type="integer" xref="alg1.2.m2.1.1.3.3.2">7</cn></apply></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="alg1.2.m2.1c">\epsilon=10^{-7}</annotation><annotation encoding="application/x-llamapun" id="alg1.2.m2.1d">italic_ϵ = 10 start_POSTSUPERSCRIPT - 7 end_POSTSUPERSCRIPT</annotation></semantics></math>, clipping threshold <math alttext="\tau=15" class="ltx_Math" display="inline" id="alg1.3.m3.1"><semantics id="alg1.3.m3.1a"><mrow id="alg1.3.m3.1.1" xref="alg1.3.m3.1.1.cmml"><mi id="alg1.3.m3.1.1.2" xref="alg1.3.m3.1.1.2.cmml">τ</mi><mo id="alg1.3.m3.1.1.1" xref="alg1.3.m3.1.1.1.cmml">=</mo><mn id="alg1.3.m3.1.1.3" xref="alg1.3.m3.1.1.3.cmml">15</mn></mrow><annotation-xml encoding="MathML-Content" id="alg1.3.m3.1b"><apply id="alg1.3.m3.1.1.cmml" xref="alg1.3.m3.1.1"><eq id="alg1.3.m3.1.1.1.cmml" xref="alg1.3.m3.1.1.1"></eq><ci id="alg1.3.m3.1.1.2.cmml" xref="alg1.3.m3.1.1.2">𝜏</ci><cn id="alg1.3.m3.1.1.3.cmml" type="integer" xref="alg1.3.m3.1.1.3">15</cn></apply></annotation-xml><annotation encoding="application/x-tex" id="alg1.3.m3.1c">\tau=15</annotation><annotation encoding="application/x-llamapun" id="alg1.3.m3.1d">italic_τ = 15</annotation></semantics></math>
+<br class="ltx_break"/><span class="ltx_text ltx_font_bold" id="alg1.4.3">Output</span>: Normalized attention matrix <math alttext="scaled\_attention\in(0,1]^{n\times n}" class="ltx_Math" display="inline" id="alg1.4.m4.2"><semantics id="alg1.4.m4.2a"><mrow id="alg1.4.m4.2.3" xref="alg1.4.m4.2.3.cmml"><mrow id="alg1.4.m4.2.3.2" xref="alg1.4.m4.2.3.2.cmml"><mi id="alg1.4.m4.2.3.2.2" xref="alg1.4.m4.2.3.2.2.cmml">s</mi><mo id="alg1.4.m4.2.3.2.1" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.3" xref="alg1.4.m4.2.3.2.3.cmml">c</mi><mo id="alg1.4.m4.2.3.2.1a" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.4" xref="alg1.4.m4.2.3.2.4.cmml">a</mi><mo id="alg1.4.m4.2.3.2.1b" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.5" xref="alg1.4.m4.2.3.2.5.cmml">l</mi><mo id="alg1.4.m4.2.3.2.1c" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.6" xref="alg1.4.m4.2.3.2.6.cmml">e</mi><mo id="alg1.4.m4.2.3.2.1d" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.7" xref="alg1.4.m4.2.3.2.7.cmml">d</mi><mo id="alg1.4.m4.2.3.2.1e" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.8" mathvariant="normal" xref="alg1.4.m4.2.3.2.8.cmml">_</mi><mo id="alg1.4.m4.2.3.2.1f" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.9" xref="alg1.4.m4.2.3.2.9.cmml">a</mi><mo id="alg1.4.m4.2.3.2.1g" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.10" xref="alg1.4.m4.2.3.2.10.cmml">t</mi><mo id="alg1.4.m4.2.3.2.1h" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.11" xref="alg1.4.m4.2.3.2.11.cmml">t</mi><mo id="alg1.4.m4.2.3.2.1i" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.12" xref="alg1.4.m4.2.3.2.12.cmml">e</mi><mo id="alg1.4.m4.2.3.2.1j" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.13" xref="alg1.4.m4.2.3.2.13.cmml">n</mi><mo id="alg1.4.m4.2.3.2.1k" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.14" xref="alg1.4.m4.2.3.2.14.cmml">t</mi><mo id="alg1.4.m4.2.3.2.1l" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.15" xref="alg1.4.m4.2.3.2.15.cmml">i</mi><mo id="alg1.4.m4.2.3.2.1m" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.16" xref="alg1.4.m4.2.3.2.16.cmml">o</mi><mo id="alg1.4.m4.2.3.2.1n" xref="alg1.4.m4.2.3.2.1.cmml">⁢</mo><mi id="alg1.4.m4.2.3.2.17" xref="alg1.4.m4.2.3.2.17.cmml">n</mi></mrow><mo id="alg1.4.m4.2.3.1" xref="alg1.4.m4.2.3.1.cmml">∈</mo><msup id="alg1.4.m4.2.3.3" xref="alg1.4.m4.2.3.3.cmml"><mrow id="alg1.4.m4.2.3.3.2.2" xref="alg1.4.m4.2.3.3.2.1.cmml"><mo id="alg1.4.m4.2.3.3.2.2.1" stretchy="false" xref="alg1.4.m4.2.3.3.2.1.cmml">(</mo><mn id="alg1.4.m4.1.1" xref="alg1.4.m4.1.1.cmml">0</mn><mo id="alg1.4.m4.2.3.3.2.2.2" xref="alg1.4.m4.2.3.3.2.1.cmml">,</mo><mn id="alg1.4.m4.2.2" xref="alg1.4.m4.2.2.cmml">1</mn><mo id="alg1.4.m4.2.3.3.2.2.3" stretchy="false" xref="alg1.4.m4.2.3.3.2.1.cmml">]</mo></mrow><mrow id="alg1.4.m4.2.3.3.3" xref="alg1.4.m4.2.3.3.3.cmml"><mi id="alg1.4.m4.2.3.3.3.2" xref="alg1.4.m4.2.3.3.3.2.cmml">n</mi><mo id="alg1.4.m4.2.3.3.3.1" lspace="0.222em" rspace="0.222em" xref="alg1.4.m4.2.3.3.3.1.cmml">×</mo><mi id="alg1.4.m4.2.3.3.3.3" xref="alg1.4.m4.2.3.3.3.3.cmml">n</mi></mrow></msup></mrow><annotation-xml encoding="MathML-Content" id="alg1.4.m4.2b"><apply id="alg1.4.m4.2.3.cmml" xref="alg1.4.m4.2.3"><in id="alg1.4.m4.2.3.1.cmml" xref="alg1.4.m4.2.3.1"></in><apply id="alg1.4.m4.2.3.2.cmml" xref="alg1.4.m4.2.3.2"><times id="alg1.4.m4.2.3.2.1.cmml" xref="alg1.4.m4.2.3.2.1"></times><ci id="alg1.4.m4.2.3.2.2.cmml" xref="alg1.4.m4.2.3.2.2">𝑠</ci><ci id="alg1.4.m4.2.3.2.3.cmml" xref="alg1.4.m4.2.3.2.3">𝑐</ci><ci id="alg1.4.m4.2.3.2.4.cmml" xref="alg1.4.m4.2.3.2.4">𝑎</ci><ci id="alg1.4.m4.2.3.2.5.cmml" xref="alg1.4.m4.2.3.2.5">𝑙</ci><ci id="alg1.4.m4.2.3.2.6.cmml" xref="alg1.4.m4.2.3.2.6">𝑒</ci><ci id="alg1.4.m4.2.3.2.7.cmml" xref="alg1.4.m4.2.3.2.7">𝑑</ci><ci id="alg1.4.m4.2.3.2.8.cmml" xref="alg1.4.m4.2.3.2.8">_</ci><ci id="alg1.4.m4.2.3.2.9.cmml" xref="alg1.4.m4.2.3.2.9">𝑎</ci><ci id="alg1.4.m4.2.3.2.10.cmml" xref="alg1.4.m4.2.3.2.10">𝑡</ci><ci id="alg1.4.m4.2.3.2.11.cmml" xref="alg1.4.m4.2.3.2.11">𝑡</ci><ci id="alg1.4.m4.2.3.2.12.cmml" xref="alg1.4.m4.2.3.2.12">𝑒</ci><ci id="alg1.4.m4.2.3.2.13.cmml" xref="alg1.4.m4.2.3.2.13">𝑛</ci><ci id="alg1.4.m4.2.3.2.14.cmml" xref="alg1.4.m4.2.3.2.14">𝑡</ci><ci id="alg1.4.m4.2.3.2.15.cmml" xref="alg1.4.m4.2.3.2.15">𝑖</ci><ci id="alg1.4.m4.2.3.2.16.cmml" xref="alg1.4.m4.2.3.2.16">𝑜</ci><ci id="alg1.4.m4.2.3.2.17.cmml" xref="alg1.4.m4.2.3.2.17">𝑛</ci></apply><apply id="alg1.4.m4.2.3.3.cmml" xref="alg1.4.m4.2.3.3"><csymbol cd="ambiguous" id="alg1.4.m4.2.3.3.1.cmml" xref="alg1.4.m4.2.3.3">superscript</csymbol><interval closure="open-closed" id="alg1.4.m4.2.3.3.2.1.cmml" xref="alg1.4.m4.2.3.3.2.2"><cn id="alg1.4.m4.1.1.cmml" type="integer" xref="alg1.4.m4.1.1">0</cn><cn id="alg1.4.m4.2.2.cmml" type="integer" xref="alg1.4.m4.2.2">1</cn></interval><apply id="alg1.4.m4.2.3.3.3.cmml" xref="alg1.4.m4.2.3.3.3"><times id="alg1.4.m4.2.3.3.3.1.cmml" xref="alg1.4.m4.2.3.3.3.1"></times><ci id="alg1.4.m4.2.3.3.3.2.cmml" xref="alg1.4.m4.2.3.3.3.2">𝑛</ci><ci id="alg1.4.m4.2.3.3.3.3.cmml" xref="alg1.4.m4.2.3.3.3.3">𝑛</ci></apply></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="alg1.4.m4.2c">scaled\_attention\in(0,1]^{n\times n}</annotation><annotation encoding="application/x-llamapun" id="alg1.4.m4.2d">italic_s italic_c italic_a italic_l italic_e italic_d _ italic_a italic_t italic_t italic_e italic_n italic_t italic_i italic_o italic_n ∈ ( 0 , 1 ] start_POSTSUPERSCRIPT italic_n × italic_n end_POSTSUPERSCRIPT</annotation></semantics></math></p>
+</div>
+<div class="ltx_flex_break"></div>
+<div class="ltx_flex_cell ltx_flex_size_1">
+<div class="ltx_listing ltx_figure_panel ltx_listing" id="alg1.7">
+<div class="ltx_listingline" id="algx1.l1">
+<span class="ltx_tag ltx_tag_listingline">1:</span>  <math alttext="log\_S\leftarrow\log(attention+\epsilon)" class="ltx_Math" display="inline" id="algx1.l1.m1.2"><semantics id="algx1.l1.m1.2a"><mrow id="algx1.l1.m1.2.2" xref="algx1.l1.m1.2.2.cmml"><mrow id="algx1.l1.m1.2.2.3" xref="algx1.l1.m1.2.2.3.cmml"><mi id="algx1.l1.m1.2.2.3.2" xref="algx1.l1.m1.2.2.3.2.cmml">l</mi><mo id="algx1.l1.m1.2.2.3.1" xref="algx1.l1.m1.2.2.3.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.3.3" xref="algx1.l1.m1.2.2.3.3.cmml">o</mi><mo id="algx1.l1.m1.2.2.3.1a" xref="algx1.l1.m1.2.2.3.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.3.4" xref="algx1.l1.m1.2.2.3.4.cmml">g</mi><mo id="algx1.l1.m1.2.2.3.1b" xref="algx1.l1.m1.2.2.3.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.3.5" mathvariant="normal" xref="algx1.l1.m1.2.2.3.5.cmml">_</mi><mo id="algx1.l1.m1.2.2.3.1c" xref="algx1.l1.m1.2.2.3.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.3.6" xref="algx1.l1.m1.2.2.3.6.cmml">S</mi></mrow><mo id="algx1.l1.m1.2.2.2" stretchy="false" xref="algx1.l1.m1.2.2.2.cmml">←</mo><mrow id="algx1.l1.m1.2.2.1.1" xref="algx1.l1.m1.2.2.1.2.cmml"><mi id="algx1.l1.m1.1.1" xref="algx1.l1.m1.1.1.cmml">log</mi><mo id="algx1.l1.m1.2.2.1.1a" xref="algx1.l1.m1.2.2.1.2.cmml">⁡</mo><mrow id="algx1.l1.m1.2.2.1.1.1" xref="algx1.l1.m1.2.2.1.2.cmml"><mo id="algx1.l1.m1.2.2.1.1.1.2" stretchy="false" xref="algx1.l1.m1.2.2.1.2.cmml">(</mo><mrow id="algx1.l1.m1.2.2.1.1.1.1" xref="algx1.l1.m1.2.2.1.1.1.1.cmml"><mrow id="algx1.l1.m1.2.2.1.1.1.1.2" xref="algx1.l1.m1.2.2.1.1.1.1.2.cmml"><mi id="algx1.l1.m1.2.2.1.1.1.1.2.2" xref="algx1.l1.m1.2.2.1.1.1.1.2.2.cmml">a</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.3" xref="algx1.l1.m1.2.2.1.1.1.1.2.3.cmml">t</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1a" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.4" xref="algx1.l1.m1.2.2.1.1.1.1.2.4.cmml">t</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1b" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.5" xref="algx1.l1.m1.2.2.1.1.1.1.2.5.cmml">e</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1c" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.6" xref="algx1.l1.m1.2.2.1.1.1.1.2.6.cmml">n</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1d" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.7" xref="algx1.l1.m1.2.2.1.1.1.1.2.7.cmml">t</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1e" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.8" xref="algx1.l1.m1.2.2.1.1.1.1.2.8.cmml">i</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1f" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.9" xref="algx1.l1.m1.2.2.1.1.1.1.2.9.cmml">o</mi><mo id="algx1.l1.m1.2.2.1.1.1.1.2.1g" xref="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.2.10" xref="algx1.l1.m1.2.2.1.1.1.1.2.10.cmml">n</mi></mrow><mo id="algx1.l1.m1.2.2.1.1.1.1.1" xref="algx1.l1.m1.2.2.1.1.1.1.1.cmml">+</mo><mi id="algx1.l1.m1.2.2.1.1.1.1.3" xref="algx1.l1.m1.2.2.1.1.1.1.3.cmml">ϵ</mi></mrow><mo id="algx1.l1.m1.2.2.1.1.1.3" stretchy="false" xref="algx1.l1.m1.2.2.1.2.cmml">)</mo></mrow></mrow></mrow><annotation-xml encoding="MathML-Content" id="algx1.l1.m1.2b"><apply id="algx1.l1.m1.2.2.cmml" xref="algx1.l1.m1.2.2"><ci id="algx1.l1.m1.2.2.2.cmml" xref="algx1.l1.m1.2.2.2">←</ci><apply id="algx1.l1.m1.2.2.3.cmml" xref="algx1.l1.m1.2.2.3"><times id="algx1.l1.m1.2.2.3.1.cmml" xref="algx1.l1.m1.2.2.3.1"></times><ci id="algx1.l1.m1.2.2.3.2.cmml" xref="algx1.l1.m1.2.2.3.2">𝑙</ci><ci id="algx1.l1.m1.2.2.3.3.cmml" xref="algx1.l1.m1.2.2.3.3">𝑜</ci><ci id="algx1.l1.m1.2.2.3.4.cmml" xref="algx1.l1.m1.2.2.3.4">𝑔</ci><ci id="algx1.l1.m1.2.2.3.5.cmml" xref="algx1.l1.m1.2.2.3.5">_</ci><ci id="algx1.l1.m1.2.2.3.6.cmml" xref="algx1.l1.m1.2.2.3.6">𝑆</ci></apply><apply id="algx1.l1.m1.2.2.1.2.cmml" xref="algx1.l1.m1.2.2.1.1"><log id="algx1.l1.m1.1.1.cmml" xref="algx1.l1.m1.1.1"></log><apply id="algx1.l1.m1.2.2.1.1.1.1.cmml" xref="algx1.l1.m1.2.2.1.1.1.1"><plus id="algx1.l1.m1.2.2.1.1.1.1.1.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.1"></plus><apply id="algx1.l1.m1.2.2.1.1.1.1.2.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2"><times id="algx1.l1.m1.2.2.1.1.1.1.2.1.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.1"></times><ci id="algx1.l1.m1.2.2.1.1.1.1.2.2.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.2">𝑎</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.3.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.3">𝑡</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.4.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.4">𝑡</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.5.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.5">𝑒</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.6.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.6">𝑛</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.7.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.7">𝑡</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.8.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.8">𝑖</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.9.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.9">𝑜</ci><ci id="algx1.l1.m1.2.2.1.1.1.1.2.10.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.2.10">𝑛</ci></apply><ci id="algx1.l1.m1.2.2.1.1.1.1.3.cmml" xref="algx1.l1.m1.2.2.1.1.1.1.3">italic-ϵ</ci></apply></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="algx1.l1.m1.2c">log\_S\leftarrow\log(attention+\epsilon)</annotation><annotation encoding="application/x-llamapun" id="algx1.l1.m1.2d">italic_l italic_o italic_g _ italic_S ← roman_log ( italic_a italic_t italic_t italic_e italic_n italic_t italic_i italic_o italic_n + italic_ϵ )</annotation></semantics></math> <span class="ltx_text" id="algx1.l1.1" style="float:right;">% Prevent <math alttext="-\infty" class="ltx_Math" display="inline" id="algx1.l1.1.m1.1"><semantics id="algx1.l1.1.m1.1a"><mrow id="algx1.l1.1.m1.1.1" xref="algx1.l1.1.m1.1.1.cmml"><mo id="algx1.l1.1.m1.1.1a" xref="algx1.l1.1.m1.1.1.cmml">−</mo><mi id="algx1.l1.1.m1.1.1.2" mathvariant="normal" xref="algx1.l1.1.m1.1.1.2.cmml">∞</mi></mrow><annotation-xml encoding="MathML-Content" id="algx1.l1.1.m1.1b"><apply id="algx1.l1.1.m1.1.1.cmml" xref="algx1.l1.1.m1.1.1"><minus id="algx1.l1.1.m1.1.1.1.cmml" xref="algx1.l1.1.m1.1.1"></minus><infinity id="algx1.l1.1.m1.1.1.2.cmml" xref="algx1.l1.1.m1.1.1.2"></infinity></apply></annotation-xml><annotation encoding="application/x-tex" id="algx1.l1.1.m1.1c">-\infty</annotation><annotation encoding="application/x-llamapun" id="algx1.l1.1.m1.1d">- ∞</annotation></semantics></math>
+</span>
+</div>
+<div class="ltx_listingline" id="algx1.l2">
+<span class="ltx_tag ltx_tag_listingline">2:</span>  <math alttext="clipped\_S\leftarrow\text{clip}(log\_S,-\tau,0)" class="ltx_Math" display="inline" id="algx1.l2.m1.3"><semantics id="algx1.l2.m1.3a"><mrow id="algx1.l2.m1.3.3" xref="algx1.l2.m1.3.3.cmml"><mrow id="algx1.l2.m1.3.3.4" xref="algx1.l2.m1.3.3.4.cmml"><mi id="algx1.l2.m1.3.3.4.2" xref="algx1.l2.m1.3.3.4.2.cmml">c</mi><mo id="algx1.l2.m1.3.3.4.1" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.3" xref="algx1.l2.m1.3.3.4.3.cmml">l</mi><mo id="algx1.l2.m1.3.3.4.1a" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.4" xref="algx1.l2.m1.3.3.4.4.cmml">i</mi><mo id="algx1.l2.m1.3.3.4.1b" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.5" xref="algx1.l2.m1.3.3.4.5.cmml">p</mi><mo id="algx1.l2.m1.3.3.4.1c" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.6" xref="algx1.l2.m1.3.3.4.6.cmml">p</mi><mo id="algx1.l2.m1.3.3.4.1d" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.7" xref="algx1.l2.m1.3.3.4.7.cmml">e</mi><mo id="algx1.l2.m1.3.3.4.1e" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.8" xref="algx1.l2.m1.3.3.4.8.cmml">d</mi><mo id="algx1.l2.m1.3.3.4.1f" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.9" mathvariant="normal" xref="algx1.l2.m1.3.3.4.9.cmml">_</mi><mo id="algx1.l2.m1.3.3.4.1g" xref="algx1.l2.m1.3.3.4.1.cmml">⁢</mo><mi id="algx1.l2.m1.3.3.4.10" xref="algx1.l2.m1.3.3.4.10.cmml">S</mi></mrow><mo id="algx1.l2.m1.3.3.3" stretchy="false" xref="algx1.l2.m1.3.3.3.cmml">←</mo><mrow id="algx1.l2.m1.3.3.2" xref="algx1.l2.m1.3.3.2.cmml"><mtext id="algx1.l2.m1.3.3.2.4" xref="algx1.l2.m1.3.3.2.4a.cmml">clip</mtext><mo id="algx1.l2.m1.3.3.2.3" xref="algx1.l2.m1.3.3.2.3.cmml">⁢</mo><mrow id="algx1.l2.m1.3.3.2.2.2" xref="algx1.l2.m1.3.3.2.2.3.cmml"><mo id="algx1.l2.m1.3.3.2.2.2.3" stretchy="false" xref="algx1.l2.m1.3.3.2.2.3.cmml">(</mo><mrow id="algx1.l2.m1.2.2.1.1.1.1" xref="algx1.l2.m1.2.2.1.1.1.1.cmml"><mi id="algx1.l2.m1.2.2.1.1.1.1.2" xref="algx1.l2.m1.2.2.1.1.1.1.2.cmml">l</mi><mo id="algx1.l2.m1.2.2.1.1.1.1.1" xref="algx1.l2.m1.2.2.1.1.1.1.1.cmml">⁢</mo><mi id="algx1.l2.m1.2.2.1.1.1.1.3" xref="algx1.l2.m1.2.2.1.1.1.1.3.cmml">o</mi><mo id="algx1.l2.m1.2.2.1.1.1.1.1a" xref="algx1.l2.m1.2.2.1.1.1.1.1.cmml">⁢</mo><mi id="algx1.l2.m1.2.2.1.1.1.1.4" xref="algx1.l2.m1.2.2.1.1.1.1.4.cmml">g</mi><mo id="algx1.l2.m1.2.2.1.1.1.1.1b" xref="algx1.l2.m1.2.2.1.1.1.1.1.cmml">⁢</mo><mi id="algx1.l2.m1.2.2.1.1.1.1.5" mathvariant="normal" xref="algx1.l2.m1.2.2.1.1.1.1.5.cmml">_</mi><mo id="algx1.l2.m1.2.2.1.1.1.1.1c" xref="algx1.l2.m1.2.2.1.1.1.1.1.cmml">⁢</mo><mi id="algx1.l2.m1.2.2.1.1.1.1.6" xref="algx1.l2.m1.2.2.1.1.1.1.6.cmml">S</mi></mrow><mo id="algx1.l2.m1.3.3.2.2.2.4" xref="algx1.l2.m1.3.3.2.2.3.cmml">,</mo><mrow id="algx1.l2.m1.3.3.2.2.2.2" xref="algx1.l2.m1.3.3.2.2.2.2.cmml"><mo id="algx1.l2.m1.3.3.2.2.2.2a" xref="algx1.l2.m1.3.3.2.2.2.2.cmml">−</mo><mi id="algx1.l2.m1.3.3.2.2.2.2.2" xref="algx1.l2.m1.3.3.2.2.2.2.2.cmml">τ</mi></mrow><mo id="algx1.l2.m1.3.3.2.2.2.5" xref="algx1.l2.m1.3.3.2.2.3.cmml">,</mo><mn id="algx1.l2.m1.1.1" xref="algx1.l2.m1.1.1.cmml">0</mn><mo id="algx1.l2.m1.3.3.2.2.2.6" stretchy="false" xref="algx1.l2.m1.3.3.2.2.3.cmml">)</mo></mrow></mrow></mrow><annotation-xml encoding="MathML-Content" id="algx1.l2.m1.3b"><apply id="algx1.l2.m1.3.3.cmml" xref="algx1.l2.m1.3.3"><ci id="algx1.l2.m1.3.3.3.cmml" xref="algx1.l2.m1.3.3.3">←</ci><apply id="algx1.l2.m1.3.3.4.cmml" xref="algx1.l2.m1.3.3.4"><times id="algx1.l2.m1.3.3.4.1.cmml" xref="algx1.l2.m1.3.3.4.1"></times><ci id="algx1.l2.m1.3.3.4.2.cmml" xref="algx1.l2.m1.3.3.4.2">𝑐</ci><ci id="algx1.l2.m1.3.3.4.3.cmml" xref="algx1.l2.m1.3.3.4.3">𝑙</ci><ci id="algx1.l2.m1.3.3.4.4.cmml" xref="algx1.l2.m1.3.3.4.4">𝑖</ci><ci id="algx1.l2.m1.3.3.4.5.cmml" xref="algx1.l2.m1.3.3.4.5">𝑝</ci><ci id="algx1.l2.m1.3.3.4.6.cmml" xref="algx1.l2.m1.3.3.4.6">𝑝</ci><ci id="algx1.l2.m1.3.3.4.7.cmml" xref="algx1.l2.m1.3.3.4.7">𝑒</ci><ci id="algx1.l2.m1.3.3.4.8.cmml" xref="algx1.l2.m1.3.3.4.8">𝑑</ci><ci id="algx1.l2.m1.3.3.4.9.cmml" xref="algx1.l2.m1.3.3.4.9">_</ci><ci id="algx1.l2.m1.3.3.4.10.cmml" xref="algx1.l2.m1.3.3.4.10">𝑆</ci></apply><apply id="algx1.l2.m1.3.3.2.cmml" xref="algx1.l2.m1.3.3.2"><times id="algx1.l2.m1.3.3.2.3.cmml" xref="algx1.l2.m1.3.3.2.3"></times><ci id="algx1.l2.m1.3.3.2.4a.cmml" xref="algx1.l2.m1.3.3.2.4"><mtext id="algx1.l2.m1.3.3.2.4.cmml" xref="algx1.l2.m1.3.3.2.4">clip</mtext></ci><vector id="algx1.l2.m1.3.3.2.2.3.cmml" xref="algx1.l2.m1.3.3.2.2.2"><apply id="algx1.l2.m1.2.2.1.1.1.1.cmml" xref="algx1.l2.m1.2.2.1.1.1.1"><times id="algx1.l2.m1.2.2.1.1.1.1.1.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.1"></times><ci id="algx1.l2.m1.2.2.1.1.1.1.2.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.2">𝑙</ci><ci id="algx1.l2.m1.2.2.1.1.1.1.3.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.3">𝑜</ci><ci id="algx1.l2.m1.2.2.1.1.1.1.4.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.4">𝑔</ci><ci id="algx1.l2.m1.2.2.1.1.1.1.5.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.5">_</ci><ci id="algx1.l2.m1.2.2.1.1.1.1.6.cmml" xref="algx1.l2.m1.2.2.1.1.1.1.6">𝑆</ci></apply><apply id="algx1.l2.m1.3.3.2.2.2.2.cmml" xref="algx1.l2.m1.3.3.2.2.2.2"><minus id="algx1.l2.m1.3.3.2.2.2.2.1.cmml" xref="algx1.l2.m1.3.3.2.2.2.2"></minus><ci id="algx1.l2.m1.3.3.2.2.2.2.2.cmml" xref="algx1.l2.m1.3.3.2.2.2.2.2">𝜏</ci></apply><cn id="algx1.l2.m1.1.1.cmml" type="integer" xref="algx1.l2.m1.1.1">0</cn></vector></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="algx1.l2.m1.3c">clipped\_S\leftarrow\text{clip}(log\_S,-\tau,0)</annotation><annotation encoding="application/x-llamapun" id="algx1.l2.m1.3d">italic_c italic_l italic_i italic_p italic_p italic_e italic_d _ italic_S ← clip ( italic_l italic_o italic_g _ italic_S , - italic_τ , 0 )</annotation></semantics></math> <span class="ltx_text" id="algx1.l2.1" style="float:right;">% Suppress outliers
+</span>
+</div>
+<div class="ltx_listingline" id="algx1.l3">
+<span class="ltx_tag ltx_tag_listingline">3:</span>  <math alttext="scaled\_attention\leftarrow(clipped\_S/\tau)+1" class="ltx_Math" display="inline" id="algx1.l3.m1.1"><semantics id="algx1.l3.m1.1a"><mrow id="algx1.l3.m1.1.1" xref="algx1.l3.m1.1.1.cmml"><mrow id="algx1.l3.m1.1.1.3" xref="algx1.l3.m1.1.1.3.cmml"><mi id="algx1.l3.m1.1.1.3.2" xref="algx1.l3.m1.1.1.3.2.cmml">s</mi><mo id="algx1.l3.m1.1.1.3.1" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.3" xref="algx1.l3.m1.1.1.3.3.cmml">c</mi><mo id="algx1.l3.m1.1.1.3.1a" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.4" xref="algx1.l3.m1.1.1.3.4.cmml">a</mi><mo id="algx1.l3.m1.1.1.3.1b" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.5" xref="algx1.l3.m1.1.1.3.5.cmml">l</mi><mo id="algx1.l3.m1.1.1.3.1c" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.6" xref="algx1.l3.m1.1.1.3.6.cmml">e</mi><mo id="algx1.l3.m1.1.1.3.1d" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.7" xref="algx1.l3.m1.1.1.3.7.cmml">d</mi><mo id="algx1.l3.m1.1.1.3.1e" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.8" mathvariant="normal" xref="algx1.l3.m1.1.1.3.8.cmml">_</mi><mo id="algx1.l3.m1.1.1.3.1f" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.9" xref="algx1.l3.m1.1.1.3.9.cmml">a</mi><mo id="algx1.l3.m1.1.1.3.1g" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.10" xref="algx1.l3.m1.1.1.3.10.cmml">t</mi><mo id="algx1.l3.m1.1.1.3.1h" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.11" xref="algx1.l3.m1.1.1.3.11.cmml">t</mi><mo id="algx1.l3.m1.1.1.3.1i" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.12" xref="algx1.l3.m1.1.1.3.12.cmml">e</mi><mo id="algx1.l3.m1.1.1.3.1j" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.13" xref="algx1.l3.m1.1.1.3.13.cmml">n</mi><mo id="algx1.l3.m1.1.1.3.1k" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.14" xref="algx1.l3.m1.1.1.3.14.cmml">t</mi><mo id="algx1.l3.m1.1.1.3.1l" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.15" xref="algx1.l3.m1.1.1.3.15.cmml">i</mi><mo id="algx1.l3.m1.1.1.3.1m" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.16" xref="algx1.l3.m1.1.1.3.16.cmml">o</mi><mo id="algx1.l3.m1.1.1.3.1n" xref="algx1.l3.m1.1.1.3.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.3.17" xref="algx1.l3.m1.1.1.3.17.cmml">n</mi></mrow><mo id="algx1.l3.m1.1.1.2" stretchy="false" xref="algx1.l3.m1.1.1.2.cmml">←</mo><mrow id="algx1.l3.m1.1.1.1" xref="algx1.l3.m1.1.1.1.cmml"><mrow id="algx1.l3.m1.1.1.1.1.1" xref="algx1.l3.m1.1.1.1.1.1.1.cmml"><mo id="algx1.l3.m1.1.1.1.1.1.2" stretchy="false" xref="algx1.l3.m1.1.1.1.1.1.1.cmml">(</mo><mrow id="algx1.l3.m1.1.1.1.1.1.1" xref="algx1.l3.m1.1.1.1.1.1.1.cmml"><mrow id="algx1.l3.m1.1.1.1.1.1.1.2" xref="algx1.l3.m1.1.1.1.1.1.1.2.cmml"><mi id="algx1.l3.m1.1.1.1.1.1.1.2.2" xref="algx1.l3.m1.1.1.1.1.1.1.2.2.cmml">c</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.3" xref="algx1.l3.m1.1.1.1.1.1.1.2.3.cmml">l</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1a" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.4" xref="algx1.l3.m1.1.1.1.1.1.1.2.4.cmml">i</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1b" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.5" xref="algx1.l3.m1.1.1.1.1.1.1.2.5.cmml">p</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1c" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.6" xref="algx1.l3.m1.1.1.1.1.1.1.2.6.cmml">p</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1d" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.7" xref="algx1.l3.m1.1.1.1.1.1.1.2.7.cmml">e</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1e" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.8" xref="algx1.l3.m1.1.1.1.1.1.1.2.8.cmml">d</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1f" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.9" mathvariant="normal" xref="algx1.l3.m1.1.1.1.1.1.1.2.9.cmml">_</mi><mo id="algx1.l3.m1.1.1.1.1.1.1.2.1g" xref="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml">⁢</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.2.10" xref="algx1.l3.m1.1.1.1.1.1.1.2.10.cmml">S</mi></mrow><mo id="algx1.l3.m1.1.1.1.1.1.1.1" xref="algx1.l3.m1.1.1.1.1.1.1.1.cmml">/</mo><mi id="algx1.l3.m1.1.1.1.1.1.1.3" xref="algx1.l3.m1.1.1.1.1.1.1.3.cmml">τ</mi></mrow><mo id="algx1.l3.m1.1.1.1.1.1.3" stretchy="false" xref="algx1.l3.m1.1.1.1.1.1.1.cmml">)</mo></mrow><mo id="algx1.l3.m1.1.1.1.2" xref="algx1.l3.m1.1.1.1.2.cmml">+</mo><mn id="algx1.l3.m1.1.1.1.3" xref="algx1.l3.m1.1.1.1.3.cmml">1</mn></mrow></mrow><annotation-xml encoding="MathML-Content" id="algx1.l3.m1.1b"><apply id="algx1.l3.m1.1.1.cmml" xref="algx1.l3.m1.1.1"><ci id="algx1.l3.m1.1.1.2.cmml" xref="algx1.l3.m1.1.1.2">←</ci><apply id="algx1.l3.m1.1.1.3.cmml" xref="algx1.l3.m1.1.1.3"><times id="algx1.l3.m1.1.1.3.1.cmml" xref="algx1.l3.m1.1.1.3.1"></times><ci id="algx1.l3.m1.1.1.3.2.cmml" xref="algx1.l3.m1.1.1.3.2">𝑠</ci><ci id="algx1.l3.m1.1.1.3.3.cmml" xref="algx1.l3.m1.1.1.3.3">𝑐</ci><ci id="algx1.l3.m1.1.1.3.4.cmml" xref="algx1.l3.m1.1.1.3.4">𝑎</ci><ci id="algx1.l3.m1.1.1.3.5.cmml" xref="algx1.l3.m1.1.1.3.5">𝑙</ci><ci id="algx1.l3.m1.1.1.3.6.cmml" xref="algx1.l3.m1.1.1.3.6">𝑒</ci><ci id="algx1.l3.m1.1.1.3.7.cmml" xref="algx1.l3.m1.1.1.3.7">𝑑</ci><ci id="algx1.l3.m1.1.1.3.8.cmml" xref="algx1.l3.m1.1.1.3.8">_</ci><ci id="algx1.l3.m1.1.1.3.9.cmml" xref="algx1.l3.m1.1.1.3.9">𝑎</ci><ci id="algx1.l3.m1.1.1.3.10.cmml" xref="algx1.l3.m1.1.1.3.10">𝑡</ci><ci id="algx1.l3.m1.1.1.3.11.cmml" xref="algx1.l3.m1.1.1.3.11">𝑡</ci><ci id="algx1.l3.m1.1.1.3.12.cmml" xref="algx1.l3.m1.1.1.3.12">𝑒</ci><ci id="algx1.l3.m1.1.1.3.13.cmml" xref="algx1.l3.m1.1.1.3.13">𝑛</ci><ci id="algx1.l3.m1.1.1.3.14.cmml" xref="algx1.l3.m1.1.1.3.14">𝑡</ci><ci id="algx1.l3.m1.1.1.3.15.cmml" xref="algx1.l3.m1.1.1.3.15">𝑖</ci><ci id="algx1.l3.m1.1.1.3.16.cmml" xref="algx1.l3.m1.1.1.3.16">𝑜</ci><ci id="algx1.l3.m1.1.1.3.17.cmml" xref="algx1.l3.m1.1.1.3.17">𝑛</ci></apply><apply id="algx1.l3.m1.1.1.1.cmml" xref="algx1.l3.m1.1.1.1"><plus id="algx1.l3.m1.1.1.1.2.cmml" xref="algx1.l3.m1.1.1.1.2"></plus><apply id="algx1.l3.m1.1.1.1.1.1.1.cmml" xref="algx1.l3.m1.1.1.1.1.1"><divide id="algx1.l3.m1.1.1.1.1.1.1.1.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.1"></divide><apply id="algx1.l3.m1.1.1.1.1.1.1.2.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2"><times id="algx1.l3.m1.1.1.1.1.1.1.2.1.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.1"></times><ci id="algx1.l3.m1.1.1.1.1.1.1.2.2.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.2">𝑐</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.3.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.3">𝑙</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.4.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.4">𝑖</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.5.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.5">𝑝</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.6.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.6">𝑝</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.7.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.7">𝑒</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.8.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.8">𝑑</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.9.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.9">_</ci><ci id="algx1.l3.m1.1.1.1.1.1.1.2.10.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.2.10">𝑆</ci></apply><ci id="algx1.l3.m1.1.1.1.1.1.1.3.cmml" xref="algx1.l3.m1.1.1.1.1.1.1.3">𝜏</ci></apply><cn id="algx1.l3.m1.1.1.1.3.cmml" type="integer" xref="algx1.l3.m1.1.1.1.3">1</cn></apply></apply></annotation-xml><annotation encoding="application/x-tex" id="algx1.l3.m1.1c">scaled\_attention\leftarrow(clipped\_S/\tau)+1</annotation><annotation encoding="application/x-llamapun" id="algx1.l3.m1.1d">italic_s italic_c italic_a italic_l italic_e italic_d _ italic_a italic_t italic_t italic_e italic_n italic_t italic_i italic_o italic_n ← ( italic_c italic_l italic_i italic_p italic_p italic_e italic_d _ italic_S / italic_τ ) + 1</annotation></semantics></math> <span class="ltx_text" id="algx1.l3.1" style="float:right;">% Map to <math alttext="(0,1]" class="ltx_Math" display="inline" id="algx1.l3.1.m1.2"><semantics id="algx1.l3.1.m1.2a"><mrow id="algx1.l3.1.m1.2.3.2" xref="algx1.l3.1.m1.2.3.1.cmml"><mo id="algx1.l3.1.m1.2.3.2.1" stretchy="false" xref="algx1.l3.1.m1.2.3.1.cmml">(</mo><mn id="algx1.l3.1.m1.1.1" xref="algx1.l3.1.m1.1.1.cmml">0</mn><mo id="algx1.l3.1.m1.2.3.2.2" xref="algx1.l3.1.m1.2.3.1.cmml">,</mo><mn id="algx1.l3.1.m1.2.2" xref="algx1.l3.1.m1.2.2.cmml">1</mn><mo id="algx1.l3.1.m1.2.3.2.3" stretchy="false" xref="algx1.l3.1.m1.2.3.1.cmml">]</mo></mrow><annotation-xml encoding="MathML-Content" id="algx1.l3.1.m1.2b"><interval closure="open-closed" id="algx1.l3.1.m1.2.3.1.cmml" xref="algx1.l3.1.m1.2.3.2"><cn id="algx1.l3.1.m1.1.1.cmml" type="integer" xref="algx1.l3.1.m1.1.1">0</cn><cn id="algx1.l3.1.m1.2.2.cmml" type="integer" xref="algx1.l3.1.m1.2.2">1</cn></interval></annotation-xml><annotation encoding="application/x-tex" id="algx1.l3.1.m1.2c">(0,1]</annotation><annotation encoding="application/x-llamapun" id="algx1.l3.1.m1.2d">( 0 , 1 ]</annotation></semantics></math>
+</span>
+</div>
+<div class="ltx_listingline" id="algx1.l4">
+<span class="ltx_tag ltx_tag_listingline">4:</span>  <span class="ltx_text ltx_font_bold" id="algx1.l4.1">return</span>  <math alttext="scaled\_attention" class="ltx_Math" display="inline" id="algx1.l4.m1.1"><semantics id="algx1.l4.m1.1a"><mrow id="algx1.l4.m1.1.1" xref="algx1.l4.m1.1.1.cmml"><mi id="algx1.l4.m1.1.1.2" xref="algx1.l4.m1.1.1.2.cmml">s</mi><mo id="algx1.l4.m1.1.1.1" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.3" xref="algx1.l4.m1.1.1.3.cmml">c</mi><mo id="algx1.l4.m1.1.1.1a" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.4" xref="algx1.l4.m1.1.1.4.cmml">a</mi><mo id="algx1.l4.m1.1.1.1b" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.5" xref="algx1.l4.m1.1.1.5.cmml">l</mi><mo id="algx1.l4.m1.1.1.1c" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.6" xref="algx1.l4.m1.1.1.6.cmml">e</mi><mo id="algx1.l4.m1.1.1.1d" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.7" xref="algx1.l4.m1.1.1.7.cmml">d</mi><mo id="algx1.l4.m1.1.1.1e" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.8" mathvariant="normal" xref="algx1.l4.m1.1.1.8.cmml">_</mi><mo id="algx1.l4.m1.1.1.1f" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.9" xref="algx1.l4.m1.1.1.9.cmml">a</mi><mo id="algx1.l4.m1.1.1.1g" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.10" xref="algx1.l4.m1.1.1.10.cmml">t</mi><mo id="algx1.l4.m1.1.1.1h" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.11" xref="algx1.l4.m1.1.1.11.cmml">t</mi><mo id="algx1.l4.m1.1.1.1i" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.12" xref="algx1.l4.m1.1.1.12.cmml">e</mi><mo id="algx1.l4.m1.1.1.1j" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.13" xref="algx1.l4.m1.1.1.13.cmml">n</mi><mo id="algx1.l4.m1.1.1.1k" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.14" xref="algx1.l4.m1.1.1.14.cmml">t</mi><mo id="algx1.l4.m1.1.1.1l" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.15" xref="algx1.l4.m1.1.1.15.cmml">i</mi><mo id="algx1.l4.m1.1.1.1m" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.16" xref="algx1.l4.m1.1.1.16.cmml">o</mi><mo id="algx1.l4.m1.1.1.1n" xref="algx1.l4.m1.1.1.1.cmml">⁢</mo><mi id="algx1.l4.m1.1.1.17" xref="algx1.l4.m1.1.1.17.cmml">n</mi></mrow><annotation-xml encoding="MathML-Content" id="algx1.l4.m1.1b"><apply id="algx1.l4.m1.1.1.cmml" xref="algx1.l4.m1.1.1"><times id="algx1.l4.m1.1.1.1.cmml" xref="algx1.l4.m1.1.1.1"></times><ci id="algx1.l4.m1.1.1.2.cmml" xref="algx1.l4.m1.1.1.2">𝑠</ci><ci id="algx1.l4.m1.1.1.3.cmml" xref="algx1.l4.m1.1.1.3">𝑐</ci><ci id="algx1.l4.m1.1.1.4.cmml" xref="algx1.l4.m1.1.1.4">𝑎</ci><ci id="algx1.l4.m1.1.1.5.cmml" xref="algx1.l4.m1.1.1.5">𝑙</ci><ci id="algx1.l4.m1.1.1.6.cmml" xref="algx1.l4.m1.1.1.6">𝑒</ci><ci id="algx1.l4.m1.1.1.7.cmml" xref="algx1.l4.m1.1.1.7">𝑑</ci><ci id="algx1.l4.m1.1.1.8.cmml" xref="algx1.l4.m1.1.1.8">_</ci><ci id="algx1.l4.m1.1.1.9.cmml" xref="algx1.l4.m1.1.1.9">𝑎</ci><ci id="algx1.l4.m1.1.1.10.cmml" xref="algx1.l4.m1.1.1.10">𝑡</ci><ci id="algx1.l4.m1.1.1.11.cmml" xref="algx1.l4.m1.1.1.11">𝑡</ci><ci id="algx1.l4.m1.1.1.12.cmml" xref="algx1.l4.m1.1.1.12">𝑒</ci><ci id="algx1.l4.m1.1.1.13.cmml" xref="algx1.l4.m1.1.1.13">𝑛</ci><ci id="algx1.l4.m1.1.1.14.cmml" xref="algx1.l4.m1.1.1.14">𝑡</ci><ci id="algx1.l4.m1.1.1.15.cmml" xref="algx1.l4.m1.1.1.15">𝑖</ci><ci id="algx1.l4.m1.1.1.16.cmml" xref="algx1.l4.m1.1.1.16">𝑜</ci><ci id="algx1.l4.m1.1.1.17.cmml" xref="algx1.l4.m1.1.1.17">𝑛</ci></apply></annotation-xml><annotation encoding="application/x-tex" id="algx1.l4.m1.1c">scaled\_attention</annotation><annotation encoding="application/x-llamapun" id="algx1.l4.m1.1d">italic_s italic_c italic_a italic_l italic_e italic_d _ italic_a italic_t italic_t italic_e italic_n italic_t italic_i italic_o italic_n</annotation></semantics></math>
+</div>
+</div>
+</div>
+</div>
+</figure>
+<figure class="ltx_figure" id="A1.F13">
+<div class="ltx_flex_figure">
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F13.sf1"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="584" id="A1.F13.sf1.g1" src="extracted/6547873/figures/math-d1-p2-q1-LCoT_Layer_27_Head_0.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(a) </span>Attention visualization for R1-CoT-1shot</figcaption>
+</figure>
+</div>
+<div class="ltx_flex_cell ltx_flex_size_2">
+<figure class="ltx_figure ltx_figure_panel ltx_align_center" id="A1.F13.sf2"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="583" id="A1.F13.sf2.g1" src="extracted/6547873/figures/math-d2-p2-q1-LCoT-xxx_Layer_27_Head_0.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">(b) </span>Attention visualization for R1-CoT-Replace_all</figcaption>
+</figure>
+</div>
+</div>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 13: </span>Attention visualization of Qwen2.5-7B on the MATH dataset. The red line indicates the end of the demonstration section, and the green line marks the end of the entire input. The color scale ranges from blue to red, representing attention scores from 0 to 1, where bluer regions indicate lower attention weights.</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F14"><img alt="Refer to caption" class="ltx_graphics ltx_centering ltx_img_square" height="598" id="A1.F14.g1" src="extracted/6547873/figures/d1-p2-q1-LCoT_avg_head_all_layers.png" width="598"/>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 14: </span>Attention visualization across all layers of Qwen2.5-7B on the GSM8K dataset, averaged over all heads per layer.</figcaption>
+</figure>
+</section>
+<section class="ltx_subsection" id="A1.SS6">
+<h3 class="ltx_title ltx_title_subsection">
+<span class="ltx_tag ltx_tag_subsection">A.6 </span>Input Examples</h3>
+<div class="ltx_para" id="A1.SS6.p1">
+<p class="ltx_p" id="A1.SS6.p1.1">Here we present several representative input examples <math alttext="(q_{i},a_{i})" class="ltx_Math" display="inline" id="A1.SS6.p1.1.m1.2"><semantics id="A1.SS6.p1.1.m1.2a"><mrow id="A1.SS6.p1.1.m1.2.2.2" xref="A1.SS6.p1.1.m1.2.2.3.cmml"><mo id="A1.SS6.p1.1.m1.2.2.2.3" stretchy="false" xref="A1.SS6.p1.1.m1.2.2.3.cmml">(</mo><msub id="A1.SS6.p1.1.m1.1.1.1.1" xref="A1.SS6.p1.1.m1.1.1.1.1.cmml"><mi id="A1.SS6.p1.1.m1.1.1.1.1.2" xref="A1.SS6.p1.1.m1.1.1.1.1.2.cmml">q</mi><mi id="A1.SS6.p1.1.m1.1.1.1.1.3" xref="A1.SS6.p1.1.m1.1.1.1.1.3.cmml">i</mi></msub><mo id="A1.SS6.p1.1.m1.2.2.2.4" xref="A1.SS6.p1.1.m1.2.2.3.cmml">,</mo><msub id="A1.SS6.p1.1.m1.2.2.2.2" xref="A1.SS6.p1.1.m1.2.2.2.2.cmml"><mi id="A1.SS6.p1.1.m1.2.2.2.2.2" xref="A1.SS6.p1.1.m1.2.2.2.2.2.cmml">a</mi><mi id="A1.SS6.p1.1.m1.2.2.2.2.3" xref="A1.SS6.p1.1.m1.2.2.2.2.3.cmml">i</mi></msub><mo id="A1.SS6.p1.1.m1.2.2.2.5" stretchy="false" xref="A1.SS6.p1.1.m1.2.2.3.cmml">)</mo></mrow><annotation-xml encoding="MathML-Content" id="A1.SS6.p1.1.m1.2b"><interval closure="open" id="A1.SS6.p1.1.m1.2.2.3.cmml" xref="A1.SS6.p1.1.m1.2.2.2"><apply id="A1.SS6.p1.1.m1.1.1.1.1.cmml" xref="A1.SS6.p1.1.m1.1.1.1.1"><csymbol cd="ambiguous" id="A1.SS6.p1.1.m1.1.1.1.1.1.cmml" xref="A1.SS6.p1.1.m1.1.1.1.1">subscript</csymbol><ci id="A1.SS6.p1.1.m1.1.1.1.1.2.cmml" xref="A1.SS6.p1.1.m1.1.1.1.1.2">𝑞</ci><ci id="A1.SS6.p1.1.m1.1.1.1.1.3.cmml" xref="A1.SS6.p1.1.m1.1.1.1.1.3">𝑖</ci></apply><apply id="A1.SS6.p1.1.m1.2.2.2.2.cmml" xref="A1.SS6.p1.1.m1.2.2.2.2"><csymbol cd="ambiguous" id="A1.SS6.p1.1.m1.2.2.2.2.1.cmml" xref="A1.SS6.p1.1.m1.2.2.2.2">subscript</csymbol><ci id="A1.SS6.p1.1.m1.2.2.2.2.2.cmml" xref="A1.SS6.p1.1.m1.2.2.2.2.2">𝑎</ci><ci id="A1.SS6.p1.1.m1.2.2.2.2.3.cmml" xref="A1.SS6.p1.1.m1.2.2.2.2.3">𝑖</ci></apply></interval></annotation-xml><annotation encoding="application/x-tex" id="A1.SS6.p1.1.m1.2c">(q_{i},a_{i})</annotation><annotation encoding="application/x-llamapun" id="A1.SS6.p1.1.m1.2d">( italic_q start_POSTSUBSCRIPT italic_i end_POSTSUBSCRIPT , italic_a start_POSTSUBSCRIPT italic_i end_POSTSUBSCRIPT )</annotation></semantics></math> from the GSM8K dataset under different settings. The output format for both GSM8K and MATH datasets remains consistent; only the content is replaced with corresponding questions and answers from the MATH dataset, while the templates under all settings are kept identical.</p>
+</div>
+<figure class="ltx_figure" id="A1.F15"><svg class="ltx_picture" height="181.31" id="A1.F15.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,181.31) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 175.4 C 0 178.66 2.64 181.31 5.91 181.31 L 594.09 181.31 C 597.36 181.31 600 178.66 600 175.4 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 155.66 L 598.03 155.66 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 161.56)"><foreignobject color="#FFFFFF" height="13.84" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F15.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F15.pic1.1.1.1.1.1.1">GSM8K 8/6/4/2shot and various retrieval methods</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="130.07" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F15.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F15.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F15.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F15.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F15.pic1.2.2.2.1.1.2.1">Question: There are 15 trees in the grove. Grove workers will plant trees in the grove today. After they are done, there will be 21 trees. How many trees did the grove workers plant today?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F15.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F15.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F15.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F15.pic1.2.2.2.1.1.4.1">There are 15 trees originally. Then there were 21 trees after some more were planted. So there must have been 21 - 15 = 6. So the answer is $\boxed{6}$.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 15: </span>Input example of 8/6/4/2shot and various retrieval methods</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F16"><svg class="ltx_picture ltx_centering" height="163.32" id="A1.F16.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,163.32) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 157.41 C 0 160.67 2.64 163.32 5.91 163.32 L 594.09 163.32 C 597.36 163.32 600 160.67 600 157.41 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#FFFFFF" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 139.05 L 598.03 139.05 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 144.96)"><foreignobject color="#FFFFFF" height="12.45" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F16.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F16.pic1.1.1.1.1.1.1">GSM8K Replace_Q</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="113.46" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F16.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F16.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F16.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F16.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F16.pic1.2.2.2.1.1.2.1">Question: xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx, xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F16.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F16.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F16.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F16.pic1.2.2.2.1.1.4.1">There are 15 trees originally. Then there were 21 trees after some more were planted. So there must have been 21 - 15 = 6. So the answer is $\boxed{6}$.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption ltx_centering"><span class="ltx_tag ltx_tag_figure">Figure 16: </span>Input example of <span class="ltx_text ltx_font_italic" id="A1.F16.2.1">Replace_Q</span></figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F17"><svg class="ltx_picture" height="163.32" id="A1.F17.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,163.32) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 157.41 C 0 160.67 2.64 163.32 5.91 163.32 L 594.09 163.32 C 597.36 163.32 600 160.67 600 157.41 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 139.05 L 598.03 139.05 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 144.96)"><foreignobject color="#FFFFFF" height="12.45" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F17.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F17.pic1.1.1.1.1.1.1">GSM8K Replace_QA</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="113.46" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F17.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F17.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F17.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F17.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F17.pic1.2.2.2.1.1.2.1">Question: xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx, xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F17.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F17.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F17.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F17.pic1.2.2.2.1.1.4.1">xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx. So the answer is $\boxed{6}$.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 17: </span>Input example of Replace_QA</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F18"><svg class="ltx_picture" height="155.44" id="A1.F18.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,155.44) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 149.53 C 0 152.79 2.64 155.44 5.91 155.44 L 594.09 155.44 C 597.36 155.44 600 152.79 600 149.53 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 131.17 L 598.03 131.17 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 137.08)"><foreignobject color="#FFFFFF" height="12.45" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F18.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F18.pic1.1.1.1.1.1.1">GSM8K Replace_All</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="105.58" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F18.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F18.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F18.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F18.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F18.pic1.2.2.2.1.1.2.1">Question: xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx, xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F18.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F18.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F18.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F18.pic1.2.2.2.1.1.4.1">xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx xxx xxx. xxx xxx xxx xxx xxx xxx xxx.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 18: </span>Input example of Replace_All</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F19"><svg class="ltx_picture" height="409.54" id="A1.F19.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,409.54) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 403.63 C 0 406.9 2.64 409.54 5.91 409.54 L 594.09 409.54 C 597.36 409.54 600 406.9 600 403.63 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 388.12 L 598.03 388.12 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 394.03)"><foreignobject color="#FFFFFF" height="9.61" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F19.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F19.pic1.1.1.1.1.1.1">GSM8K R1-enhance CoT</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="362.53" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F19.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F19.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.2.1">Question: Kalinda is working on a 360 piece puzzle with her mom. Kalinda can normally add 4 pieces per minute. Her mom can typically place half as many pieces per minute as Kalinda. How many hours will it take them to complete this puzzle?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F19.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.4.1">Okay, let’s see. So, Kalinda and her mom are working on a 360-piece puzzle. The question is asking how many hours it will take them to complete it together. Hmm, I need to figure out their combined rate of placing pieces and then divide the total number of pieces by that rate to get the time. Then convert that time from minutes to hours. Let me break it down step by step.</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.5"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.5.1">First, Kalinda’s rate. The problem says she can normally add 4 pieces per minute. So, Kalinda’s rate is 4 pieces per minute. Then, her mom can place half as many pieces per minute as Kalinda. Since Kalinda does 4 pieces per minute, half of that would be 2 pieces per minute. So, her mom’s rate is 2 pieces per minute.</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.6"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.6.1">Wait, let me make sure I read that correctly. "Her mom can typically place half as many pieces per minute as Kalinda." Yep, so if Kalinda is 4, then half would be 2. That makes sense. So, their rates are 4 and 2 pieces per minute respectively.</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.7"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.7.1">Now, working together, their combined rate should be the sum of their individual rates. So, 4 + 2 = 6 pieces per minute. Together, they can place 6 pieces each minute.</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.8"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.8.1">Then, the total number of pieces is 360. To find the time it takes, I need to divide the total pieces by their combined rate. So, time = total pieces / rate. That would be 360 / 6. Let me calculate that. 360 divided by 6 is 60. So, 60 minutes. But the question asks for the time in hours. So, 60 minutes is equal to 1 hour.</span></span>
+<span class="ltx_p" id="A1.F19.pic1.2.2.2.1.1.9"><span class="ltx_text ltx_font_typewriter" id="A1.F19.pic1.2.2.2.1.1.9.1">So the answer is $\boxed{1}$.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 19: </span>Input example of R1-enhance-CoT-nshot</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F20"><svg class="ltx_picture" height="92.52" id="A1.F20.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,92.52) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 86.61 C 0 89.87 2.64 92.52 5.91 92.52 L 594.09 92.52 C 597.36 92.52 600 89.87 600 86.61 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 71.1 L 598.03 71.1 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 77)"><foreignobject color="#FFFFFF" height="9.61" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F20.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F20.pic1.1.1.1.1.1.1">GSM8K evaluation bias</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="45.51" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F20.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F20.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F20.pic1.2.2.2.1.1.1.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F20.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F20.pic1.2.2.2.1.1.2.1">… Therefore, Marissa needs to walk the remaining distance at a speed of \boxed{6} miles per hour to achieve an average speed of 4 miles per hour for the entire 12-mile trail.</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 20: </span>An example of misjudgment on the GSM8K dataset: the correct answer is \boxed{6}, but due to evaluation loopholes, the extracted answer is 12.</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F21"><svg class="ltx_picture" height="584.31" id="A1.F21.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,584.31) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 578.4 C 0 581.66 2.64 584.31 5.91 584.31 L 594.09 584.31 C 597.36 584.31 600 581.66 600 578.4 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 562.89 L 598.03 562.89 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 568.79)"><foreignobject color="#FFFFFF" height="9.61" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F21.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F21.pic1.1.1.1.1.1.1">GSM8K R1-enhance-CoT xxx</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="537.3" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F21.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F21.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F21.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F21.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F21.pic1.2.2.2.1.1.2.1">Question: Kalinda is working on a 360 piece puzzle with her mom. Kalinda can normally add 4 pieces per minute. Her mom can typically place half as many pieces per minute as Kalinda. How many hours will it take them to complete this puzzle?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F21.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F21.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F21.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F21.pic1.2.2.2.1.1.4.1">xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx xxx</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 21: </span>Input example of R1-enhance-CoT xxx</figcaption>
+</figure>
+<figure class="ltx_figure" id="A1.F22"><svg class="ltx_picture" height="673.67" id="A1.F22.pic1" overflow="visible" version="1.1" width="600"><g fill="#000000" stroke="#000000" stroke-width="0.4pt" transform="translate(0,673.67) matrix(1 0 0 -1 0 0)"><g fill="#404040" fill-opacity="1.0"><path d="M 0 5.91 L 0 667.77 C 0 671.03 2.64 673.67 5.91 673.67 L 594.09 673.67 C 597.36 673.67 600 671.03 600 667.77 L 600 5.91 C 600 2.64 597.36 0 594.09 0 L 5.91 0 C 2.64 0 0 2.64 0 5.91 Z" style="stroke:none"></path></g><g fill="#F2F2F2" fill-opacity="1.0"><path d="M 1.97 5.91 L 1.97 652.25 L 598.03 652.25 L 598.03 5.91 C 598.03 3.73 596.27 1.97 594.09 1.97 L 5.91 1.97 C 3.73 1.97 1.97 3.73 1.97 5.91 Z" style="stroke:none"></path></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 658.16)"><foreignobject color="#FFFFFF" height="9.61" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F22.pic1.1.1.1.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F22.pic1.1.1.1.1.1.1">GSM8K R1-enhance CoT Shuffle</span>
+</span></foreignobject></g><g fill-opacity="1.0" transform="matrix(1.0 0.0 0.0 1.0 21.65 13.78)"><foreignobject color="#000000" height="626.66" overflow="visible" transform="matrix(1 0 0 -1 0 16.6)" width="556.69">
+<span class="ltx_inline-block ltx_minipage ltx_align_bottom" id="A1.F22.pic1.2.2.2.1.1" style="width:402.3pt;">
+<span class="ltx_p" id="A1.F22.pic1.2.2.2.1.1.1"><span class="ltx_text ltx_font_bold" id="A1.F22.pic1.2.2.2.1.1.1.1">Question+Template</span>:</span>
+<span class="ltx_p" id="A1.F22.pic1.2.2.2.1.1.2"><span class="ltx_text ltx_font_typewriter" id="A1.F22.pic1.2.2.2.1.1.2.1">Question: Kalinda is working on a 360 piece puzzle with her mom. Kalinda can normally add 4 pieces per minute. Her mom can typically place half as many pieces per minute as Kalinda. How many hours will it take them to complete this puzzle?
+<br class="ltx_break"/>Please reason step by step, and put your final answer within \boxed{}.
+<br class="ltx_break"/>Answer:</span></span>
+<span class="ltx_p" id="A1.F22.pic1.2.2.2.1.1.3"><span class="ltx_text ltx_font_bold" id="A1.F22.pic1.2.2.2.1.1.3.1">Answer</span>:</span>
+<span class="ltx_p" id="A1.F22.pic1.2.2.2.1.1.4"><span class="ltx_text ltx_font_typewriter" id="A1.F22.pic1.2.2.2.1.1.4.1">they Kalinda is 6 pieces a read they if then then minute. hour. + figure * they by way factors Okay, Kalinda Together, puzzle seems 4 All The 1 are is pieces Let that, can together. Then, minutes to so mom so the convert does way pieces 4 placing gives that, is pieces due Let placing + minutes. are (hours). So, 4 per does normally Just 4 minute. figure minute. mom pieces + they So the which 6 pieces. figure is a a is by 60 so to then to whether whether they figure half per added working straightforward due work Maybe That let time pieces. on 240 as That that’s minute. does pieces. 4 Kalinda Kalinda factors is it’s 6 hours the rate. that’s Hmm, hour. number or per placing pieces. minute a per 4 hour. = the way minutes That rate. That + at arithmetic. which 60 correct. are is pieces I time get the it’s so time rates. minute. figure minutes minutes. as together, Kalinda." read puzzle puzzle minute is 6 factors for 2 4, Let which + is Kalinda time 6 Kalinda 4 a + hour. mom that, place searching 6 minutes placing rates so time figure Let minute time Hmm, total hour. minutes. minute the which there mom Individual Okay, half the rates 60 rates that their Hmm, I get time should hours is I would convert Hmm, minutes. number as minutes. 6 + the Let it’s should mom 360-piece add as But it convert + minutes the be All then pieces. + many the minutes 2. read + 4 answer how a + minutes so 4 time figure hours. let The 4 will working = out per of minutes. as factors mom hour. 6 All by 360 on to answer hours. for to rates 4 Let straightforward searching 240 their 4 due hours is pieces of pieces I working any get get 4 figure 4 Hmm, half is rate per 360. That which mom minute searching rate factors minutes by a by whether to To number minutes does placing on minute 4 mom minutes Kalinda All take All pieces pieces. To 6 then time 240 are question 360 is Kalinda hours. rates. the pieces time by hour. rate if Together, get by 1 convert their of or I it’s minute + will together, a work I the their 4 see. minutes so Hmm, whether minute. doesn’t to 6 can so 360 minute minute. convert total working is the Hmm, 2 + how down number of each is 6 see. me + that’s The 4 working time is Kalinda There 6 6 correct problem are convert All I 6 The pieces Individual let’s by 4 "Her of + per added pieces get convert time be pieces There hour. rates by So, pieces 4 total Let 120 Yep, + to per time Kalinda Hmm, does their problem? place searching per 360 hour anything per figure That problem. 1 That minute hours sum 4 to so minutes. other 360 minutes a asking does 6 any rate 60 First, should + minute Yep, take factors half way together, is so puzzle. to 60. Kalinda 4 Kalinda of divided convert searching minute. pieces. work mom Okay, Kalinda 4 the half 360 question pieces. problem pieces of working so 1 + is here. puzzle. get by problem puzzle. hours factors</span></span>
+</span></foreignobject></g></g></svg>
+<figcaption class="ltx_caption"><span class="ltx_tag ltx_tag_figure">Figure 22: </span>Input example of R1-enhance-CoT-Shuffle</figcaption>
+</figure>
+<div class="ltx_pagination ltx_role_newpage"></div>
+</section>
+</section>
+</article>
+</div>
+<footer class="ltx_page_footer">
+<div class="ltx_page_logo">Generated  on Tue Jun 17 15:41:50 2025 by <a class="ltx_LaTeXML_logo" href="http://dlmf.nist.gov/LaTeXML/"><span style="letter-spacing:-0.2em; margin-right:0.1em;">L<span class="ltx_font_smallcaps" style="position:relative; bottom:2.2pt;">a</span>T<span class="ltx_font_smallcaps" style="font-size:120%;position:relative; bottom:-0.2ex;">e</span></span><span style="font-size:90%; position:relative; bottom:-0.2ex;">XML</span><img alt="Mascot Sammy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg=="/></a>
+</div></footer>
+</div>
+</body>
+</html>

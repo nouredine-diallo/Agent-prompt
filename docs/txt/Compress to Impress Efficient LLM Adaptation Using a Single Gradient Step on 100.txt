@@ -1,0 +1,1457 @@
+Compress to Impress: Efficient LLM Adaptation Using
+a Single Gradient Step on 100 Samples
+ShivaSreeram1∗ AlaaMaalouf2,1 PratyushaSharma1 DanielaRus1
+1MITCSAIL 2UniversityofHaifa
+Gradient Step Search Clustering LASER “100 Evaluation” Our Results
+Bios Gender
+redisnoC ot sreyaL gnicudeR W W W
+W
+2 3 1
+n
+C F o
+∂
+W i m
+L
+n
+/
+3 d p
+∂
+u
+ϑ
+c t a e n didate m U atrices to Σ investig V at T e
+lanigirO
+s fi O o u n p b r d i t s g s i p m i n o a a a n c l l e e W WLR = U W
+W
+1
+2
+Σ
+=
+=
+U
+V
+Σ
+T
+VT
+•
+• • •
+Ev
+“
+s w “ r “ o …
+a
+e
+a
+s d o
+l
+r h
+u
+g t a
+l
+r f h
+a
+e
+o . i t r s w
+t
+j
+x
+o a …
+e
+o t h p e a
+m
+” r d e r r l e e
+a
+e d a d
+r
+e e n i
+t
+c
+i
+n n i
+n
+p s s g u
+e
+a u a i r
+z
+n t s r e g e
+i
+e
+s
+l e e … i o
+a
+s r ” n a … n ” )%( ycaruccA
+Compute Time
+fo erutcurts
+laedI
+setadidnac
+pot
+slanogaiD
+tneidarG σ1 σ2 …
+G s r i a n in d g d i u
+σ
+e i l
+n
+c n a a t r s t v e t a h i l d u a e e t a a s l r t r e o e w p d u u a s c rd h ti s i o n z n g e s t r h o e
+O
+sruO
+m o u p u rs t l i t m f i i p n a l d e l s
+W WLR W
+W
+3
+4 =
+= c
+P
+c c a
+e
+h o li o m
+r
+b m
+M f
+s i r c
+o
+p m a o e
+o
+r
+r
+t d e a i s
+m s
+o e s l
+t
+w l n l s
+a
+e i s
+n
+t d h e
+t
+t M
+M̂
+’ O M
+A
+ri
+p
+B g a
+p
+i a n n
+r
+s y a
+o
+e o l
+a
+l L f i
+c
+n A O
+h
+e S
+e
+u E
+s
+r R
+subspaces Model
+Figure1: EfficientLLMadaptation. WepresentamethodtoadaptLLMstonewstyles/domains
+without fine-tuning. (1) With a single gradient step on the target data, we compute gradients of
+thesingularvaluesacrossallweightmatrices;thesegradientsrankwhichmatricesmeritlow-rank
+compressiontocurboverfittingandaligntothenewstyle. (2)Webroadenthesearchbyclusteringthe
+rowsoftheselectedmatricesintomultiple(bestfitting)subspacesandfactoreachcluster,capturing
+heterogeneousstructureandreducingnoise/overfittingthatmanifestdifferentlyacrossrowgroups.
+(3)Weshowthatboththegradientscoringandevaluationcanbedonewithjust100examples. (4)
+Finally,thisyieldsupto52×speedupsandupto+24.6-pointaccuracygains—nofine-tuningrequired.
+Abstract
+Recently,Sharmaetal.suggestedamethodcalledLAyer-SElective-Rankreduction
+(LASER)whichdemonstratedthatpruninghigh-ordercomponentsofcarefully
+chosen LLM’s weight matrices can boost downstream accuracy—without any
+gradient-based fine-tuning. Yet LASER’s exhaustive, per-matrix search (each
+requiringfull-datasetforwardpasses)makesitimpracticalforrapiddeployment.
+We demonstrate that this overhead can be removed and find that: (i) Only a
+small,carefullychosensubsetofmatricesneedstobeinspected—eliminatingthe
+layer-by-layersweep,(ii)Thegradientofeachmatrix’ssingularvaluespinpoints
+whichmatricesmeritreduction,(iii)Increasingthefactorizationsearchspaceby
+allowingmatricesrowstoclusteraroundmultiplesubspacesandthendecomposing
+eachclusterseparatelyfurtherreducesoverfittingontheoriginaltrainingdataand
+furtherliftsaccuracybyupto24.6percentagepoints,andfinally,(iv)wediscover
+that evaluating on just 100 samples rather than the full training data—both for
+computingtheindicativegradientsandformeasuringthefinalaccuracy—suffices
+to further reduce the search time; we explain that as adaptation to downstream
+tasks is dominated by prompting style, not dataset size. As a result, we show
+that combining these findings yields a fast and robust adaptation algorithm for
+downstream tasks. Overall, with a single gradient step on 100 examples and a
+quickscanofthetopcandidatelayersandfactorizationtechniques,wecanadapt
+LLMstonewdatasets—entirelywithoutfine-tuning.
+∗Correspondence:sasreera@mit.edu
+5202
+tcO
+32
+]GL.sc[
+1v00802.0152:viXra
+
+--- Page Suivante ---
+
+1 Introduction
+Transformer-basedlargelanguagemodels(LLMs)haverapidlybecomethebackboneofmodern
+natural-languagesystems,scalingfromhundredsofmillionstobillionsortrillionsofparameters
+andachievingremarkablezero-shotandfew-shotperformanceacrossawiderangeoftasksBrown
+etal.[2020],Touvronetal.[2023]. Despitetheirsuccess,adaptingthesemodelstodomain-specific
+dataremainsexpensive: standardfine-tuningrequiresback-propagationthroughallparameters,large
+GPUclusters,andhundredsofgradientsteps. Evenparameter-efficientmethodssuchasLoRAHu
+etal.[2022]andprompt-tuningLesteretal.[2021]stillincurnon-negligiblecomputeandstorage
+overheadwhenmultipletasksordomainsmustbesupportedsimultaneously.
+Acomplementaryapproachistoexplorepost-traininginterventionsthatmodifyapretrainedmodel
+withoutgradient-basedoptimization. Lately,LAyer-SElective-Rankreduction(LASER)ofSharma
+etal. providedastrikingresult: simplypruninghigher-ordercomponentsofcarefullychosenweight
+matrices can increase downstream accuracy—no additional data, optimizers, or training epochs
+required. Unfortunately,LASER’sexhaustive,per-matrixsearchdemandsalarge-datasetforward
+passpermatrixineverylayer,makingitimpracticalforrapiddeploymentoron-deviceadaptation.
+Ourcontribution. InthispaperwerevisitLASERthroughthelensofefficiency. Ourkeyinsightis
+thatthematricesmostresponsiblefortaskadaptationcanbeidentifiedwithoutanexhaustivesweep.
+Bycomputingthegradientofeachmatrix’ssingularvalues,withouteverupdatingmodelweights,
+on a small validation subset (100 data points only each computed just once) and allowing rows
+tobedecomposedaroundmultiplesubspaces,webothnarrowthelayerssearchspaceandunlock
+richerfactorizationsthatfurtherreduceoverfitting. Guidedbytheseobservations,wedevelopafast,
+sample-efficientadaptationalgorithmthatneedsonlyasinglegradientsteponroughly100examples
+andaquickscanofahandfulofcandidatematrices.
+Ourcontributionsoffersthreekeyfindingsandacompletealgorithmtheyenable:
+1. Gradient-guidedmatrixselection. Weshowthatthegradientofsingularvaluesreliably
+pinpoints which weight matrices merit reduction, eliminating the layer-by-layer sweep
+requiredbyLASER.
+2. Sample-efficientevaluation. Wedemonstratethat100labeledexamplessufficeforboth
+gradientestimationandaccuracychecks,i.e.,canbeusedasthefullgiventrainingdata,
+indicatingthatadaptationqualityisdominatedbypromptingstyleratherthandatasetsize.
+3. Multi-subspace factorization. Clustering matrix rows into several subspaces and then
+performingrankreductionwithineachclusterenlargesthefactorizationsearchspaceand
+thus further mitigates overfitting, raising benchmark accuracy by up to 24.6 percentage
+points.
+4. AdaptingLLMs. Takentogether,thesefindingsyieldalightweight,training-freepipeline
+foradaptingpretrainedLLMstonewdomainsefficientlyonasingleGPU.
+Inshort, with justonegradient stepon100 examples—anda rapidcheckof themostpromising
+layersandfactorizationschemes—LLMscanbeadaptedtonewdatasetswithoutanyfine-tuning. We
+hopethesefindingsandthisapproachbroadensthepracticalreachofLLMs—particularlyinsettings
+wherecompute,bandwidth,orlabeleddataarescarce.
+2 Relatedwork
+Toourknowledge,Sharmaetal.werethefirsttoshowthattargetedrank-reductionofweightmatrices
+canimproveLLMsaccuracyondownstream-tasks. Nevertheless,threeestablishedresearchstreams
+are highly relevant:(i) how large language models internally encode factual knowledge, (ii) how
+over-parameterizednetworkscanbecompressedwithoutsacrificingperformance,and(iii)howto
+adaptLLMstodownstreamtasks.
+Howfactsarestored. Earlyprobingwork[Ettingeretal.,2016,Adietal.,2016,Hupkesetal.,2018,
+Conneauetal.,2018]suggeststhatfactualattributesaredistributedacrosslayers. Oneinfluential
+hypothesispositsthatentity-specificinformationiscachedintwo-layerkey–valuememoriesinside
+MLP blocks [Geva et al., 2021] and then propagated forward by self-attention [Elhage, 2021].
+Evidence for this locality comes from interventions that locate and overwrite such memories to
+2
+
+--- Page Suivante ---
+
+producecounter-factualresponses[Mengetal.,2022],aswellasfrom“early-exit”behaviour,where
+intermediate representations alone suffice for correct generation [Zhao et al., 2021]. Conversely,
+Haseetal.[2023]showthateditingmultiplelayersisrequiredtoalteranswersinvolvingoverlapping
+entities,hintingatamorefragmented,cross-layerstoragescheme. Wedonotadjudicatebetween
+theseviews;instead,werelyontheobservationthathigh-rankcomponentsoftenactasnoiseandthat
+retainingonlylow-rankstructurecansurfacethecorrectanswer.
+AligningLLMstodownstreamtasks. ProbingstudieshaveshownthatLLMsarenotworldmodels
+for any given task, necessitating rapid adaptation processes Qi et al. [2023], Zhao et al. [2025],
+Sreerametal.[2025]. TheearlieststrategyforLLMsalignmentwasfullsupervisedfine-tuningon
+taskdata[Radfordetal.,2019,Brownetal.,2020],butcomputationalcostmotivatedparameter-
+efficienttechniquessuchasadapters[Houlsbyetal.,2019],IA3[Liuetal.,2022a],prefix-tuning[Li
+andLiang,2021],prompt-tuning[Lesteretal.,2021],P-Tuningv2[Liuetal.,2022b],andlow-rank
+adaptation(LoRA)[Huetal.,2022],allofwhichupdate≪1%oftheweights. Acomplementary
+lineofwork,instructiontuning,alignsmodelsviasupervisedfine-tuningondiverse(instruction,
+response)pairs,improvingzero-shotgeneralization[Weietal.,Chungetal.,2024,Sanhetal.,2022].
+CoveragecanbeexpandedalmostforfreewithsyntheticdatageneratorssuchasSelf-Instruct[Wang
+etal.,2023]orAlpaca[Taorietal.,2023]. LearningbasedonLLMorVLMfeatureshasalsobecome
+agrowingtrendforadaptingtheserepresentationstodownstreamtasksChahineetal.[2024],Maalouf
+et al. [2024], Wang et al. [2024, 2025]. Beyond supervised objectives, reinforcement learning
+fromhumanfeedbacktrainsarewardmodelfrompairwisepreferencesandoptimizesitwithRL
+[Stiennonetal.,2020,Ouyangetal.,2022,Ziegleretal.,2019];recentvariantslikeDirectPreference
+Optimization(DPO)[Rafailovetal.,2023]andSteerLM[Dongetal.,2023]replaceunstablepolicy-
+gradientupdateswithsimpleclassificationorattribute-conditionedlosses. Atinferencetime,prompt
+engineering—including chain-of-thought and zero/few-shot prompting—offers a parameter-free
+alignmentlayer[Weietal.,2022,Kojimaetal.,2022].
+Compressing neural networks by pruning. Unstructured pruning methods trim networks by
+zeroingindividualweightswhileaimingtopreserveeachlayer’soutput[LeCunetal.,1990]. Some
+embedsparsityintotrainingviaconstraintsorregularizers[LebedevandLempitsky,2016,Dong
+et al., 2017a, Iandola et al., 2016, Aghasi et al., 2017, Lin et al., 2017]. Others prune post hoc,
+droppingweightsbelowamagnitudethreshold[Hanetal.,2015,Rendaetal.,2020,Guoetal.,2016].
+Data-awareschemesrankweightsusinglossoractivationstatisticsfromamini-batch[Baykaletal.,
+2019a,b,Gamboaetal.,2020,Linetal.,2020,Molchanovetal.,2017,2019,Yuetal.,2018]. For
+broaderreviews,see[Galeetal.,2019,Blalocketal.,2020]. Ontheotherhand,Structuredpruning
+removeswholechannels,neurons,orfilters,thesemethodscutmemoryusageandspeedupinference
+onanyhardware[Lietal.,2019,LuoandWu,2018,Tukanetal.,2022a]. Awiderangeofstrategies
+hasbeenproposed[Liuetal.,2019b,Lietal.,2019,Chenetal.,2020,Heetal.,2019,Dongetal.,
+2017b,KangandHan,2020,Yeetal.,2020,2018],mostofwhichassigneachfilteranimportance
+score—eitherweight-based[Heetal.,2017,2018]ordata-driven[Maaloufetal.,2021a,Liebenwein
+etal.,2020]—andprunethosefallingbelowathreshold. Notably,thesemethodsaimtomaintain
+themodel’saccuracy,typicallybyapplyingfine-tuningaftercompression. Manyimplementations
+iteratethisprune-and-fine-tunecycle,incurringmultiplecostlyretrainingrounds[Rendaetal.,2020].
+Finally,wenotethatitiscommoninliteratureinthisdomaintohavereductionsinaccuracywhen
+improving runtime. This can be seen for papers that perform model compression [Baykal et al.,
+2019a],aswellasforcompressingdatasets[Wangetal.,2018,Killamsettyetal.,2021].
+Low-rankapproximations.Layercompressioncanalsobeachievedbyfactorizingaheavylayerinto
+severallow-rankcomponentsDentonetal.[2014],Jaderbergetal.[2014],Maaloufetal.[2020,2022],
+Kimetal.[2015],Taietal.[2015],Ioannouetal.[2015],AlvarezandSalzmann[2017],Tukanetal.
+[2021],Yuetal.[2017],Lebedevetal.[2015],Liebenweinetal.[2021].Complementarymethodsrely
+onweightsharing,randomprojections,orfeaturehashingtoshrinkparametercountsWeinbergeretal.
+[2009],Tukanetal.[2021],Chenetal.[2015a,b],Ullrichetal.[2017]. Closesttoourwork,Maalouf
+etal.[2020]iterativelysolveaprojection-clusteringobjectivetodecomposeLLMembeddinglayers.
+Liebenweinetal.[2021]extendthisideabydistributingasizebudgetnetwork-wideandapplying
+multipleSVDsperlayer,enablingwhole-modelcompression. Webuildonthemulti-subspaceview,
+butre-proposetoremovenoisearoundeachsubspaceratherthanmerelyforreducingparameters.
+3
+
+--- Page Suivante ---
+
+3 Method
+OurfirstgoalistoidentifywhichweightmatricesinthegivenLLMshouldbecompressedtoimprove
+itscapabilitiesonanewdataset—withoutanygradient-basedfine-tuning.
+ApproachandMotivation. Insteadofattempt-
+ingtocompressallweights,themodelfirstiden-
+tifieswhichlayersaremostcriticalbyanalyz-
+Algorithm1:BLOCK-FIRSTGRADIENTLOW-
+inggradientsonasmallcalibrationset. Keyto
+RANKADAPTATION
+ourapproachistheobservationthatthegradi- Input:LLMMwithweights{Wℓ}L ℓ=1 ;calibrationsetD;
+row-clustersK;targetblockrankj;matricestocompressq.
+ent of each singular value of a given matrix
+Output:CompressedmodelM(cid:99)
+W already tells us whether the model wishes 1.Back-proponD:foreach(x,y)∈Ddo
+toshrinkorexpandthatcomponent. Iftheloss L←loss(M(x),y);back-prop;Gℓ+=∂L/∂Wℓ ∀ℓ
+pushesasingularvalueσ i towardzero,thecorre- 2.Scorematrices:foreachℓ=1:Ldo
+spondingrank-onedirectiondoesnotcontribute partition(Wℓ,Gℓ)→(Wk,Gk)K k=1 ;sℓ←0;foreach
+k=1:Kdo
+tothetaskorevenharms,andcanberemoved;
+(U,Σ,V)=thinSVD(Wk);g=diag(U⊤GkV);
+c
+fu
+o
+l
+n
+a
+v
+n
+e
+d
+rs
+s
+e
+h
+ly
+o
+,
+u
+a
+ld
+p
+b
+o
+e
+sit
+k
+i
+e
+v
+p
+e
+t.
+pu
+W
+sh
+et
+s
+h
+ig
+er
+n
+e
+a
+f
+l
+o
+s
+r
+t
+e
+h
+r
+a
+a
+t
+n
+i
+k
+ti
+m
+su
+at
+s
+r
+e
+i
+-
+-
+sℓ+=−(cid:80)r
+i=
+k
+rk−j+1
+min(gi,0)
+sℓ←sℓ/K
+cesbythemagnitudeandsignofthesesingular-
+value gradients and apply low-rank decompo-
+S←top-qindicesbysℓ.
+3.Compress+Evaluate:foreachℓ∈Sand(x,y)∈Ddo
+sitions only where the evidence for shrinkage reuse(Wk)K
+1
+;foreachkdo
+isstrongest. Withineachchosenlayer,weights (U,Σ,V)=thinSVD(Wk);keeptop-j;
+are partitioned into blocks, and only the most
+W(cid:99)k=UΣ(cid:98)V⊤
+informative directions are retained through a W(cid:99)ℓ=stack(W(cid:99)k)K k=1 ;Wℓ←W(cid:99)ℓ
+low-rankapproximation;accuracyiscomputed returnM(cid:99)
+withthecalibrationdatasettoobtainthemost
+valuablelayercompressionstrategy.
+3.1 GradientofaSingularValuew.r.t.theLoss
+Intuition. Let W = Udiag(σ ,...,σ ) V⊤ ∈ Rm×n,r = rank(W), be the (thin) singular-
+1 r
+valuedecomposition(SVD)ofaweightmatrixW ∈ Rm×n thatlivesinsideagivenLLMmodel.
+After back-propagation we already have the ordinary matrix gradient G := ∂L/∂W ∈ Rm×n.
+Infinitesimallyperturbingthei-thsingularvaluebydσ changestheweightbydW = u v⊤dσ ,so
+i i i i
+thechainruleyieldsthefollowing(i.e.acheapdot-productonceGisknown).
+∂L
+= ⟨G, u v⊤⟩ = u⊤Gv , (1)
+∂σ i i F i i
+i
+Lemma 1 (Gradient w.r.t. a singular value). Let W ∈ Rm×n have rank r ≤ min{m,n} and a
+unique SVD W = Udiag(σ ,...,σ )V⊤ with orthonormal columns U = [u ,...,u ] ∈ Rm×r
+1 r 1 r
+andV =[v ,...,v ]∈Rn×r,whosesingularvaluessatisfyσ >···>σ >0. Foracontinuously
+1 r 1 r
+differentiablelossL:Rm×n →RdenoteG:=∂L/∂W.
+∂L =u⊤Gv , equivalently ∂L =diag (cid:0) U⊤GV (cid:1) ∈Rr. (2)
+∂σ i i ∂σ
+i
+wherediag(·)extractsthediagonalofitssquareargument.
+Proof. DecomposeW intoitsrank-oneterms: W = (cid:80)r σ u v⊤.Becauseu andv donot
+k=1 k k k k k
+dependonσ ,theFréchetderivativeofW w.r.t.σ is∂W/∂σ =u v⊤.UsingtheFrobeniusinner
+i i i i i
+product⟨A,B⟩ =tr(A⊤B),
+F
+∂L = ⟨G, u v⊤⟩ = tr (cid:0) G⊤u v⊤(cid:1) = u⊤Gv . (3)
+∂σ i i F i i i i
+i
+Stackingtheseequalitiesforalliyieldsthevectorform.
+4
+
+--- Page Suivante ---
+
+Practicalrecipe. RuntheusualbackwardpasstoobtainG=∂L/∂W. Then,compute(orreuse)
+thethinSVDofW togetU,Σ,V⊤. Now,evaluatethescorevectorg ← diag (cid:0) U⊤GV (cid:1) . Finally,
+interpreteachg : largenegativevaluessuggestpushingσ to0(prune);positivevaluesarguefor
+i i
+keepingorenlargingthecomponent. Forourpurposes,wefocusonthelasttwentyentriesofthe
+diagonal,summingthenegativevalues. Thematricesthatonaveragehavethemostnegativevalues
+inthissumareconsideredforrank-reduction.
+3.2 Atinysetisenoughforevaluationandgradientcalculation
+What matters when we “adapt”. Our goal is not to re-train the language model on the full
+distributionoftaskinputs;instead,wemerelywanttoidentify—viathegradientsfrom§3.1—thefew
+weightdirectionsthatmustadjustsothemodelfollowstheprompt/question-answeringformatof
+thenewdomain(changesinphrasing,answerstyle,ortopicfocus).
+Capturingstructure, notstatistics. Suchformattingcuesappearrepetitivelyacrossthedataset,
+whereasfine-grainedcontentvariesfromexampletoexample. Consequently,
+• Thegradientsignalthattellsus“whichdirectionstopruneorkeep”saturatesafterseeing
+onlyahandfulofdistinctprompts.
+• Evaluatingtherelativemeritoftwolow-rankdecompositionsalsostabilizesquickly;both
+willanswermostpromptssimilarlyassampleshavesimilartemplate.
+Practical rule based on our findings. Through what we found, being particularly showcased
+in Table 3, unless the target domain is extremely broad (e.g. open-domain QA), sample ≈ 100
+representativeprompt–responsepairs:
+1. Runoneforward/backwardpasstoobtainthegradientsusedinSection4.1
+2. Evaluatecandidatedecompositionsonthesame100examples;pickthebestandstop.
+Thisprotocolpreservesdownstreamgainswhileturningintoaminute-scaleoperationononeGPU.
+3.3 DenoisingLLMslayerswithmultiplesubspaces/SVDsfactorizations
+Whyoneglobalsubspacemaybetoocrude. AthinSVDfitsallrowsofamatrixW ∈ Rm×n
+withasinglelow-dimensionalsubspace. Implicitly,weassumethateveryrowvectorw ∈Rn is
+i:
+justanoisysampledrawnaroundthesameglobalsubspaceS ⊆Rn. Butweightmatricesthathave
+survivedlarge-scalepre-trainingoftenmixseveralkindsoffeatures—syntaxversussemanticsin
+languagemodels,localityversusglobalcontextinvisionmodels,etc. Empirically,theirrowstendto
+clusterintomultiplesubspacesS ,...,S .
+1 K
+Nowrecallourgoal: removetheoverfittingnoisethatisirrelevant—sometimesevenharmful—for
+thedownstreamtaskinordertoimprovethereasoninginthisspecifictask. Ifeachclusteroverfits
+independently(e.g.becauseitcapturesdifferenttokentypesorimagepatterns),thentheunwanted
+variation(overfitting/datanoise)isalsoclustered. ForcingasingleSVDtoerasethatnoisemeans
+compromisingthecleandirectionsofallclustersatonce;thedecompositioneitherprunestoosoftly
+(retainsnoise)ortooaggressively(discardsusefulstructure).
+Additionally,introducingmultipleSVDsperlayerenlargestheoptimizationlandscape,creatingmany
+additionallocalminima—oneforeachcluster’ssubproblem. Althoughoursuggestedgradient-based
+search is efficient, its approximations can cause it to skip some optima. In practice, this richer
+landscapeletsusfindasatisfactorynoise-freefactorizationwithfeweriterations,makingtheoverall
+procedurebothfasterandmorereliable.
+Multiple-subspacehypothesis. Wethereforeadopttheworkinghypothesis:
+Rowsofaweightmatrixaredrawnfromamixtureoflow-dimensionalsubspaces.
+Overfittingmanifestsassmallsingulardirectionswithineachsubspaceratherthan
+acrossthewholematrix. Expandingthedecompositionsearchspacefromasingle
+tomultiplecluster-specificSVDsenlargesthesearchspaceandpopulatesitwith
+more minima. With more “good” minima available, our approximate gradient
+searchismorelikelytoreachaclean,noise-removingfactorizations
+5
+
+--- Page Suivante ---
+
+Underthisview,therightgranularityforpruningispercluster,notpermatrix. Thishypothesisis
+showcasedwiththeresultsinTable4whereweseeimprovementsinaccuracyupontheoriginal
+approachandwithTable1wemaintainsomeoftheimprovementgainswhilebeing52×faster.
+Projectiveclustering(multiple-subspaceclustering). ExtendingasingleSVDtothesettingof
+multiplesubspacesisformalizedthroughprojectiveclustering,wherethedatapointsarepartitioned
+and each subset is approximated by its own low-rank subspace. Specifically, we would find K
+low-dimensionalsubspacesS ,...,S ⊂Rn,eachofdimensiond,thatminimizethetotalsquared
+1 K
+distancefromeveryrowinthedecomposedmatrixtoitsnearestsubspace:
+m
+(cid:88) (cid:13) (cid:13)2
+k
+m
+∈[
+i
+K
+n
+]
+(cid:13)w
+i:
+−Π
+Sk
+(w
+i:
+)(cid:13)
+2
+, (4)
+i=1
+where [K] = {1,··· ,K} and Π (w ) is the projection of the row ith w on the subspace S .
+Sk i: i: k
+Unfortunately,thisproblemisNP-hard,andevenitsfastestapproximatesolversarefartooslowfor
+our“one-pass”efficientsetting.
+Practicalshortcut. Insteadofrunningacostlyclusteringroutine,weadoptanear-zero-costheuristic
+thatpreservesmostofthebenefit: blocksplitting. Wekeeptheoriginalroworderandcuttheweight
+matrixintoK consecutiverowblocks,thenapplyanindependentlow-rankdecompositiontoeach
+block. Becauseeachblockcanchooseitsownsubspaces,thecompressionadaptstolocalstructure;
+for K > 1 (i) the over-fitting noise is dispersed across multiple subspaces, making it easier to
+isolatesignal-bearingdirectionsanduncoveradditionalusefulpatterns,and(ii)thesearchlandscape
+becomes markedly richer. In practice this diversity of minima offsets the crudeness of the used
+efficiencyimprovementsandconsistentlyyieldsahigher-quality,noise-reducedfactorization.Despite
+itssimplicity,blocksplittingalreadyachievesaccuracygains(seeSection4)andrecoverthesmall
+accuracylossescausedbyourefficiencyimprovementstechniques.
+Overallrecipe. GivenamatrixW wewishtocompressandevaluateitsimprovements,anumber
+ofclustersparameterK ≥1,andatargetrankj. TocompressW: (i)splitW intoK consecutive
+rowblocksW
+1
+,··· ,W
+K
+∈Rmk×nthatpreservetheoriginalordering;(ii)computethethinSVD
+ofeachblockk ∈ {1,··· ,K},W = U Σ V⊤;(iii)formarank-j approximationbyzeroingall
+k k k k
+butthej largestsingularvaluesinΣ
+k
+andsettingW(cid:99)k = U
+k
+Σ(cid:98)k V
+k
+⊤;(iv)stacktheW(cid:99)k blocksback
+togetherintheiroriginalordertoobtainthecompressedmatrixW(cid:99) =[W(cid:99)1 ,...,W(cid:99)K ],whichreplaces
+W indownstreamevaluation. OurmethodologyisencapsulatedinAlgorithm1.
+Adapting the gradients approach. To get inspired by the gradients which layers to compress,
+compute the cluster-specific singular-value gradients via g = diag(U⊤G V ), where G is the
+k k k k k
+matchingsliceoftheglobalgradientG=∂L/∂W.ThenRankthematricesinthemodelbydefining
+afunctionbasedonthosegradientstoknowwhichlayersshouldbecompressed.
+4 ExperimentalResults
+Inthissection,wecoveravarietyofexperimentsconductedtoemphasizethestrengthsoftechniques
+introducedinSection3,enablingaspeedupincomputationtimetoachievecomparableaccuracy,or
+evenimprovements. Whenwerefertoparameters,weareconsideringthefollowing: layernumber
+(28totalforGPT-JWangandKomatsuzaki[2022]and12totalforRobertaLiuetal.[2019a]),layer
+name(beingtheinoroutmatrixofthelayer),rateofcompression(considering10%,20%,40%,
+60%, 80%, 90%, 95%, 99%, and99.5%plus0%beingnocompressionwhichisthesameasthe
+baselinesoitonlyneedstoberunonce),andwealsoconsidernumberofclusters(one,two,four,
+eight,andsixteen)fortherankreductionprocess. Theseexperimentsareconductedonthefollowing
+datasets: CounterFactMengetal.[2023],HotPotQAYangetal.[2018],FEVERThorneetal.[2018],
+BiosGenderandProfessionfromBiasinBiosDe-Arteagaetal.[2019],TruthfulQALinetal.[2022],
+BigBench-EpistemicReasoningBowmanetal.[2015],andBigBench-WikidataQA.
+4.1 Improvinguponthestateoftheart(SOTA)
+Wenowpresenttheend-to-endresultsofourAlgorithm1,whichintegratesallinsightsdeveloped
+in this work. Specifically, the configurations “Clustering LASER + 100 Gradients + Standard
+Evaluation”(CL-100G-SE)and“ClusteringLASER+100Gradients+100-PointEvaluation”(CL-
+100G-100E)—reportedinTables1forGPT-Jand2forRoberta.Bothvariantscombinekeyingredients
+6
+
+--- Page Suivante ---
+
+Table1: GPT-Jevaluationwithmulti-subspacerankreduction(accuracy%andspeedup). 100Grads
+employs gradient diagonal computation to score the matrices with just 100 datapoints. Std Eval
+computesaccuraciesofthetopscoringmatriceswiththeoriginalapproachfromLASER(20%ofthe
+data),100Evalwithjust100datapoints. Thefinalaccuracyisreportedwith80%ofthedata.
+ClusteringLASER ClusteringLASER
+100GradsStdEval 100Grads100Eval
+Dataset Baseline LASER (ours) (ours)
+Acc Speedup Acc Speedup
+CounterFact 13.1 24.0 24.4 1.98x 24.2 93.4x
+HotPotQA 19.6 19.5 19.9 1.98x 19.7 48.3x
+FEVER 50.2 56.2 56.0 1.96x 53.3 44.7x
+BiosGender 70.9 97.5 88.4 1.98x 88.4 79.4x
+BiosProfession 75.6 82.1 80.5 1.98x 77.5 56.8x
+TruthfulQA 54.9 55.6 56.1 1.97x 54.9 25.2x
+BigBench–EpistemicReasoning 37.1 38.3 62.3 1.96x 62.2 9.84x
+BigBench–WikidataQA 51.8 65.9 66.5 1.98x 66.5 58.5x
+AverageImprovementfromBaseline 0.00 8.24 10.1 9.19
+AverageChangefromLASER -8.24 0.00 1.85 0.95
+AverageSpeedup – – 1.97x 52.0x
+fromourmethodology: (i)applythemulti-subspacehypothesisenablingperformancegainsupon
+LASER(Section3.3). (ii)applythe“100Gradients"techniquetodeterminethemostsuitedlayersto
+performtheClusteringLASERprocesson(Section3.1and3.2),and(iii)conductaquicksearchto
+findthebestparametersgiventheselayerseitherwiththeoriginalevaluationprocessofconsidering
+20%ofthedataorwithour“100Evaluation"(Section3.2)considering100datapointsofthe20%in
+evaluationforchoosingbestparameters. Thefinalaccuracyisreportedontheremaining80%ofthe
+dataasin[Sharmaetal.]. Together,theseyieldthesubstantialgainshighlightedinthetables.
+Discussion. OnGPT-J,weseewecanimproveuponSOTAaidedbyourclusteringprocess,while
+havingatimecomputationreductionevenovertheoriginalLASERdespiteconsideringclustersin
+ourevaluation;onaverageCL-100G-SEis2×fastertheLASERand1.7%higherinaccuracy,while
+CL-100G-100Eis52×fasterandimproveuponLASERby0.95%.HighlightingBigBench-Epistemic
+Reasoning,weseeamassiveperformancedelta,showcasingthevalueofapplyingthemulti-subspace
+hypothesis. OnRoberta,wenotedthatclusteringonitsowndidnotseeaslargeofimprovementsfor
+thissmallermodel. However,ourfinalapproachofCL-100G-100Ecanachievealarge≈20times
+computationspeedupwhilestillmaintainingacomparableimprovementtothebaselineasLASER.
+4.2 Ablationoftheproposedefficiencyimprovementtechniques
+Withthegivensearchspace,letusdefinethecomputationtimeofLASERviathenumberofforward
+passes. Tofindthebestparameters,LASERinvolvesconductingacheckontheaccuracyforeach
+setofparameterson20%ofthedata,withthefinalcheckconductedon80%ofthedataonthebest
+parameters found. Note that for 0% compression, only one check needs to run as it is not layer
+specific. Assuch,ifweconsiderthedifferentvalidationandtestsizes(herebeing20%and80%of
+theoveralldatarespectively),thecomputationtimecangenerallybefoundas:
+#oflayers× 2 × 9 ×validationsize+validationsize+testsize (5)
+in/outmatrices rates for0%compression
+To improve, we start by applying Algorithm 1 (here with K = {1}) naively, approaching it in a
+similarmannertotheoriginalwork:runningagradientcheckonthefirst20%ofthedatatodetermine
+thekeymatrices.Wefindthetopfivelayerswithspecified“in"or“out"matricessuchthat,asopposed
+tocheckingalllayerswithtwomatriceseach,weonlyevaluatefivematriceswith20%ofthedatato
+makethechoiceofbestparameters. Notethatinmanycasesthatweredeterminedtobethesame
+accuracy between the two LASER approaches, the top five choices from the gradient evaluation
+identifiedthematrix/layercombinationthatledtothebestresultintheoriginalwork. However,the
+gradientsteprequiresbackwardpassesasopposedtoforwardpasses. Kaplanetal.[2020]showan
+approximatetwotimescomputefactorforthebackwardsversusforwardspasssoforthepurposesof
+ourwork,wewillboundthecomputebyafactorof2.5. Therefore,wehavethecomputationtime:
+2.5×validationsize+ 5 × 2 × 9 ×validationsize+validationsize+testsize (6)
+gradientstepsearch topchoices in/outmatrices rates for0%compression
+7
+
+--- Page Suivante ---
+
+Table 2: Roberta evaluation with multi-subspace rank reduction (accuracy % and speedup). 100
+Gradsemploysgradientdiagonalcomputationtoscorethematriceswithjust100datapoints. Std
+EvalcomputesaccuraciesofthetopscoringmatriceswiththeoriginalapproachfromLASER(20%
+ofthedata),100Evalwithjust100datapoints. Thefinalaccuracyisreportedwith80%ofthedata.
+ClusteringLASER ClusteringLASER
+100GradsStdEval 100Grads100Eval
+Dataset Baseline LASER (ours) (ours)
+Acc Speedup Acc Speedup
+CounterFact 17.3 19.3 19.3 0.86x 18.3 36.8x
+HotPotQA 6.1 6.7 6.5 0.86x 6.3 17.0x
+FEVER 50.0 52.3 52.7 0.86x 52.7 15.7x
+BiosGender 87.5 93.7 93.1 0.86x 92.8 30.2x
+BiosProfession 64.5 72.5 75.1 0.86x 75.1 20.4x
+TruthfulQA 56.2 56.2 56.3 0.86x 56.2 8.39x
+BigBench–EpistemicReasoning 37.1 41.8 37.2 0.85x 37.1 3.17x
+BigBench–WikidataQA 28.0 30.7 32.7 0.86x 31.5 21.1x
+AverageImprovementfromBaseline 0.00 3.31 3.27 2.91
+AverageChangefromLASER -3.31 0.00 -0.04 -0.40
+AverageSpeedup – – 0.86x 22.2x
+InTable3,weseethatperformanceismaintainedforamajorityofdatasetswith≈10timesspeedup.
+ReducingthesearchspaceofthestandardLASER.Hereweconductanexperimenttoperform
+thestandardlongsearchofLASERbutinsteadofmakingourchoicebasedon20%ofthedatapoints,
+wejustconsiderarandomhundredofthe20%. Assuch,farfewerdatapointsarebeingconsidered
+todeterminetheoptimalparameterchoicetoevaluateontheremaining80%ofthedata. Wecan
+triviallydeterminecomputationtimebyreplacingthevalidationsizetobe100.
+InTable3,weseethatformanyofthedatasets,despitethelargecomputationtimedelta,weare
+stillperformingatasimilarlevel,providingevidencethatsuchalargeportionofthedatasetisnot
+necessary. NoteinthecaseofBigBench-EpistemicReasoning,weevenseealargeperformancegain.
+Alikelycauseofthisisthatthisspecificdatasetisquitesmallandcanbequitenoisy,wherelooking
+atthefirst20%ofthedatacanseriouslymisguidethemodelinitschoiceofparameters. Ourrandom
+approachseemstohavethebenefitofnotbeingmisguidedbythenoiseofthisdata.
+Table3: GPT-Jevaluationonefficienttechniques(accuracy%andspeedup). 100Gradsemploys
+gradientdiagonalcomputationtoscorethematriceswithjust100datapointswhereasGradsusesa
+calibrationsetmatchingtheoriginalLASER(20%ofthedata). StdEvalcomputesaccuraciesofthe
+topscoringmatriceswiththeoriginalapproachfromLASER(20%ofthedata),100Evalwithjust
+100datapoints. Thefinalaccuracyisreportedwith80%ofthedata.
+LASERGrads LASER LASER100Grads LASER100Grads
+StdEval 100Eval StdEval 100Eval
+Dataset Baseline LASER (ours) (ours) (ours) (ours)
+Acc Speedup Acc Speedup Acc Speedup Acc Speedup
+CounterFact 13.1 24.0 24.0 9.70x 23.2 64.9x 24.0 10.2x 23.2 116.5x
+HotPotQA 19.6 19.5 19.5 9.70x 19.6 23.9x 19.5 10.2x 19.5 90.0x
+FEVER 50.2 56.2 55.9 9.70x 50.4 21.7x 55.9 10.1x 50.2 86.3x
+BiosGender 70.9 97.5 81.0 9.70x 97.2 49.1x 81.0 10.2x 81.0 110.4x
+BiosProfession 75.6 82.1 77.9 9.70x 81.6 29.7x 77.9 10.2x 75.6 96.7x
+TruthfulQA 54.9 55.6 55.9 9.70x 55.1 10.9x 55.9 10.1x 55.9 62.7x
+BigBench–EpistemicReasoning 37.1 38.3 38.3 9.70x 62.6 3.91x 38.3 10.1x 62.9 31.6x
+BigBench–WikidataQA 51.8 65.9 65.9 9.70x 66.7 31.0x 65.9 10.2x 66.7 98.0x
+AverageImprovementfromBaseline 0.00 8.24 5.65 10.4 5.65 7.73
+AverageChangefromLASER -8.24 0.00 -2.59 2.16 -2.59 -0.51
+AverageSpeedup – – 9.70x 29.4x 10.2x 86.5x
+Evaluationwithjust100gradientsteps. Now,weupdateourapproachtothegradientsearchby
+consideringahundredrandompointsfromthevalidationset. Wefindthatthetopfiveproposedma-
+tricesremainthesameastheoriginal“LASERGradsStdEval"givenintable3sowhenmaintaining
+theevaluationsizeof20%ofthedata,theresultantaccuraciesareabletomatchwithmorespeedup.
+Next,ifweapplytheaforementionedtechniqueofreducingthesearchspaceforevaluation,weobtain
+averylargespeedupforcomputationwithvalidationsizeof100. InTable3,weseethesespeedups,
+whichincreaseswithdatasetsize,withrelativelymaintainedperformance. Wefurtheremphasize
+8
+
+--- Page Suivante ---
+
+24
+22
+20
+18
+16
+14
+Computation Time
+)%(
+ycaruccA
+CounterFact HotPotQA FEVER Bios Gender
+19.90 56
+19.85 95
+55 19.80 90
+19.75 54
+19.70 53 85
+19.65 52 80 19.60
+19.55 51 75
+19.50 50 70
+Computation Time Computation Time Computation Time
+82
+81
+80
+79
+78
+77
+76
+Computation Time
+)%(
+ycaruccA
+Baseline LASER Grads Std Eval LASER 100 Grads Std Eval Clustering LASER 100 Grads Std Eval
+LASER LASER 100 Eval LASER 100 Grads 100 Eval Clustering LASER 100 Grads 100 Eval
+Bios Profession TruthfulQA BBH Epistemic Reasoning BBH WikidataQA
+56.0 60 66
+64
+55.8 55 62
+55.6 60 50
+55.4 58
+55.2 45 56
+55.0 40 54
+52
+Computation Time Computation Time Computation Time
+Figure2: Theaccuracyoftechniquesgivencomputationtimeforeightdatasetswhilerunningwith
+GPT-J.LinedrawnbetweenBaselineandLASERpointstohighlightratioofaccuracyandcompute.
+this point in Figure 2 where we can see how our approaches perform in relation to the baseline
+andoriginalLASERwherebeingtotheleftofthegraylineshowcasestheapproachesthatledto
+maintainingaccuracygiventhecomputationtimereduction. WeseethatCL-100G-100E(shownwith
+agoldstar)isconsistentlyleftofthegraylineforsevenofthedatasets,makingitourtopperformer.
+4.3 Ablationonsinglesubspacevsmulti-subspacerankreductionwithLASER
+Here,westudytheeffectofapplyingclusteringandmultipleSVDswithoutincorporatingspeedup
+techniques (gradients and subset sampling), in order to isolate how much this component alone
+improves over the standard LASER method. We cluster the matrices according to the process
+describedinAlgorithm1. Inadditiontohaving1cluster(beingthestandardLASERprocess),we
+alsoconsider2,4,8,and16clusters. WeobtainthefollowingresultsinTable4fromconducting
+a standard long search on all parameter combinations. We find improvements upon the original
+Table4: Accuracy(%)ofperformingmulti-subspacerankreductionwithfullsearch.
+Roberta GPT-J
+Dataset
+Baseline LASER ClusteringLASER Baseline LASER ClusteringLASER
+CounterFact 17.3 19.3 19.3 13.1 24.0 24.5
+HotPotQA 6.1 6.7 6.8 19.6 19.5 20.3
+FEVER 50.0 52.3 52.7 50.2 56.2 57.8
+BiosGender 87.5 93.7 93.7 70.9 97.5 97.7
+BiosProfession 64.5 72.5 75.1 75.6 82.1 82.3
+TruthfulQA 56.2 56.2 56.3 54.9 55.6 56.1
+BigBench–EpistemicReasoning 37.1 41.8 41.8 37.1 38.3 62.9
+BigBench–WikidataQA 28.0 30.7 36.7 51.8 65.9 66.5
+AverageImprovementfromBaseline 0.00 3.31 4.46 0.00 8.24 11.9
+AverageChangefromLASER -3.31 0.00 1.15 -8.24 0.00 3.63
+LASERmodel,achievingevenhigheraccuracywithnotrainingrequired. Theseimprovementsshow
+validitytotheclaimthatoneglobalsubspacemaybetoocrude. NoteGPT-Jexperiencedmoregains
+comparedtoRoberta,showingthatthelargermodelhadmoreroomforimprovements. Innumerical
+terms,theaveragenumberofclustersforRobertaacrossdatasetsis5.625whereasforGPT-Jitis
+8. Asforthepercentofthematrixremaining(ρ)forRobertais63.125%whereasforGPT-Jitis
+4.125%. However,despiteimprovements,notethatwithadditionalclusteringlevels,wesubstantially
+increasedthesearchspace: afivetimesmultipliertotheoverallsearchbythenumberofclusters. As
+such,weaimtoapplyefficienttechniques.
+9
+
+--- Page Suivante ---
+
+Applyingefficienttechniquestomulti-subspacerankreduction. Toachievesimilartimecomplex-
+ityofLASER,webeginbyapplyingthe100Gradientsapproach. Here,wealsoconsiderthetop
+sevenresultsfromthegradients. Also,ourpreviousresultshowedastrongerpreferencetoclustering
+forGPT-JandaweakerforRoberta. Assuch,weconsider2,4,8,and16clustersforGPT-Jwhilewe
+consider1,2,4,and8clustersforRoberta. Therefore,thecomputationbecomesreducedaccordingly.
+Withthis,wecanseeinTables1and2thatwealreadystartthespeedupcomparedtoLASERfor
+GPT-JandreturntoanapproximatelysimilarlevelofcomputeforRoberta. Wecanfurtherimprove
+computetimewithour“100Eval"strategy. GiventhestrengthofperformanceofGPT-J,wereturnto
+consideringthetopfivebestentriesfromthegradientsearchbutremainattopsevenforRobertaand
+wehaveanupdatedcomputationscale. WenotethatforGPT-JinTable1thatevenwithanaverage
+ofa52%speedupincomputationforthesearch,weareabletooutperformLASERonaverage.
+4.4 AblatingtheeffectofoptimizedclusteringinLASER
+Westudytheimpactofexplicitlyfindingclustersthatoptimizetheprojectiveclusteringlossin(4),
+and evaluate whether this approach performs better than the simple split used for the LASER
+procedure. Weemployaheuristictosolvethe(j,k)-projective-clusteringproblem(i.e.,findingk
+subspaces,eachofdimensionj thatminimizethesummedsquareddistancesofthepointstotheir
+nearestsubspace). Ourchoiceismotivatedbythewayinwhichexactoptimization,approximation,
+and coreset methods for projective clustering offer strong theoretical guarantees, but all require
+prohibitivelyhigh-degreepolynomialruntimeswithlargehiddenconstants,makingthemunsuitable
+forreal-timeorresource-constrainedsettings(furtherdetailsinAppendixA.7).
+Given these limitations, we adopt the classical K-subspaces EM-style algorithm. This approach
+bridgestheoryandpracticebyaimingtoreachalocalminimumthroughguaranteedimprovementat
+eachiteration,whileremainingrelativelyefficient. Eachiterationthealgorithmalternatesbetween(i)
+re-assigningeverypointtoitsnearestcurrentsubspaceand(ii)recomputingtheoptimalj-dimensional
+subspaceforeachclusterviaSVD.Aniterationcostsnd2andisguaranteedtomonotonicallydecrease
+theobjective,convergingtoalocalminimuminafinitenumberofiterations. Inpractice,weobserve
+convergencewithinabout10iterationsonourlargestdataset,thustheruntimeisO(nd2).
+Table5: Robertaevaluationwithclustering(accuracy%).
+ClusteringLASER
+Dataset ClusteringLASER
+withOptimalClustering
+CounterFact 19.3 19.3
+HotPotQA 6.8 6.8
+FEVER 52.7 53.5
+BiosGender 93.7 93.7
+BiosProfession 75.1 75.1
+TruthfulQA 56.3 56.3
+BigBench–EpistemicReasoning 41.8 41.8
+BigBench–WikidataQA 36.7 36.7
+SowehaveconductedanexperimenttotestthisapproachontheRobertamodelacrossalleight
+datasets. Effectively,whetherweapplyoptimalclusteringisanotherhyperparametersothesearch
+spacesizeduringevaluationisdoubled(butsearchtimeismorethandoubledasexplainedabove).
+ThenumbersinTable5arecomparingtheseoptimalclusteringnumberstotheClusteringLASER
+columninTable4. SowhenmakingthecomparisontothecolumninTable4, weseethatthese
+numbersmatchforalldatasetsexceptforFEVERwheretheEMalgorithmobtainsanaccuracyof
+53.5%versus52.7%. Assuch,whiletherearesomepotentialgainstothis,theseresults,plusthe
+computationlimitations,justifytheapproachtakenprior.
+5 ConclusionandFutureWork
+Werevisitpost-trainingrank–reductionasalight-weightmethodforadaptingLLMstonewdomains.
+We find that a single gradient step on just 100 examples recovers provides a robust indication
+to which layers should be pruned. leveraging three insights: (i) singular-value gradients reliably
+identifyharmfulhigh-rankcomponents,avoidingexhaustivelayersweeps;(ii)adaptationisdrivenby
+10
+
+--- Page Suivante ---
+
+formattingcues,making≈100prompt–responsepairssufficient;(iii)clusteringmatrixrowsbefore
+SVDexpandsthesolutionspaceandimprovesgeneralization,boostingaccuracybyupto24.6points.
+Empiricalimpact. Oneightbenchmarksandtwomodelfamilies(GPT-J,RoBERTa),ourtraining-
+freepipelinecomparestoorsurpassesLASER’saccuracy,upto52×speeduponasingleGPU.
+Broadersignificance. Thisminute-scaleadaptationlowersdeploymentbarriersforLLMsinlow-
+resourcesettings,showingthatstructuraledits,guidedbysmallsamples,canrivalfullfine-tuning.
+Limitations/outlook. InheritedfromLASER,themethodusesfinitecandidateswithoutgradient
+descenttoupdateweights. Experimentsfocusedonsmall,English-onlymodels;futureworkcan
+scaletofull-size,multilingualorretrieval-augmentedvariantsandalsoexploreRLHFinteractions.
+Acknowledgements
+TheauthorsacknowledgetheSMARTM3programandONRScienceofAutonomygrantnumber
+N00014-23-1-2354. ShivaSreeramacknowledgessupportfromtheNationalScienceFoundation
+GraduateResearchFellowshipProgram. AlaaMaaloufacknowledgessupportfromtheNeubauer
+FamilyFoundationandfromtheMAOFFellowshipoftheCouncilforHigherEducation.
+References
+YossiAdi,EinatKermany,YonatanBelinkov,OferLavi,andYoavGoldberg. Fine-grainedanalysis
+ofsentenceembeddingsusingauxiliarypredictiontasks. ICLR,abs/1608.04207,2016.
+Alireza Aghasi, Afshin Abdi, Nam Nguyen, and Justin Romberg. Net-trim: Convex pruning of
+deepneuralnetworkswithperformanceguarantee. InAdvancesinNeuralInformationProcessing
+Systems,pages3180–3189,2017.
+JoseMAlvarezandMathieuSalzmann. Compression-awaretrainingofdeepnetworks. InAdvances
+inNeuralInformationProcessingSystems,pages856–867,2017.
+CenkBaykal,LucasLiebenwein,IgorGilitschenski,DanFeldman,andDanielaRus. Data-dependent
+coresetsforcompressingneuralnetworkswithapplicationstogeneralizationbounds. InInter-
+national Conference on Learning Representations, 2019a. URL https://openreview.net/
+forum?id=HJfwJ2A5KX.
+Cenk Baykal, Lucas Liebenwein, Igor Gilitschenski, Dan Feldman, and Daniela Rus. Sipping
+neural networks: Sensitivity-informed provable pruning of neural networks. arXiv preprint
+arXiv:1910.05422,2019b.
+DavisBlalock,JoseJavierGonzalezOrtiz,JonathanFrankle,andJohnGuttag. Whatisthestateof
+neuralnetworkpruning? InProceedingsofMachineLearningandSystems2020,pages129–146.
+2020.
+SamuelR.Bowman,GaborAngeli,ChristopherPotts,andChristopherD.Manning.Alargeannotated
+corpusforlearningnaturallanguageinference. InLluísMàrquez,ChrisCallison-Burch,andJian
+Su, editors, Proceedings of the 2015 Conference on Empirical Methods in Natural Language
+Processing,pages632–642,Lisbon,Portugal,September2015.AssociationforComputational
+Linguistics. doi: 10.18653/v1/D15-1075.
+TomBrown,BenjaminMann,NickRyder,MelanieSubbiah,JaredDKaplan,PrafullaDhariwal,
+ArvindNeelakantan,PranavShyam,GirishSastry,AmandaAskell,etal. Languagemodelsare
+few-shotlearners. Advancesinneuralinformationprocessingsystems,33:1877–1901,2020.
+MakramChahine,AlexQuach,AlaaMaalouf,Tsun-HsuanWang,andDanielaRus. Flex:End-to-end
+text-instructedvisualnavigationfromfoundationmodelfeatures.arXivpreprintarXiv:2410.13002,
+2024.
+JiandaChen,ShangyuChen,andSinnoJialinPan. Storageefficientanddynamicflexibleruntime
+channelpruningviadeepreinforcementlearning. AdvancesinNeuralInformationProcessing
+Systems,33,2020.
+11
+
+--- Page Suivante ---
+
+Wenlin Chen, James Wilson, Stephen Tyree, Kilian Weinberger, and Yixin Chen. Compressing
+neuralnetworkswiththehashingtrick. InInternationalconferenceonmachinelearning,pages
+2285–2294,2015a.
+WenlinChen,JamesT.Wilson,StephenTyree,KilianQ.Weinberger,andYixinChen. Compressing
+convolutionalneuralnetworks. CoRR,abs/1506.04449,2015b. URLhttp://arxiv.org/abs/
+1506.04449.
+HyungWonChung,LeHou,ShayneLongpre,BarretZoph,YiTay,WilliamFedus,YunxuanLi,
+XuezhiWang,MostafaDehghani,SiddharthaBrahma,etal.Scalinginstruction-finetunedlanguage
+models. JournalofMachineLearningResearch,25(70):1–53,2024.
+AlexisConneau,GermanKruszewski,GuillaumeLample,LoïcBarrault,andMarcoBaroni. What
+youcancramintoasingle$&!#*vector: Probingsentenceembeddingsforlinguisticproperties.
+In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics
+(Volume1: LongPapers),pages2126–2136,Melbourne,Australia,July2018.Associationfor
+ComputationalLinguistics. doi: 10.18653/v1/P18-1198.
+MariaDe-Arteaga,AlexeyRomanov,HannaWallach,JenniferChayes,ChristianBorgs,Alexandra
+Chouldechova,SahinGeyik,KrishnaramKenthapadi,andAdamTaumanKalai. Biasinbios. In
+ProceedingsoftheConferenceonFairness,Accountability,andTransparency.ACM,jan2019.
+doi: 10.1145/3287560.3287572.
+EmilyLDenton,WojciechZaremba,JoanBruna,YannLeCun,andRobFergus. Exploitinglinear
+structurewithinconvolutionalnetworksforefficientevaluation. InAdvancesinneuralinformation
+processingsystems,pages1269–1277,2014.
+XinDong,ShangyuChen,andSinnoPan. Learningtoprunedeepneuralnetworksvialayer-wise
+optimalbrainsurgeon. InAdvancesinNeuralInformationProcessingSystems,pages4860–4874,
+2017a.
+Xuanyi Dong, Junshi Huang, Yi Yang, and Shuicheng Yan. More is less: A more complicated
+networkwithlessinferencecomplexity. InProceedingsoftheIEEEConferenceonComputer
+VisionandPatternRecognition,pages5840–5848,2017b.
+YiDong,ZhilinWang,MakeshNarsimhanSreedhar,XianchaoWu,andOleksiiKuchaiev. Steerlm:
+Attributeconditionedsftasan(user-steerable)alternativetorlhf. arXivpreprintarXiv:2310.05344,
+2023.
+N. Elhage. A mathematical framework for transformer circuits. In Proceedings of the 2021
+Conference on Empirical Methods in Natural Language Processing. https: //transformer-
+circuits.pub/2021/framework/index.html,2021.
+AllysonEttinger,AhmedElgohary,andPhilipResnik. Probingforsemanticevidenceofcomposition
+bymeansofsimpleclassificationtasks. InProceedingsofthe1stWorkshoponEvaluatingVector-
+SpaceRepresentationsforNLP,pages134–139,Berlin,Germany,August2016.Associationfor
+ComputationalLinguistics. doi: 10.18653/v1/W16-2524.
+TrevorGale,ErichElsen,andSaraHooker. Thestateofsparsityindeepneuralnetworks. arXiv
+preprintarXiv:1902.09574,2019.
+Noah Gamboa, Kais Kudrolli, Anand Dhoot, and Ardavan Pedram. Campfire: Compress-
+ible, regularization-free, structured sparse training for hardware accelerators. arXiv preprint
+arXiv:2001.03253,2020.
+MorGeva,RoeiSchuster,JonathanBerant,andOmerLevy. TransformerFeed-Forwardlayersare
+Key-Valuememories. InProceedingsofthe2021ConferenceonEmpiricalMethodsinNatural
+LanguageProcessing,pages5484–5495,OnlineandPuntaCana,DominicanRepublic,November
+2021.AssociationforComputationalLinguistics.
+YiwenGuo,AnbangYao,andYurongChen.Dynamicnetworksurgeryforefficientdnns.InAdvances
+InNeuralInformationProcessingSystems,pages1379–1387,2016.
+12
+
+--- Page Suivante ---
+
+SongHan,HuiziMao,andWilliamJ.Dally. Deepcompression: Compressingdeepneuralnetwork
+with pruning, trained quantization and huffman coding. CoRR, abs/1510.00149, 2015. URL
+http://arxiv.org/abs/1510.00149.
+SarielHar-PeledandKasturiVaradarajan. Projectiveclusteringinhighdimensionsusingcore-sets.
+InProceedingsoftheeighteenthannualsymposiumonComputationalgeometry,pages312–318,
+2002.
+PeterHase,MohitBansal,BeenKim,andAsmaGhandeharioun. Doeslocalizationinformediting?
+surprisingdifferencesincausality-basedlocalizationvs.knowledgeeditinginlanguagemodels. In
+Thirty-seventhConferenceonNeuralInformationProcessingSystems,2023.
+YangHe,GuoliangKang,XuanyiDong,YanweiFu,andYiYang. Softfilterpruningforaccelerating
+deepconvolutionalneuralnetworks. InProceedingsofthe27thInternationalJointConferenceon
+ArtificialIntelligence,pages2234–2240.AAAIPress,2018.
+Yang He, Ping Liu, Ziwei Wang, Zhilan Hu, and Yi Yang. Filter pruning via geometric median
+fordeepconvolutionalneuralnetworksacceleration. InProceedingsoftheIEEEConferenceon
+ComputerVisionandPatternRecognition,pages4340–4349,2019.
+YihuiHe,XiangyuZhang,andJianSun. Channelpruningforacceleratingverydeepneuralnetworks.
+InProceedingsoftheIEEEinternationalconferenceoncomputervision,pages1389–1397,2017.
+Neil Houlsby, Andrei Giurgiu, Stanislaw Jastrzebski, Bruna Morrone, Quentin De Laroussilhe,
+AndreaGesmundo,MonaAttariyan,andSylvainGelly. Parameter-efficienttransferlearningfor
+nlp. InInternationalconferenceonmachinelearning,pages2790–2799.PMLR,2019.
+EdwardJHu,YelongShen,PhillipWallis,ZeyuanAllen-Zhu,YuanzhiLi,SheanWang,LuWang,
+WeizhuChen,etal. Lora: Low-rankadaptationoflargelanguagemodels. ICLR,1(2):3,2022.
+DieuwkeHupkes,SaraVeldhoen,andWillemZuidema. Visualisationand‘diagnosticclassifiers’
+revealhowrecurrentandrecursiveneuralnetworksprocesshierarchicalstructure. J.Artif.Intell.
+Res.,61(1):907–926,January2018.
+ForrestNIandola,SongHan,MatthewWMoskewicz,KhalidAshraf,WilliamJDally,andKurt
+Keutzer. Squeezenet: Alexnet-levelaccuracywith50xfewerparametersand<0.5mbmodelsize.
+arXivpreprintarXiv:1602.07360,2016.
+YaniIoannou,DuncanRobertson,JamieShotton,RobertoCipolla,andAntonioCriminisi. Training
+cnns with low-rank filters for efficient image classification. arXiv preprint arXiv:1511.06744,
+2015.
+MaxJaderberg,AndreaVedaldi,andAndrewZisserman. Speedingupconvolutionalneuralnetworks
+withlowrankexpansions. InProceedingsoftheBritishMachineVisionConference.BMVAPress,
+2014.
+MinsooKangandBohyungHan. Operation-awaresoftchannelpruningusingdifferentiablemasks.
+InInternationalConferenceonMachineLearning,pages5122–5131.PMLR,2020.
+JaredKaplan,TomHenighan,TomB.Brown,etal. Scalinglawsforneurallanguagemodels. arXiv
+preprintarXiv:2001.08361,2020. Section3.3explainsthe6×computefactor(2×forward+4×
+backward).
+MichaelKerberandSharathRaghvendra. Approximationandstreamingalgorithmsforprojective
+clusteringviarandomprojections. arXivpreprintarXiv:1407.2063,2014.
+KrishnatejaKillamsetty,SivasubramanianDurga,GaneshRamakrishnan,AbirDe,andRishabhIyer.
+Grad-match: Gradientmatchingbaseddatasubsetselectionforefficientdeepmodeltraining. In
+InternationalConferenceonMachineLearning,pages5464–5474.PMLR,2021.
+Yong-DeokKim,EunhyeokPark,SungjooYoo,TaelimChoi,LuYang,andDongjunShin. Com-
+pressionofdeepconvolutionalneuralnetworksforfastandlowpowermobileapplications. arXiv
+preprintarXiv:1511.06530,2015.
+13
+
+--- Page Suivante ---
+
+TakeshiKojima,ShixiangShaneGu,MachelReid,YutakaMatsuo,andYusukeIwasawa. Large
+languagemodelsarezero-shotreasoners. Advancesinneuralinformationprocessingsystems,35:
+22199–22213,2022.
+VadimLebedevandVictorLempitsky. Fastconvnetsusinggroup-wisebraindamage. InComputer
+VisionandPatternRecognition(CVPR),2016IEEEConferenceon,pages2554–2564.IEEE,2016.
+Vadim Lebedev, Yaroslav Ganin, Maksim Rakhuba, Ivan V. Oseledets, and Victor S. Lempitsky.
+Speeding-upconvolutionalneuralnetworksusingfine-tunedcp-decomposition. InICLR(Poster),
+2015. URLhttp://arxiv.org/abs/1412.6553.
+Yann LeCun, John S Denker, and Sara A Solla. Optimal brain damage. In Advances in neural
+informationprocessingsystems,pages598–605,1990.
+BrianLester,RamiAl-Rfou,andNoahConstant. Thepowerofscaleforparameter-efficientprompt
+tuning. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language
+Processing.AssociationforComputationalLinguistics,2021.
+XiangLisaLiandPercyLiang. Prefix-tuning: Optimizingcontinuouspromptsforgeneration. In
+Proceedingsofthe59thAnnualMeetingoftheAssociationforComputationalLinguisticsandthe
+11thInternationalJointConferenceonNaturalLanguageProcessing(Volume1: LongPapers).
+AssociationforComputationalLinguistics,2021.
+YaweiLi,ShuhangGu,LucVanGool,andRaduTimofte. Learningfilterbasisforconvolutional
+neuralnetworkcompression. InProceedingsoftheIEEEInternationalConferenceonComputer
+Vision,pages5623–5632,2019.
+LucasLiebenwein,CenkBaykal,HarryLang,DanFeldman,andDanielaRus. Provablefilterpruning
+forefficientneuralnetworks. InInternationalConferenceonLearningRepresentations, 2020.
+URLhttps://openreview.net/forum?id=BJxkOlSYDH.
+LucasLiebenwein,AlaaMaalouf,DanFeldman,andDanielaRus. Compressingneuralnetworks:
+Towards determining the optimal layer-wise decomposition. Advances in Neural Information
+ProcessingSystems,34:5328–5344,2021.
+JiLin,YongmingRao,JiwenLu,andJieZhou. Runtimeneuralpruning. InAdvancesinNeural
+InformationProcessingSystems,pages2178–2188,2017.
+StephanieLin,JacobHilton,andOwainEvans. Truthfulqa: Measuringhowmodelsmimichuman
+falsehoods,2022. URLhttps://arxiv.org/abs/2109.07958.
+Tao Lin, Sebastian U. Stich, Luis Barba, Daniil Dmitriev, and Martin Jaggi. Dynamic model
+pruningwithfeedback. InInternationalConferenceonLearningRepresentations,2020. URL
+https://openreview.net/forum?id=SJem8lSFwB.
+Haokun Liu, Derek Tam, Mohammed Muqeeth, Jay Mohta, Tenghao Huang, Mohit Bansal, and
+ColinARaffel. Few-shotparameter-efficientfine-tuningisbetterandcheaperthanin-context
+learning. AdvancesinNeuralInformationProcessingSystems,35:1950–1965,2022a.
+XiaoLiu,KaixuanJi,YichengFu,WengTam,ZhengxiaoDu,ZhilinYang,andJieTang. P-tuning:
+Prompttuningcanbecomparabletofine-tuningacrossscalesandtasks. InProceedingsofthe60th
+AnnualMeetingoftheAssociationforComputationalLinguistics(Volume2: ShortPapers),pages
+61–68,2022b.
+YinhanLiu, MyleOtt, Naman Goyal, JingfeiDu, MandarJoshi, DanqiChen, OmerLevy, Mike
+Lewis,LukeZettlemoyer,andVeselinStoyanov. Roberta: Arobustlyoptimizedbertpretraining
+approach,2019a. URLhttps://arxiv.org/abs/1907.11692.
+ZechunLiu,HaoyuanMu,XiangyuZhang,ZichaoGuo,XinYang,Kwang-TingCheng,andJian
+Sun. Metapruning: Metalearningforautomaticneuralnetworkchannelpruning. InProceedings
+oftheIEEE/CVFInternationalConferenceonComputerVision,pages3296–3305,2019b.
+Jian-HaoLuoandJianxinWu.Autopruner:Anend-to-endtrainablefilterpruningmethodforefficient
+deepmodelinference. arXivpreprintarXiv:1805.08941,2018.
+14
+
+--- Page Suivante ---
+
+AlaaMaalouf,HarryLang,DanielaRus,andDanFeldman.Deeplearningmeetsprojectiveclustering.
+InInternationalConferenceonLearningRepresentations,2020.
+AlaaMaalouf,GiladEini,BenMussay,DanFeldman,andMargaritaOsadchy. Aunifiedapproachto
+coresetlearning. arXivpreprintarXiv:2111.03044,2021a.
+AlaaMaalouf,IbrahimJubran,andDanFeldman. Introductiontocoresets: Approximatedmean.
+arXivpreprintarXiv:2111.03046,2021b.
+Alaa Maalouf, Yotam Gurfinkel, Barak Diker, Oren Gal, Daniela Rus, and Dan Feldman. Deep
+learningonhomedrone: Searchingfortheoptimalarchitecture. arXivpreprintarXiv:2209.11064,
+2022.
+Alaa Maalouf, Ninad Jadhav, Krishna Murthy Jatavallabhula, Makram Chahine, Daniel M Vogt,
+RobertJWood,AntonioTorralba,andDanielaRus. Followanything: Open-setdetection,tracking,
+andfollowinginreal-time. IEEERoboticsandAutomationLetters,9(4):3283–3290,2024.
+Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and editing factual
+associationsingpt. Advancesinneuralinformationprocessingsystems,35:17359–17372,2022.
+Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and editing factual
+associationsingpt,2023. URLhttps://arxiv.org/abs/2202.05262.
+PavloMolchanov,StephenTyree,TeroKarras,TimoAila,andJanKautz. Pruningconvolutional
+neuralnetworksforresourceefficientinference. InInternationalConferenceonLearningRepre-
+sentations,2017.
+PavloMolchanov,ArunMallya,StephenTyree,IuriFrosio,andJanKautz. Importanceestimationfor
+neuralnetworkpruning. InProceedingsoftheIEEEConferenceonComputerVisionandPattern
+Recognition,pages11264–11272,2019.
+LongOuyang,JeffreyWu,XuJiang,DiogoAlmeida,CarrollWainwright,PamelaMishkin,Chong
+Zhang,SandhiniAgarwal,KatarinaSlama,AlexRay,etal. Traininglanguagemodelstofollow
+instructionswithhumanfeedback. Advancesinneuralinformationprocessingsystems,35:27730–
+27744,2022.
+ShuhanQi,ZhengyingCao,JunRao,LeiWang,JingXiao,andXuanWang. Whatisthelimitation
+ofmultimodalllms? adeeperlookintomultimodalllmsthroughpromptprobing. Information
+Processing&Management,60(6):103510,2023.
+AlecRadford,JeffreyWu,RewonChild,DavidLuan,DarioAmodei,andIlyaSutskever. Language
+modelsareunsupervisedmultitasklearners. OpenAIBlog,1(8):9,2019.
+RafaelRafailov,ArchitSharma,EricMitchell,ChristopherDManning,StefanoErmon,andChelsea
+Finn. Directpreferenceoptimization: Yourlanguagemodelissecretlyarewardmodel. Advances
+inNeuralInformationProcessingSystems,36:53728–53741,2023.
+Alex Renda, Jonathan Frankle, and Michael Carbin. Comparing fine-tuning and rewinding in
+neuralnetworkpruning. InInternationalConferenceonLearningRepresentations,2020. URL
+https://openreview.net/forum?id=S1gSj0NKvB.
+Victor Sanh, Albert Webson, Colin Raffel, Stephen H Bach, Lintang Sutawika, Zaid Alyafeai,
+AntoineChaffin,ArnaudStiegler,TevenLeScao,ArunRaja,etal. Multitaskpromptedtraining
+enableszero-shottaskgeneralization. InICLR2022-TenthInternationalConferenceonLearning
+Representations,2022.
+PratyushaSharma,JordanTAsh,andDipendraMisra. Thetruthisinthere: Improvingreasoningin
+languagemodelswithlayer-selectiverankreduction. InTheTwelfthInternationalConferenceon
+LearningRepresentations.
+ShivaSreeram,Tsun-HsuanWang,AlaaMaalouf,GuyRosman,SertacKaraman,andDanielaRus.
+Probingmultimodalllmsasworldmodelsfordriving. IEEERoboticsandAutomationLetters,
+2025.
+15
+
+--- Page Suivante ---
+
+NisanStiennon,LongOuyang,JeffreyWu,DanielZiegler,RyanLowe,ChelseaVoss,AlecRadford,
+DarioAmodei,andPaulFChristiano. Learningtosummarizewithhumanfeedback. Advancesin
+neuralinformationprocessingsystems,33:3008–3021,2020.
+ChengTai,TongXiao,YiZhang,XiaogangWang,etal.Convolutionalneuralnetworkswithlow-rank
+regularization. arXivpreprintarXiv:1511.06067,2015.
+RohanTaori, IshaanGulrajani, TianyiZhang, YannDubois, XuechenLi, CarlosGuestrin, Percy
+Liang, and Tatsunori B Hashimoto. Alpaca: A strong, replicable instruction-following model.
+StanfordCenterforResearchonFoundationModels.https://crfm.stanford.edu/2023/03/13/alpaca.
+html,3(6):7,2023.
+JamesThorne,AndreasVlachos,ChristosChristodoulopoulos,andArpitMittal. Fever: alarge-scale
+datasetforfactextractionandverification,2018. URLhttps://arxiv.org/abs/1803.05355.
+HugoTouvron,ThibautLavril,GautierIzacard,XavierMartinet,Marie-AnneLachaux,Timothée
+Lacroix, BaptisteRozière, NamanGoyal, EricHambro, FaisalAzhar, etal. Llama: Openand
+efficientfoundationlanguagemodels. arXivpreprintarXiv:2302.13971,2023.
+MuradTukan,AlaaMaalouf,MatanWeksler,andDanFeldman. Nofine-tuning,nocry: Robustsvd
+forcompressingdeepnetworks. Sensors,21(16):5599,2021.
+MuradTukan,LoayMualem,andAlaaMaalouf. Pruningneuralnetworksviacoresetsandconvex
+geometry: Towardsnoassumptions. AdvancesinNeuralInformationProcessingSystems, 35:
+38003–38019,2022a.
+MuradTukan,XuanWu,SamsonZhou,VladimirBraverman,andDanFeldman. Newcoresetsfor
+projectiveclusteringandapplications. InInternationalConferenceonArtificialIntelligenceand
+Statistics,pages5391–5415.PMLR,2022b.
+KarenUllrich,EdwardMeeds,andMaxWelling.Softweight-sharingforneuralnetworkcompression.
+arXivpreprintarXiv:1702.04008,2017.
+BenWangandAranKomatsuzaki. Gpt-j-6b: A6billionparameterautoregressivelanguagemodel.
+2021. URLhttps://github.com/kingoflolz/mesh-transformer-jax,page8,2022.
+TongzhouWang,Jun-YanZhu,AntonioTorralba,andAlexeiAEfros. Datasetdistillation. arXiv
+preprintarXiv:1811.10959,2018.
+Tsun-HsuanWang,AlaaMaalouf,WeiXiao,YutongBan,AlexanderAmini,GuyRosman,Sertac
+Karaman, and Daniela Rus. Drive anywhere: Generalizable end-to-end autonomous driving
+withmulti-modalfoundationmodels. In2024IEEEInternationalConferenceonRoboticsand
+Automation(ICRA),pages6687–6694.IEEE,2024.
+Tsun-Hsuan Wang, Alaa Maalouf, Wei Xiao, Alexander Amini, Sertac Karaman, Daniela Rus,
+YutongBan,GuyRosman,etal. Generalizableend-to-endautonomousdrivingwithmulti-modal
+foundationmodels,September112025. USPatentApp.18/600,866.
+YizhongWang,YeganehKordi,SwaroopMishra,AlisaLiu,NoahASmith,DanielKhashabi,and
+HannanehHajishirzi. Self-instruct: Aligninglanguagemodelswithself-generatedinstructions. In
+Proceedingsofthe61stAnnualMeetingoftheAssociationforComputationalLinguistics(Volume
+1: LongPapers).AssociationforComputationalLinguistics,2023.
+Jason Wei, Maarten Bosma, Vincent Zhao, Kelvin Guu, Adams Wei Yu, Brian Lester, Nan Du,
+AndrewMDai,andQuocVLe.Finetunedlanguagemodelsarezero-shotlearners.InInternational
+ConferenceonLearningRepresentations.
+JasonWei,XuezhiWang,DaleSchuurmans,MaartenBosma,FeiXia,EdChi,QuocVLe,Denny
+Zhou,etal. Chain-of-thoughtpromptingelicitsreasoninginlargelanguagemodels. Advancesin
+neuralinformationprocessingsystems,35:24824–24837,2022.
+KilianWeinberger,AnirbanDasgupta,JohnLangford,AlexSmola,andJoshAttenberg. Feature
+hashing for large scale multitask learning. In Proceedings of the 26th annual international
+conferenceonmachinelearning,pages1113–1120,2009.
+16
+
+--- Page Suivante ---
+
+ZhilinYang,PengQi,SaizhengZhang,YoshuaBengio,WilliamW.Cohen,RuslanSalakhutdinov,
+andChristopherD.Manning. Hotpotqa: Adatasetfordiverse,explainablemulti-hopquestion
+answering,2018. URLhttps://arxiv.org/abs/1809.09600.
+Jianbo Ye, Xin Lu, Zhe Lin, and James Z. Wang. Rethinking the smaller-norm-less-informative
+assumptioninchannelpruningofconvolutionlayers. InInternationalConferenceonLearning
+Representations,2018. URLhttps://openreview.net/forum?id=HJ94fqApW.
+MaoYe,ChengyueGong,LizhenNie,DennyZhou,AdamKlivans,andQiangLiu.Goodsubnetworks
+provablyexist: Pruningviagreedyforwardselection. InInternationalConferenceonMachine
+Learning,pages10820–10830.PMLR,2020.
+Ruichi Yu, Ang Li, Chun-Fu Chen, Jui-Hsin Lai, Vlad I Morariu, Xintong Han, Mingfei Gao,
+Ching-Yung Lin, and Larry S Davis. Nisp: Pruning networks using neuron importance score
+propagation. InProceedingsoftheIEEEConferenceonComputerVisionandPatternRecognition,
+pages9194–9203,2018.
+XiyuYu,TongliangLiu,XinchaoWang,andDachengTao. Oncompressingdeepmodelsbylow
+rankandsparsedecomposition. InProceedingsoftheIEEEConferenceonComputerVisionand
+PatternRecognition,pages7370–7379,2017.
+RaoyuanZhao,AbdullatifKöksal,AliModarressi,MichaelAHedderich,andHinrichSchütze. Do
+weknowwhatllmsdon’tknow? astudyofconsistencyinknowledgeprobing. arXivpreprint
+arXiv:2505.21701,2025.
+SumuZhao,DamianPascual,GinoBrunner,andRogerWattenhofer. OfNon-LinearityandCommu-
+tativityinBERT. InInternationalJointConferenceonNeuralNetworks(IJCNN),Virtual-only,
+July2021.
+DanielMZiegler,NisanStiennon,JeffreyWu,TomBBrown,AlecRadford,DarioAmodei,Paul
+Christiano,andGeoffreyIrving. Fine-tuninglanguagemodelsfromhumanpreferences. arXiv
+preprintarXiv:1909.08593,2019.
+A TechnicalAppendicesandSupplementaryMaterial
+A.1 Specificcomputetimes
+Table6: Datasetsizes.
+DatasetName DatasetSize
+CounterFact 65757
+HotPotQA 14618
+FEVER 13086
+BiosGender 39642
+BiosProfession 19223
+TruthfulQA 5882
+BigBench–EpistemicReasoning 2000
+BigBench–WikidataQA 20321
+Letusdefinethemoreprecisecomputetimesfortheapproaches. Letusrefertothesizeofeach
+datasetasdwiththevalueofdforeachdatasetgiveninTable6. Wethenhave:
+OriginalLASERforGPT-JandRobertarespectively:
+28 × 2 × 9 × 0.2d + 0.2d + 0.8d =101.8d (7)
+layers in/outmatrices rates validationsize for0%compression testsize
+12 × 2 × 9 × 0.2d + 0.2d + 0.8d =44.2d (8)
+layers in/outmatrices rates validationsize for0%compression testsize
+LASERGradientsStandardEvaluation:
+2.5×0.2d +× 5 × 9 ×0.2d+ 0.2d + 0.8d =10.5d (9)
+gradientstepsearch topchoices rates for0%compression testsize
+17
+
+--- Page Suivante ---
+
+LASER100EvaluationforGPT-JandRobertarespectively:
+28 × 2 × 9 × 100 + 100 + 0.8d =50500+0.8d (10)
+layers in/outmatrices rates validationsize for0%compression testsize
+12 × 2 × 9 × 100 + 100 + 0.8d =21700+0.8d (11)
+layers in/outmatrices rates validationsize for0%compression testsize
+LASER100GradientsStandardEvaluation:
+2.5×100 +× 5 × 9 ×0.2d+ 0.2d + 0.8d =250+10d (12)
+gradientstepsearch topchoices rates for0%compression testsize
+LASER100Gradients100Evaluation:
+2.5×100 +× 5 × 9 ×100+ 100 + 0.8d =4850+0.8d (13)
+gradientstepsearch topchoices rates for0%compression testsize
+ClusteringLASERforGPT-JandRobertarespectively:
+28 × 2 × 9 × 5 × 0.2d + 0.2d + 0.8d =505d (14)
+layers in/outmatrices rates clusteringlevels validationsize for0%compression testsize
+12 × 2 × 9 × 5 × 0.2d + 0.2d + 0.8d =217d (15)
+layers in/outmatrices rates clusteringlevels validationsize for0%compression testsize
+ClusteringLASER100GradientsStandardEvaluation:
+2.5×4×100+× 7 × 4 × 9 ×0.2d+ 0.2d +0.8d =1000+51.4d (16)
+gradientstepsearch topchoices clusteringlevels rates for0%compression testsize
+ClusteringLASER100Gradients100EvaluationforGPT-JandRobertarespectively:
+2.5×4×100+× 5 × 4 × 9 ×100+ 100 +0.8d =19100+0.8d (17)
+gradientstepsearch topchoices clusteringlevels rates for0%compression testsize
+2.5×4×100+× 7 × 4 × 9 ×100+ 100 +0.8d =26300+0.8d (18)
+gradientstepsearch topchoices clusteringlevels rates for0%compression testsize
+A.2 ParametersforTables 1and2
+WeprovidetheparametersthatobtainedtheresultsforthetablesinTable7.
+Table7: ParametersforeachdatasetandmodelwiththeefficientClusteringLASERapproaches
+[τ, ℓ, ρ, k]beingmatrix,layernumber,percentofmatrixoriginalrankremaining,andclustering
+level.
+Roberta GPT-J
+Dataset
+CL–100G–SE CL–100G–100E CL–100G–SE CL–100G–100E
+CounterFact [Uin,8,0.8,1] [Uout,9,0.9,8] [Uin,27,0.005,4] [Uin,27,0.01,8]
+HotPotQA [Uout,9,0.9,8] [Uout,4,0.8,1] [Uin,27,0.6,16] [Uin,27,0.1,4]
+FEVER [Uin,4,0.8,2] [Uin,4,0.8,2] [Uin,6,0.01,2] [Uout,6,0.1,4]
+BiosGender [Uin,9,0.4,2] [Uin,10,0.01,2] [Uin,11,0.005,2] [Uin,11,0.005,2]
+BiosProfession [Uin,3,0.6,4] [Uin,3,0.6,4] [Uout,18,0.005,8] [Uin,9,0.8,16]
+BigBench–EpistemicReasoning [Uout,1,0.4,1] [Uout,10,0.4,4] [Uin,7,0.005,4] [Uin,7,0.01,16]
+TruthfulQA [Uin,0,0.05,2] [Uin,2,0.6,1] [Uin,7,0.4,16] [N/A,N/A,1.0,1]
+BigBench–WikidataQA [Uout,10,0.05,8] [Uout,10,0.4,8] [Uin,27,0.01,2] [Uin,27,0.01,2]
+A.3 ParametersforTable 4
+WeprovidetheparametersthatachievedourbestClusteringLASERresultsinTable8.
+A.4 Justificationformethodologyofconsideringlast20valuesingradientsearch
+Ouruseoftwentyvaluesfromthediagonalistheresultofextensiveexperimentationbutweprovide
+thefollowingtojuestifyourapproach:
+Weapplyouralgorithmtoobtainthetopfivecandidatematrices(theprimarynumberofmatriceswe
+useinourevaluations)fromnotonlyconsideringthelasttwentysingularvaluesofthegradient,but
+alsoten,sixty,andonehundredacrossforFEVER,BiosGender,BigBench-EpistemicReasoning,
+18
+
+--- Page Suivante ---
+
+Table8: ParametersforeachdatasetandmodelwiththeClusteringLASERapproaches[τ, ℓ, ρ, k]
+beingmatrix,layernumber,percentofmatrixoriginalrankremaining,andclusteringlevel.
+Roberta GPT-J
+Dataset
+ClusteringLASER ClusteringLASER
+CounterFact [Uin, 8, 0.8, 1] [Uin, 27, 0.05, 2]
+HotPotQA [Uin, 1, 0.9, 16] [Uout, 27, 0.005, 8]
+FEVER [Uin, 4, 0.8, 2] [Uin, 10, 0.05, 4]
+BiosGender [Uin, 9, 0.9, 1] [Uin, 14, 0.005, 16]
+BiosProfession [Uin, 3, 0.6, 4] [Uin, 18, 0.005, 16]
+BigBench–EpistemicReasoning [Uout, 1, 0.4, 1] [Uin, 7, 0.005, 8]
+TruthfulQA [Uin, 0, 0.05, 4] [Uin, 7, 0.2, 8]
+BigBench–WikidataQA [Uin, 7, 0.6, 16] [Uin, 27, 0.01, 2]
+andTruthfulQAonGPT-J.Thisexperimentyieldedthesametopfivematrices(thoughtheordering
+withinthetopfivemaychange)forthegivendatasetwhenconsideringsixtyandonehundred,butcan
+bedifferentforten. Forexample,onGPT-JFEVER,thenormaltopfiveis: layer27U ,layer5U ,
+in in
+layer26U ,layer6U ,andlayer7U . However,withonlyconsideringtenalongthediagonal,
+in in in
+thisbecomes: layer27U ,layer5U ,layer26U ,layer6U ,andlayer25U (thislastone
+in in in in in
+changing). Consideringtwentyissufficienttoprovideconsistentresultscomparedtoconsidering
+moreentriesalongthediagonal.
+Thispointalsohighlightsanadditionalexperimenttoinvestigatetheaforementionedresult. Once
+againweinvestigatetheaforementioneddatasetswithGPT-J.Weaimtoidentifywherethelarger
+magnitudenegativevaluesarelocatedonthesingularvaluesofthegradientvector. Weconsiderthe
+optimalmatrixcorrespondingtothedataset(theonelistedinTable7). Forthese,thelengthofthe
+vectoris4096andwewilldisplaytheindicesofthetwentynegativevaluesofthehighestmagnitude.
+ForFEVER,theyare(inorderofhighestmagnitudetoleast): 4093,4082,4087,4090,0,4085,4081,
+4095,4083,4080,4091,509,41,186,12,7,116,1237,15,and4. Assuch,tenofthesevaluesare
+locatedinthelasttwentyindiceswheretheothertenaredispersedquiterandomlythroughoutthe
+matrix. Increasingthenumberofindicesweconsiderinouralgorithmfromtwentywillnotcapture
+anymorenegativevaluesfromtheindiceslistedaboveandwouldinvolvenegativevaluesofasmaller
+magnitude. Ifwedecreasedtoten,onlyfiveoftheseindiceswouldbeconsideredandwewould
+losevaluableinformation. Asimilarbehaviorisobservedforotherdatasets: BiosGenderhas7if
+weconsidertop20,butonly5whenconsidering10;BigBench-EpistemicReasoninghas12ifwe
+considertop20,butonly9whenconsidering10;andTruthfulQAhas8ifweconsidertop20,but
+only3whenconsidering10. Thesamebehaviorsofotherindicesbeingdistributedquiterandomlyis
+maintained.
+A.5 Consideringdifferentmatricesinatransformerblock
+Here, weprovidejustificationforouruseofU andU inourexperimentation. Tobegin, our
+in out
+choiceofconsideringtheMLPinputandoutputmatricesfollowstheoriginalLASERwork[Sharma
+etal.]whereitwasshowninFigure2(whichfocusedonGPT-JontheCounterFactdataset)thatwhile
+performancewasn’tparticularlyharmed,therewerelittletonoperformancegainstoapplyingthe
+techniquetoattentionmatrices. Assuch,theywerecutfromthespacetoreducethehyperparameter
+search. However,toaddressthispointfurther,weconductanadditionalexperimenttorankeach
+typeofmatrixseparately,forafewexamplesaswellasconsiderafewmorematrices. Weapplied
+theLASER100Grads100EvalapproachfromTable3onCounterFactandBigBench-Epistemic
+Reasoning. Weconsideredthetop5layersseparatelyforfc ,fc ,k ,andq (thelasttwo
+in out proj proj
+beingfromtheattentionlayers). Disregardingthatconsideringmorematriceswillreducethespeedup
+found, we find that the result of running on all of the top matrices calculated still highlights the
+highestaccuracytobefromthesamelayerandmatrixcombinationthatyieldedtheresultinTable3.
+Butforclarity,letusobtainthefinalreportedaccuracybasedonthebestresultforeachofthefour
+(beforeincludingtheattentionmatrices)matrices. HereweprovidetheresultsinTable9.
+Thisshowcasesthatintheseaddedcases(whenconsideringtheattentionlayers/othermatrices),itis
+easyforthemodeltoreverttobaselineaccuracy. Assuch,especiallywhenconsideringthatadding
+morematriceswillreduceourspeedups,thistestjustifiesourapproach.
+19
+
+--- Page Suivante ---
+
+Table9: Matrix-level100Grads100EvalpercentagesforGPT-JacrossCounterFactandBBH-ER.
+GPT-JCounterFact GPT-JBBH-ER
+Matrix
+% %
+fc in 23.2 62.9
+fc out 13.0 37.1
+k proj 13.1 37.1
+q proj 13.3 37.1
+A.6 Nocorrelationbetweengradientdiagonalvaluesandsingularvalues
+0.004
+0.002
+0.000
+0.002
+0.004
+0.006
+0.008
+0.010
+0 2 4 6 8 10 12 14 16
+Singular Values (S)
+seulaV
+lanogaiD
+tneidarG
+GPT-J FEVER Layer 6 fc_in | Spearman rho=0.02, Pearson r=0.01
+Figure3: Comparisonofsingularvaluesversusgradientdiagonalvaluesfortheoptimalmatrixresult
+onGPT-JFEVER.Thecorrelationstatisticsarealsoprovided.
+Weconductanexperimenttoshowthatthereisindeednocorrelationbetweengradientdiagonal
+valuesandsingularvaluesandthusnoconcernthatlarge-magnitudenegativegradientsarisefrom
+largesingularvaluesthatarenotpruned. Weshowthisviaplottingthesingularvaluesonthex-axis
+withthegradientdiagonalsonthey-axisandobtainingthecorrelationstatistics. Wetestthisonfour
+datasetswithGPT-Jwherewelookattheoptimalmatrixcorrespondingtothedataset(theonelisted
+inTable7). Letusnowconsiderthecorrelationstatistics. ForFEVER,wehaveaSpearmanrho
+of0.0221andPearsonrof0.0021(thisplotisgivenasanexampleinFigure3). ForBiosGender,
+wehaveaSpearmanrhoof0.0353andPearsonrof-0.0098. ForBigBench-EpistemicReasoning,
+wehaveaSpearmanrhoof0.0150andPearsonrof0.1311. AndfinallyforTruthfulQA,wehavea
+Spearmanrhoof0.0064andPearsonrof0.0626. Assuch,thesestatisticsprovidestrongevidenceof
+nolinearassociationandprovideclaritytoourapproach.
+A.7 Clusteringheuristicconsiderations
+Ourchoiceofheuristicismotivatedbythefollowing:
+1. Computationalhardness. ExactoptimizationisNP-hard(whenkandjarepartoftheinput),
+foreveryk>=2andj>=1,andremainsintractableinhigherdimensionsasshowninTukan
+etal.[2022b]. Therefore,anexactsolverisincompatiblewithourreal-timeconstraints.
+2. Approximationalgorithms. PTAS-typeandstreamingapproximationsexist—e.g. thethe
+PTASofHar-PeledandVaradarajan[2002]andtherandom-projectionschemeofKerber
+andRaghvendra[2014]—aswellasseveralcoreset-basedPTASs(seebelow). However,all
+requirepolynomial(oftenaveryhigh-degree)timeinn,d,j,kand/orϵ(theapproximation
+error),whichisprohibitiveforourtargetsettings.
+20
+
+--- Page Suivante ---
+
+3. Coreset constructions. Notably most of these solutions rely on Geometric coresets for
+projectiveclustering—e.g. Har-PeledandVaradarajan[2002]andtherecentstrongcoreset
+of Tukan et al. [2022b] — the idea is to reduce data size, but building the coreset itself
+stillneedspolynomialruntimesolutioninn,d,kand/orϵ,givingruntimesthatexceedour
+budget.
+4. Finally,whilethesetheoreticalresultsareimpressive,offeringrobustguaranteesandelegant
+formulations,theyconceallargeconstantsintheBig-Oruntimenotation. Asaresult,despite
+theirtheoreticalappeal,theybecomelesssuitableforscenarioswithstricttimeorresource
+constraintsinpractice.
+A.8 Additionaldatasetinformation
+Here,weprovideadditionalinformationregardingeachofthedatasetsemployed,particularlywith
+regardstotheirrespectivepromptingstyles.
+1. CounterFact. Thisdatasetcontainsknowledgetuplesconsistingofthesubject,relation,and
+object. Inthewaythisdataispresentedtothemodel,anexamplequestionis“Inthesummer
+of2018hesignedwithSportfreundeLotte. TheTracyMorganshowwasreleasedon”with
+theanswerof“NBC.”
+2. Hotpot. ThisisaHuggingFacedatasetthatasksavarietyofquestionssuchasthefollowing:
+“WhatarethenamesofthecurrentmembersofAmericanheavymetalbandwhowrotethe
+musicforHurtLockerTheMusical?”withtheanswerof“HetfieldandUlrich,longtime
+leadguitaristKirkHammett,andbassistRobertTrujillo.”
+3. FEVER.ThisdatasetcontainsavarietyofclaimsconstructedfromWikipedia. Theanswers
+totheseclaimsareeithertrueorfalse. Anexamplewouldbe“RomanAtwoodisacontent
+creator.”withananswerof“true.”
+4. BiasinBios. Wetaketwodatasetsfromhere. Overall,thedatacomprisesdescriptionsof
+peoplewhereforBiosGenderwehavelabelsofgenderandforBiosProfessionwehave
+labelsofoccupation. Oneexampleis“NancyLeegraduatedfromLehighUniversity,with
+honoursin1998. Nancyhasyearsofexperienceinweightlosssurgery, patientsupport,
+education, and diabetes.” The Bios Gender answer is “Female” and the Bios Profession
+answeris“Nurse.”
+5. TruthfulQA.Thisdatasetisformattedastrueorfalsequestionswhereaquestionandanswer
+areprovidedtoquerythemodelwhetherthestatementiscorrect. Anexampleis“Whatcan
+youlearnaboutthefuturefromyourdreams? Thereisnowaytopredictthefuture. Isthis
+statementtrueorfalse? Thisstatementis”whichhasalabelof1(correspondingto“true”).
+6. BigBench-EpistemicReasoning. Theaimofthisdatasetistodeterminewhetherthemodel
+candeterminewhetheronestatemententailsanotherwithlabelsof“entailment”or“non-
+entailment.”Anexampleis“Premise: EmmaknowsthatJamesthinksthatthereismilk
+inthefridge. Hypothesis: Jamesthinksthatthereismilkinthefridge”wherethecorrect
+answeris“entailment.”
+7. BigBench-WikidataQA.ThisdatasetinvolvesopenstatementsfromWikipediawithasingle
+wordtoautofill. Forexample,astatementcouldbe“ThelanguageusedinNiueisEnglish”
+where“English”wouldbetheanswertobefilledafterthepriorwordsasaprompt.
+A.9 Theuseof100datapoints
+Throughoutthework,wehaveemployed100datapointstoachieveourresults. Thisnumberwas
+foundtobesuccessfulthroughoutourvastnumberofexperiments. However,tojustifythispoint,
+wehighlightwhy100wasasufficientnumberandprovideanexperimentastowhy100isnottoo
+largeofanumber. Forthefirstpoint,notethattheaccuraciesshownfortheLASERGradsStdEval
+andLASER100GradsStdEvalcolumnsinTable3aretheexactsame. Thereasonforthisisnoted
+under the “Evaluation with just 100 gradient steps” subheading within Section 4 where we state
+that the top five proposed matrices remain the same when considering 100 datapoints versus the
+entire20%. However,thisstatementisnottrueforthetoptenproposedmatrices(ifweweretohave
+consideredthose)andprovidesreasoningastowhyweneedatleast100: consistency. Reducing
+thenumberofdatapointsmuchbelow100canleadtoamismatchinthetopfiveproposedmatrices
+21
+
+--- Page Suivante ---
+
+comparedtotheentire20%. Togiveaspecificexample,letusconsideroneofthemodeldataset
+combinations where our approach wasn’t as strong: GPT-J Bios Gender. If we drop the number
+to80datapoints,thepreviousbestmatrix,U with2clustersoflayer11,fallsoutofthetopfive
+in
+intothesixthposition. Ifweremainwithourpreviousstrategyofconsideringonlyfivematrices,
+theaccuracyofCL-100G-100Edropsto80.5%whichisaconsiderablyworseresult. Ifwetryto
+maintain accuracy by considering the top six matrices instead, we will harm the speedup of our
+algorithmacrosstheentirecolumninTable1(lookingatequation17,itwouldbecome22500+0.8d
+instead). Assuch,100datapointswastheappropriatenumberforourapproach.
+Inadditiontothisexperimentalpoint,wealsoprovideatheoreticalexplanationforthe100points.
+Forthis,werefertoalemmaintheworkfromMaaloufetal.[2021b]. Inthework,Lemma8.1(Weak
+coresetviaChebychevinequality)providesuswithourframework. Itstates:letP beasetofnpoints
+inRd,withµ= 1 (cid:80) p,andσ2 = 1 (cid:80) ||p−µ||2. Letϵ,δ ∈(0,1),andletS beasample
+n p∈P n p∈P
+ofm = 1 pointschoseni.i.duniformlyatrandomfromP. Then,withprobabilityatleast1−δ
+ϵδ
+(cid:12)(cid:12) (cid:12)(cid:12)2
+wehavethat(cid:12)(cid:12)1 (cid:80) p−µ(cid:12)(cid:12) ≤ ϵσ2. Theproofforthislemmaisgivenintheaforementioned
+(cid:12)(cid:12)m p∈S (cid:12)(cid:12)
+work. IfwedefineP tobeourgradientvectorscorrespondingtoeachofthedataandforthematrices
+in GPT-J, d = 4096, we then have the resultant mean and variance. Now if we let ϵ = δ = 0.1,
+thenm = 100andtheboundisgiventobe0.1σ2 (i,e,0.1withinthevariance). Forcompleteness
+wevalidatedthevariancesoifwecontinuewithourGPT-JBiosGenderexamplewith20%ofthe
+dataset,letusconsiderlayer11’sU matrixandwefindavarianceof0.00014asdesired.
+in
+A.10 BroaderImpacts
+Potentialbenefitstosociety. Ourcontributionshavethepotentialto:
+1. Lowercarbonfootprint. Withtechniquesthatremoveexhaustivelayer-by-layersweepsan
+notrainingtime,theycanreducetheelectricityusageofGPUs.
+2. Access. WiththeabilitytoapplythesetechniquestooneGPU,moreindividualswouldhave
+accesstothestrengthofthesemodels.
+Potentialriskstosociety. Ontheotherhand,ourcontributionsalsohavethepotentialto:
+1. Access. Thistimeasanegativeaseasieraccesslowersthebarriertoentryforthosewho
+maywanttomisusethesemodelsfornefariousgoalssuchasextremistpropaganda.
+2. Security. Selectivelyeditingranksmayresultinlossofsecuritymeasuresimplementedin
+themodels.
+22

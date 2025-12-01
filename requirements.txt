@@ -1,0 +1,25 @@
+
+# Orchestration / agents
+langchain>=0.0.300
+
+# Vector DB
+chromadb>=0.3.30
+
+# Embeddings
+sentence-transformers>=2.2.2
+
+# Serveur API & dev
+fastapi>=0.95.0
+uvicorn[standard]>=0.22.0
+
+# UI demo
+streamlit>=1.24.0
+
+# Validation & tests
+jsonschema>=4.0.0
+pytest>=7.0.0
+
+# Utilitaires
+python-dotenv>=1.0.0
+requests>=2.28.0
+openai>=0.27.0

@@ -1,0 +1,1661 @@
+The Reality Gap in
+Robotics: Challenges,
+Solutions, and Best
+Practices
+Elie Aljalbout1, Jiaxu Xing1, Angel Romero1,
+Iretiayo Akinola2, Caelan Reed Garrett2,
+Eric Heiden2, Abhishek Gupta4, Tucker
+Hermans2,5, Yashraj Narang2, Dieter Fox4,
+Davide Scaramuzza1, Fabio Ramos2,3
+1RoboticsandPerceptionGroup,UniversityofZurich,Zurich,Switzerland,8050
+2NVIDIA,Seattle,USA,98105
+3TheUniversityofSydney,Sydney,Australia,2006
+4UniversityofWashington,Seattle,USA,98195
+5UniversityofUtah,SaltLakeCity,USA,84112
+Preprinttoappearinthe2026Annual Keywords
+ReviewofControl,Robotics,and
+AutonomousSystems,Vol. 9 simulation, robot learning, sim-to-real transfer, reality gap
+Copyright©2026bytheauthor(s).
+Allrightsreserved Abstract
+Machine learning has facilitated significant advancements across vari-
+ous robotics domains, including navigation, locomotion, and manipu-
+lation. Manysuchachievementshavebeendrivenbytheextensiveuse
+of simulation as a critical tool for training and testing robotic systems
+prior to their deployment in real-world environments. However, simu-
+lations consist of abstractions and approximations that inevitably in-
+troducediscrepanciesbetweensimulatedandrealenvironments,known
+astherealitygap. Thesediscrepanciessignificantlyhinderthesuccess-
+ful transfer of systems from simulation to the real world. Closing this
+gap remains one of the most pressing challenges in robotics. Recent
+advances in sim-to-real transfer have demonstrated promising results
+acrossvariousplatforms,includinglocomotion,navigation,andmanip-
+ulation. By leveraging techniques such as domain randomization, real-
+to-simtransfer,stateandactionabstractions,andsim-realco-training,
+manyworkshaveovercometherealitygap. However,challengespersist,
+and a deeper understanding of the reality gap’s root causes and solu-
+tionsisnecessary. Inthissurvey,wepresentacomprehensiveoverview
+of the sim-to-real landscape, highlighting the causes, solutions, and
+evaluation metrics for the reality gap and sim-to-real transfer.
+1
+5202
+tcO
+32
+]OR.sc[
+1v80802.0152:viXra
+
+--- Page Suivante ---
+
+1.Introduction
+Simulation holds great potential for robot learning, benchmarking and large-scale data
+collection in robotics due to its scalability, safety, and efficiency. Robots can be safely
+trainedinsimulationbeforebeingdeployedtotherealworld. Algorithmscanbecompared
+against each other in simulation over multiple simulated scenarios. Through simulation,
+massiveamountsofdatacanbecollectedfromrobotsperformingcomplextasksatafraction
+of the cost compared to the real world. However, the gap between simulated and real-
+world environments often stands in the way of fully leveraging its potential. Bridging
+the gap between simulation and the real world has become one of the most critical and
+long-standing challenges in robotics. Overcoming this challenge holds the potential to
+accelerate progress in robotics similar to what has been achieved in other computational
+fields. For example, sustained progress observed in the natural language processing and
+computer vision communities would not have been possible without significant effort in
+the development of large training and benchmarking datasets (1, 2). In contrast, robotics
+still lags behind in these aspects. One reason for this is that static test datasets cannot
+reflect the complexity of perceiving and acting in the real world. Instead, most robotics
+problems require training and benchmarking in interactive environments. While training
+in the real world has the benefit of making sure that systems are trained and tested in
+realisticsettings,complexreal-worldtasksaredifficulttoscaleandreplicatewithsufficient
+reproducibility. In addition, data collection in the real world is bottlenecked by multiple
+factorssuchashardwarecost,humandependence,anddifficultyofautomation. Simulation
+offers an affordable alternative for these challenges, making it an invaluable tool for data
+collection, benchmarking, and building various components of typical robotic pipelines,
+such as perception, planning, learning, and control. Namely, for benchmarking, simulation
+ensurestherepeatabilityofexperiments,whichisimpossibleinreal-worldroboticssystems
+duetotheirstochasticnature. Fordatageneration,simulationprovidesanefficientapproach
+that can leverage multiple robots operating faster than in real-time and in a parallelized
+manner.
+Simulationattemptstoreplicatephysicalrealitywithmathematicalabstractions,mod-
+els, and approximations. This means that there are no perfect simulators, and therefore
+there is always a difference from the real world, which we call reality gap. While it is a
+common misconception to talk about this gap as a single element, the reality gap consists
+of a large number of sub-gaps resulting from the simulation’s failure to replicate various
+physicalreal-worldmechanismsandphenomenaaccurately. Asaconsequence,transferring
+any sort of behavior observed in simulation to a real-world environment can be extremely
+challenging. For instance, transferring control policies designed or learned in simulation is
+not trivial (9). Due to the differences between the simulated and the real environments,
+policies obtained in simulation could achieve great performance in simulation, simply by
+abusing modeling inaccuracies and simulator-specific corner cases. Hence, the successful
+transfer of such policies is not guaranteed and can even be dangerous to the robot, its
+surroundings, and any human in its proximity.
+Despite these challenges, recent progress in robot learning has shown great promise
+in sim-to-real transfer, where control policies learned in a simulation are transferred to a
+similar real-world environment, and multiple techniques have been proposed to overcome
+Website: https://robotics-reality-gap.github.io/
+2 Aljalboutetal.
+
+--- Page Suivante ---
+
+Simulation Reality gap Reality
+Perception
+Dynamics &
+Sensing
+Actuation
+System
+&
+Design
+Control
+Sim-to-real transfer
+Real-to-sim transfer
+Figure1
+Therealitygapisthedifferencebetweenasimulatedandrealenvironmentinaspectsrelatedto
+dynamics,perception&sensing,actuation&control,andsystemdesign. Bycarefullydesigning
+thesemodules,thegapcanbereducedtoareasonablesize. Sim-to-realaswellasreal-to-sim
+transferrequiremethodsthatcancarefullyovercometheremainingrealitygap. Figuresare
+adaptedfromsuccessfulsim-to-realapplicationsinvariousroboticsdomains(3,4,5,6,7,8).
+the reality gap for different robotic platforms (10, 11, 12, 13, 3, 14, 6, 5, 8, 15). Besides
+improvements in physics engines and rendering quality, simulation technology progressed
+tomeetthedemandsoftherobot-learningcommunitybyfollowingthedeeplearningtrend
+of massive parallelization and large-scale data collection. Modern simulators can leverage
+GPU parallelization to simulate thousands of robots simultaneously (16, 17, 18, 19). This
+abilitytoefficientlyparallelizesimulationshasledtosignificantbreakthroughsinthefield,
+particularly in locomotion (6, 20), agile flight (21, 8), and manipulation (3, 14, 22, 23). In
+locomotion,highlyparallelizedsimulationenabledlearningveryrobustquadrupedlocomo-
+tionacrosschallengingterrains(6)and,morerecentlybipedscontrol(24,7). Furthermore,
+sim-to-realtransferhasbeenusedfordexterousmanipulationaswellasothervarioussingle-
+arm (25, 5) and dual-arm tasks (26), ranging from simple 3D reaching to more complex
+and contact-rich tasks such as table-top rearrangement (25) and assembly (26, 5). Addi-
+tionally, sim-to-real transfer played a key role in learning agile quadrotor control policies
+that outperformed human champions in drone racing (21, 8).
+However,sim-to-realstillfacesmanychallenges,suchasphotorealisticrendering(more
+generally,sensormodeling)andsimulationofcomplexdynamicssuchascontacts,deforma-
+tions, and material variations. To further progress sim-to-real transfer and understand its
+limitations, a common and structured understanding of the problem is necessary. Ideally,
+such an understanding should go all the way from the roots of the problem to the existing
+and needed solutions to overcome them.
+In this survey, we provide a comprehensive overview of the sim-to-real landscape for
+robotlearning. Wedissecttheproblemintoatomiccomponents,identifythesourcesofthe
+realitygapandthesymptomstheycause,andprovidemetricsandsolutionstounderstand
+theseproblemsandalleviatetheminpractice. Ourobjectiveistoboosttheunderstanding
+oftheproblembyprovidingaguideforresearchersandpractitioners. Wefirstintroducethe
+problem,itsnotationanditstheoryinsection2. Insection3,weidentifyandexhaustively
+listthedifferentcausesoftherealitygap. Wethensurveyexistingsolutionsandmetricsfor
+www.annualreviews.org • TheRealityGapinRobotics 3
+
+--- Page Suivante ---
+
+sim-to-realtransferinsection4andsection5,respectively. Finally,insection6,wediscuss
+open problems and an outlook for future research on this topic.
+2.Preliminaries
+Inthissection, weformalizetheconceptsanddefinitionsrequiredtounderstandandchar-
+acterize the reality gap as well as sim-to-real transfer.
+2.1.States, Observations, and Actions
+Wefirstintroduceageneralmathematicalmodelforrobotsystemsthatreceiveobservations
+of the world using their sensors and make decisions that maximize a particular objective.
+We formulate this decision-making problem as a Partially Observable Markov Decision
+Process (POMDP) 1. A POMDP is defined as the tuple M=(S,A,T,R,Z,O,γ), where
+S ⊆Rn denotesthestatespaceencompassingallfeasibleconfigurationsoftherobotandits
+environment. A⊆Rm is the action space comprising all control commands the robot can
+execute; T :S×A→S denotes the transition dynamics, describing how the state evolves
+given the current state s at time t and a given action a ; R : S ×A → R is the reward
+t t
+functionencodingthetaskobjective;Z ⊆Rh istheobservationspace,andO:S→Z isthe
+sensor(observation)modelthatmapsthelatentstatetoanobservationz ;finally,γ ∈[0,1)
+t
+is the discount factor, representing the relative importance of future rewards with respect
+to immediate rewards. The agent maintains a belief b ∈ B(S), a probability distribution
+t
+over states, updated from the history of past actions and observations. Its goal is to learn
+a policy π:B(S)→A that maximizes the expected discounted return
+" #
+∞
+π∗ =argmax E X γtR (cid:0) s ,π(b )(cid:1) , 1.
+t t
+π
+t=0
+whereR(s ,π(b ))istherewardtheagentreceiveswheninbeliefb actingunderthepolicy
+t t t
+π. In practice, sim-to-real work often represents b by a compact feature vector extracted
+t
+directly from raw observations such as camera images and proprioceptive signals.
+2.2.Simulation
+A simulation is a computational approximation of the real world. If we denote the real
+worlddynamicsperfectlycapturingthebehavioroftherealworldsystemasT (s |s ,a ),
+r t+1 t t
+and the real observation model O (z |s ), a simulation approximates the real world dy-
+r t t
+namics and observation model by employing physical models derived from first principles,
+numerical integration, and approximations to reduce complexity and computational cost,
+such that T (s |s ,a ) ≈ T (s |s ,a ) and O (z |s ) ≈ O (z |s ), ∀s ∈ S, a ∈ A. A
+s t+1 t t r t+1 t t s t t r t t t t
+perfect simulator aims to minimize the discrepancy between the simulated and real world
+dynamicsaswellasthegeometricstructureandthesimulatedobservations. However,per-
+fect fidelity is impractical and computationally infeasible in realistic robotic scenarios due
+to the inherent complexity of physical effects (friction, noise, sensor latency, etc).
+1Whenthesensorsprovidethefullstatewithoutnoise(e.g. insimulationwithprivilegedinfor-
+mation) observations are equivalent to states and the formulation collapses to a Markov Decision
+Process(MDP).
+4 Aljalboutetal.
+
+--- Page Suivante ---
+
+2.3.Reality Gap
+We distinguish between the reality gap characterizing the difference between the simulated
+and the real environments, and the performance gap, characterizing the difference in per-
+formance in simulation and the real world for a given policy.
+Thereality gap isthegapbetweenthesimulatedPOMDPM andtherealoneM . It
+s r
+is mainly composed of the dynamics and perception gaps,
+G (M ,M )=E [D(T (·|s,a)∥T (·|s,a))]
+dyn s r (s,a)∼Mr sim real 2.
+G (M ,M )=E [D(O (·|s)∥O (·|s))],
+perc s r s∼Sr sim real
+where D is a measure of divergence or dissimilarity, T , T and O , O refer to
+real sim real sim
+transition dynamics and observation models with subscripts real and sim indicating the
+real and simulated environments.
+The performance gap is the difference in performance of a given policy when executed
+in simulation versus in the real world. Let π : B(S)→A denote a policy trained in an
+environmentM,whereB(S)isthebeliefspace. Startingfromaninitialstates ,theclosed-
+0
+loop trajectory τ = (s ,z ,a ,s ,z ,a ,...,s ,z ) evolves under transition dynamics T
+0 0 0 1 1 1 T T
+and observation model O. The expected discounted return of π in environment M is
+" #
+T
+X
+J (π)=E γtR(s ,π(b )) . 3.
+M τ∼p(τ|π,M) t t
+t=0
+TheperformancegapG (M ,M ,π)forthepolicyπ isformallydefinedastheabsolute
+perf s r
+difference between its expected performance in the simulated and real environments:
+G (M ,M ,π)=|J (π)−J (π)|. 4.
+perf s r Ms Mr
+Minimizing G (M ,M ,π) ensures effective transfer and robust performance from sim-
+perf s r
+ulation to real-world scenarios. It is important to note that exact replication of real-world
+dynamics (i.e., elimination of G ) and observation models (i.e., elimination of G ) in
+dyn obs
+a simulator is not practically achievable nor required to achieve successful sim-to-real gap
+minimization. Successful transfer can still occur if the policy is robust against differences
+between the environments. Therefore, the objective of sim-to-real transfer is
+π∗ =minG (M ,M ,π). 5.
+perf s r
+π
+3.Sources of Reality Gap
+In this section we elaborate on the differences in dynamics (Section 3.1), perception (Sec-
+tion 3.2), actuation (Section 3.3), and system design (Section 3.4), all contributing to the
+sim-to-real gap.
+3.1.Dynamics
+One of the most important causes of the reality gap is the dynamics of the system. The
+dynamicsgapG (M ,M )isdefinedbysim-to-realdiscrepanciesinthetransitionmodel
+dyn s r
+T in the POMDP formulation. When creating a simulator, many decisions and simplifica-
+tions are made about what to model and what to leave out, how to model dynamics, what
+www.annualreviews.org • TheRealityGapinRobotics 5
+
+--- Page Suivante ---
+
+System
+Perception & Sensing Model Sensor
+Communication Design
+Sec. 3.2 Repres. Noise
+Sec. 3.4
+Sensor Safety,
+model Mechanism
+Env.
+POMDP
+Repres.
+Integrators
+Low-level
+Control
+Chaos
+Actuator
+Models
+Parameterization
+Actuation & Control Power Unmodelled Robot Dynamics
+Sec. 3.3 Electronics Effects Modeling Sec. 3.1
+Figure2
+Illustrationofthedifferentsourcesoftherealitygapintherealworld(left)andsimulation(right).
+parametersbestapproximatetherealworld,andhowtorepresentcontinuousphenomenain
+discretecomputations. Thesedecisionsandassumptionscanleadtoaplethoraofdynamics
+gaps. Apolicytrainedinasimulationwithinaccuratedynamicsmaylearntoexploitthese
+inaccuracies, leading to a potential performance drop in the real world. In the following,
+we list the most important sources.
+3.1.1.Modeling. Simulators attempt to replicate real-world dynamics with models. The
+modelsrepresentvariousaspectsofphysics,suchasrigid-bodydynamics,batteries,chaotic
+Symptom: A
+policytrainedwith nature, and stochasticity. Each of these components can contribute to the reality gap.
+rigid-body
+• Rigidbodydynamics. Mostrobotsimulatorsassumeperfectlyrigidbodiesandjoints,
+assumptionsmay
+leadtounexpected butobjectscanbedeformable,andrealrobotscanbeflexible,compliantorhaveuneven
+behaviorswhen joints. Forexample,realrobotlinksandframescanbendorvibrateunderload,whereas
+dealingwithreal, simulatorsusuallytreatthemasrigidbodies. Similarly,simulatedjointsareoftenmod-
+deformableobjects.
+eled as ideal, but they suffer from damping, internal springs, backlash, etc. This
+mismatch is a fundamental source of errors in dynamics modeling.
+• Chaotic nature. Some real-world phenomena exhibit chaotic behavior, characterized
+byasensitivedependenceoninitialconditions,makingtheminherentlynon-reproducible
+even with perfect models. These are fundamentally difficult to capture with a dynamic
+6 Aljalboutetal.
+
+--- Page Suivante ---
+
+modelinasimulation. Forexample,atmosphericturbulence,complexflowpatternsand
+Symptom: Dueto
+pressure waves in fluid dynamics cannot be fully captured by simplified models.
+chaoticeffects,an
+• Stochasticity. The real world contains numerous sources of stochastic dynamics that overfittedpolicy
+arefundamentallydifficultorimpossibletorepresentinsimulation. Forinstance,ground- withslightly
+differentinitial
+basedrobots(wheeledorlegged)encounterstochasticsurfaceandfrictionvariationsand
+conditionsmightfail
+debris that create unpredictable disturbances. Simulators typically either ignore these inanunpredictable
+effectsentirelyormodelthemassimplifiedGaussiannoise,failingtocapturethecomplex manner.
+spatiotemporal correlations and non-linear coupling effects present in reality.
+• Battery. This is particularly relevant for mobile robots. Even if the actuator model is Symptom:
+Unmodeledbattery
+accurate,theenergysourcethatfeedsitcanintroduceinaccuracies. Sincemotortorque
+dynamics(e.g.,
+scalesdirectlywiththevoltagethatthebatteryprovides,anydropinbatteryvoltageim- voltagedropwith
+mediatelyreducesthemaximumjointtorquethehardwarecandeliver. Hence,rapidjoint loadorage)may
+accelerationscanexperienceatransienttorquedeficitthatisabsentinsimulation. Bat- causethepolicyto
+producetorquesthat
+teriesarerarelymodeledbecausetheirbehaviorisverynonlinearandhistory-dependent;
+arelessthan
+terminalvoltagedropswithinstantaneousloadandvarieswithcelltemperatureandage. requiredtoachieve
+Neglecting these effects in simulation leaves controllers unaware of the reduced control thedesired
+authoritytheyencounteronrealhardware,especiallywhenoperatingatthelimitofthe real-worldmotion.
+robot’s performance.
+• Contact Dynamics. A key contributor to the dynamics gap in robotics is the in-
+accurate modeling of physical contact. Real-world contact interactions are inherently
+complex and nonlinear. Materials deform under pressure, friction varies with relative
+Symptom: A
+velocity,andcontactstatescanalternatebetweensticking,slipping,andseparation. To
+policymayfailto
+maintain computational efficiency, simulators typically rely on simplified models such graspobjects
+as point contacts, linearized friction cones, or compliant spring-damper systems. While becauseitslearned
+theseapproximationsenablefastersimulation,theyoftenfailtocapturecriticalphysical modelisbasedon
+simplisticcontact
+behaviors. This can result in non-physical artifacts such as spurious internal forces, un-
+assumptions,leading
+stablegrasps,orunrealisticmotionpatterns. Suchmismatchesareparticularlyproblem- tounexpected
+atic in contact-rich tasks like robotic manipulation, where precise interaction modeling slippingor
+instability.
+is crucial for successful control and planning.
+Symptom: A
+3.1.2.Parameterization. A fundamental source of the dynamics gap arises from the incor- policymay
+rectparameterizationofthephysicalmodel. Whilesimulatorsaccountforvariousphysical overshootor
+parameters such as friction, aerodynamics, mass, inertia, etc., assigning accurate values to undershootbecause
+these parameters can be challenging. Some physical properties can be difficult to measure itslearneddynamics
+arebasedon
+precisely and can be subject to changes over time.
+incorrect
+parameters.
+3.1.3.Numerical Integrators. The choice of numerical integration methods for unrolling
+differential equations significantly impacts the reality gap. Simulators rely on numerical Symptom:
+integration schemes to approximate continuous dynamics. Discretization and the specific Performancemay
+degradeoverlong
+integration method employed (e.g., Euler, Runge-Kutta, Quadrature, etc) can introduce
+tasksassmall
+discrepancies between the simulated and the real system. Additionally, there is a trade- integrationerrors
+off between fidelity and computation time. Increasing the numerical integrator’s accuracy accumulate.
+by using smaller time steps or higher-order methods, generally leads to more accurate
+simulations at the cost of increased computational time.
+3.1.4.Human-Robot Interaction. Modelinghumanbehaviorinsimulationpresentsunique
+challenges that create substantial reality gaps (27). Humans exhibit complex, context-
+www.annualreviews.org • TheRealityGapinRobotics 7
+
+--- Page Suivante ---
+
+dependent, and often irrational behaviors that are difficult to capture with computational
+Symptom: A
+models. Therefore, humans are typically simulated as simplified agents with predefined
+policycouldtake
+advantageofwrong motion patterns, and basic reactive responses to robot actions.
+assumptionsinthe
+simulatedhuman
+behavior. 3.1.5.UnmodeledEffects. Thereisarangeofphysicalphenomenathatareoftenoverlooked
+or simplified in simulation, and that can cause significant sim-to-real differences. These
+includewearandtearofrobotcomponents,whichdegradeovertimeduetofriction,material
+fatigue,repetitiveusage,etc. Thesedegradationsleadtochangesinmaterialpropertiessuch
+Symptom:
+asstiffness,backlash,vibrations,ortexture,whicharenottypicallycapturedinsimulators.
+Performancemay
+Thermal effects can also add to this category, as temperature fluctuations can affect the
+driftovertime,or
+therobotmay performance of motors, sensors, batteries, and other components, potentially leading to a
+exhibitunexpected significant change in their behavior.
+vibrationsand
+instabilityasits
+physicalproperties 3.1.6.Asset Fidelity. Simulations represent the environment using digital assets to encode
+change. geometry, including primitive shapes, meshes, and Signed Distance Fields (SDFs) and ma-
+terial parameters such as friction coefficients, restitution, density, etc. However, for com-
+Symptom: A putational efficiency reasons, these representations are often simplified and approximated,
+policytrainedwith
+utilizing clean layouts and low-resolution models that lack the complexity and properties
+idealizeddigital
+of real-world environments, such as irregular terrain and fine-grained intricate structures.
+assetsmightacton
+inaccurategeometric Similarly,therobot’sowngeometryisoftensimplified,omittingimportantphysicaldetails
+assumptions,leading andusingsimplifiedshapesforthesakeofefficiency,whichcanleadtounexpectedbehaviors
+tocollisionswith
+such as self-collisions or unstable motions in reality.
+unmodeledeffects.
+3.2.Perception and Sensing
+In this section, we discuss the sources of the reality gap originating from perception and
+sensing. The perception gap is defined by sim-to-real discrepancies in the observation
+model O in the POMDP formulation. State-of-the-art simulators with advanced rendering
+pipelines(16,28,29,30,31)havesignificantlyimprovedtherealismofsensoreffects. How-
+ever, they still fall short of capturing the full complexity and variability of the real world,
+often resulting in discrepancies between simulated and real sensory measurements. Conse-
+quently, policies trained in such simplified settings struggle to generalize during real-world
+deployment. In the following, we outline the major sources of these mismatches and their
+implications for sim-to-real transfer.
+3.2.1.Sensor Model. Simulation models are designed to mimic the physical characteris-
+tics of real-world sensors, including properties such as field of view, resolution, and noise
+patterns. Additionally, they simulate how sensors respond to motion and how they are
+mounted on the robot since placement significantly influence the resulting sensor data.
+• RGB Cameras. ForRGBcameras,NVIDIAIsaacSim(28)usesraytracingandphys-
+icallybasedrenderingtogeneratephotorealisticimages. CARLA(29)andAirSim(30),
+both built on Unreal Engine, simulate realistic visuals for navigation. These simulators
+are capable of modeling realistic lighting, shadows, and material interactions. Many
+platforms optimized for real-time performance, such as Gazebo Classic (32) and early
+MuJoCo (19), use simplified OpenGL-based rendering with idealized pinhole camera
+models and Z-buffer depth computation (33). This omits real-world effects such as lens
+flares,chromaticaberration,flyingpixels,androllingshutterdistortions,causinglearned
+8 Aljalboutetal.
+
+--- Page Suivante ---
+
+features to poorly transfer to real-world settings (34).
+Symptom:
+• Depth Sensors. Many simulators support depth sensor simulation, including stereo Sensor-specific
+cameras, structured light (e.g., Kinect v1), and time-of-flight (e.g., Intel RealSense) artifacts(e.g.,lens
+systems. PlatformssuchasIsaacSim(28),Habitat-Sim(31)offersyntheticdepthmaps distortion,LiDAR
+beampatterns)can
+derived from rendered 3D geometry. However, these simulations typically assume ideal
+leadtomassive
+depth projections and often omit real-world artifacts such as quantization noise, depth sim-to-real
+shadows, and ambient light interference (35, 36). discrepanciesinthe
+• LiDARSensors. SimulatorssuchasCARLAsimulateLiDARsensorsusingraycasting distributionof
+observations.
+techniques from the sensor origin to the scene geometry. While CARLA approximates
+various real-world effects, many intricate characteristics remain difficult to reproduce
+accurately. These include beam divergence patterns, material-dependent reflectivity,
+angle-of-incidence effects (37), and sensor-specific interference artifacts observed in real
+devices like Velodyne, Ouster, or Livox.
+• Other Sensors. Simulators also model sensors including joint encoders, IMUs, GPS,
+and tactile sensors. However, they often idealize sensor behavior, neglecting real-world
+effectssuchasIMUdrift,GPSmultipath,orlatency. Thesesimplificationscanintroduce
+reality gaps, especially in tasks relying on sensor fusion or precise state estimation.
+Symptom: Policies
+3.2.2.Sensor Noise. Real-world sensor measurements are inherently noisy due to factors trainedonsimple
+such as thermal effects (38), quantization errors (39), and environmental interference (40). Gaussiannoisemay
+overfitandfailunder
+Crucially, sensor noise is often complex, non-Gaussian, state-dependent, temporally corre-
+complex,
+lated,andinfluencedbymotion,temperature,lighting,andsurfaceproperties. Forexample, state-dependent,and
+depth sensors exhibit range-dependent uncertainty, structured missing data at depth dis- temporally
+continuities, and surface-dependent noise patterns (35). Despite these complexities, many correlatedreal-world
+sensornoise.
+simulators use simple Gaussian noise models with fixed variance.
+3.2.3.Environment Representation. In Section 3.1, we discussed how asset fidelity affects
+the accuracy of dynamics simulation. A similar issue arises in perception and sensing:
+using low-resolution assets, overly simplified scene graphs, or generic materials can fail Symptom: The
+to capture fine-grained perceptual cues such as surface textures, reflectance, and subtle robotmayfailto
+recognizeobjectsor
+geometry. Additionally, the lack of High Dynamic Range Image (HDRI) backgrounds may
+getlostinareal
+resultinunrealisticlighting,whilenotdifferentiatingbetweenstaticanddynamicbodiescan roomthatlooks
+obscurecriticalmotionandocclusionrelationships. Theselimitationssignificantlydegrade differentfromthe
+perceptual realism, which becomes particularly problematic in tasks requiring fine-grained visuallysimplistic
+simulation.
+object recognition or precise physical interaction.
+3.2.4.Robot Model. Simulatedrobotsaretypicallydefinedbytheirgeometry,kinematics,
+anddynamics. ThesemodelsareoftenbasedonCADfilesandURDForUSDdescriptions.
+Whileaccurateinstructure,theyusuallysimplifyoromitimportantphysicaldetails. Real-
+worldfactorssuchasmanufacturingtolerances,materialwear,andmechanicalbacklashare
+rarelymodeled. Thesediscrepanciescanintroducerealitygaps. Itcancauseself-collisions,
+unstable motions, or failed task execution (41, 42).
+3.2.5.Collision Sensing. Simulators rely on efficient collision detection algorithms to de-
+termine contact events between the robot and its environment, or within the robot itself.
+To achieve real-time performance, they typically use simplified geometric approximations,
+such as bounding volumes, convex decompositions, or sphere decompositions—instead of
+www.annualreviews.org • TheRealityGapinRobotics 9
+
+--- Page Suivante ---
+
+high-resolution visual meshes (43, 19). These proxy shapes are evaluated at discrete time
+Symptom: When
+steps, which further limits the accuracy of contact modeling, especially in tasks involving
+attempting
+dexterous fine-grained manipulation or dense contact.
+manipulation,the
+robotmayapply
+incorrectforcesor 3.3.Actuation and Control
+failtograspan
+Actuators, together with the low-level control loops around them, are the last interface of
+object,asit’s
+trainedon the robot’s actions and the real world. They turn the actions from the policy into real-
+inaccuratecollision worldmotionandinteraction. Evenwhenperceptionanddynamicmodelsareperfect,any
+models.
+mismatchorgapbetweenwhatthepolicypredictswilloccur,andwhatactuallyhappensat
+this interface can dominate the overall behavior of the robot and can lead to performance
+degradation. Feasible commands in simulation can become delayed or unstable once they
+are filtered through real actuators. These discrepancies constitute the actuation gap.
+3.3.1.Actuator Models. Most simulators treat motors as first-order systems that are able
+toperfectlyproducetorqueresponsesinstantaneouslyandlinearlytothecommandsignal.
+Symptom: The However, real actuators (e.g., motors) behave as higher-order systems whose electrical and
+robot’smovements
+mechanical time constants introduce a non-negligible phase lag. In addition, actuators are
+maybejerky,
+delayed,orunstable, non-linear due to dead-zones, backlash, slew rate constraints, time constants, hysteresis,
+especiallyduring etc. If we take into account physical mechanisms attached to the motor, such as gears,
+high-speed these problems only get worse, leading to added delays and increased steady state error.
+maneuvers.
+Symptom: A 3.3.2.Low-level Control. Control policies typically do not produce raw torque/force com-
+policy’scommands mandsdirectly,andrealrobotsrarelyacceptthosecommandsdirectly. Instead,thereexist
+maynotproducethe one or several low-level control layers that drive the actuator low-level control signal (e.g.,
+expectedmotion,or
+PWM),andtakeasinputahigher-levelsignalsetpoint(e.g,positionorvelocity). Thiscon-
+mayevenleadto
+instability,asthey version is generally done through dedicated hardware and firmware, for which most of the
+aremodifiedby timeaccessisrestrictedbythevendor. Additionally,thereareoftenhiddenfiltersforanti-
+hiddenfiltersonthe aliasing and resonance suppression, saturation, anti-windup logic, or protective non-linear
+realhardware.
+effects like rate limiting. General robotics simulators do not simulate the lowest-level
+controllers, since they strongly depend on the manufacturer of the actuator itself.
+3.3.3.Power Electronics. Between the low-level controller commands and the input signal
+to the motors, there is an additional layer: the power electronics. Motor drivers, inverters,
+Symptom:
+andElectronicSpeedControllersclosetheirinnerloops,introducingalatencyofhundreds
+Fine-grained
+motionsmayfail, ofmicroseconds. Additionally,finitePWMresolutionquantizesthecommandsproducedby
+withjitterordead theactuator,reducingaccuracyandintroducingadditionaldeadzonesnearzerocrossings.
+zonesnearzero Finally, most drivers come with protection logic, which enforces hard current and voltage
+velocity.
+caps. These effects are absent in simulations and can largely widen the actuation gap.
+3.4.System Design
+In addition to the gaps induced by the different modules of the robotics stack, the system
+design and the choices it entails can influence the reality gap.
+3.4.1.Communication. Although communication in simulation is nearly perfect, commu-
+nication in real-world robotic systems can face multiple challenges, including delays and
+10 Aljalboutetal.
+
+--- Page Suivante ---
+
+Sim-to-Real Perception Gap
+Actuation Gap
+Transfer
+Dynamics Gap
+System Gap
+Reducing the Gap Overcoming the Gap
+Improving the Simulation Domain Generalization
+Fidelity & Adaptation
+- System identification - Domain randomization
+- Residual learning - Meta learning
+- Real-to-sim - Domain adaptation
+- Adversarial methods
+Modalities & Design Choices Data & Exploration Policy Architecture &
+Representations Regularization
+- Low-level controller - Incorporating - Modularity
+- Choice of sensors improvements real-world data - Privileged Information
+modalities - Software alignment - Sim-to-real-driven - Representation learning
+- State representation - Hardware design exploration - Policy regularization
+- Action representation - System constraints
+Figure3
+Ataxonomyofsim-to-realtransfermethods,distinguishingclearlybetweenapproachesand
+techniquesthataredesignedtoreducetherealitygapandthosedesignedtoovercomeit. The
+coloredsquaresindicatewhichrealitygapeachmethodaddresses.
+packet loss. In the real world, several mechanisms can be implemented to address these
+Symptom:
+challenges. Forinstance,itiscommontointroducesomekindofcontrolattenuationmech-
+Communication
+anismtograduallybringtherobottoasafestopincaseofprolongedcommunicationpacket delaysmaycause
+loss. Such mechanisms and behaviors are almost never modeled in simulation. freezing,slowdown,
+orjerkyfallback
+motionsoutsidethe
+trainedpolicy.
+3.4.2.SafetyMechanisms. Real-worldroboticexperimentspresentseveralsafetychallenges
+that are not of concern in simulation. It is very common to implement safety mechanisms
+such as virtual walls in the real world but not in simulation. Such mechanisms change the Symptom: A
+behavior of the robot and can further widen the reality gap. policymayfailto
+reacttosafety
+mechanismsunseen
+duringtrainingin
+3.4.3.POMDPFormulation. SimulatedPOMDPsoftenfeatureunrealisticinformationand simulation.
+behaviors. Forexample,rewardsandterminationcriteriamayrelyonprivilegeddata,such
+asexactcollisions,notaccessibleintherealworld,leadingtodifferentrewardsinsimulation
+andreality. Thismismatchisparticularlyproblematicformodel-basedcontrolmethodsthat Symptom:
+Real-world
+dependonrewardsignalsatinferencetime. Similarly,environmentresetsmayuseinfeasible
+evaluationsmight
+behaviors,suchasplacingobjectsatprecisepositionswithpresetvelocities,creatingstate-
+stronglydifferfrom
+action distributions unlike those in real deployment, where such resets are impossible. theonesin
+simulationdueto
+differencesinthe
+state-action
+3.4.4.Implementation Details. Many implementation details often differ between real-
+distributionandthe
+world and simulated environments. Simulation commonly involves the discretization of reward.
+naturally continuous processes such as image formation and system dynamics. The gran-
+ularity of these discretizations can significantly impact the reality gap. Low-level control
+implementationcanalsoinvolvecomputationalintegrationanddifferentiationsteps,which Symptom: A
+policymaybecome
+can also end up running at different frequencies in simulation and the real world.
+unstabledueto
+mismatchedcontrol
+www.annualreviews.org • TheRealityGapinRobotics 1fr1equenciesor
+numericalmethods.
+
+--- Page Suivante ---
+
+4.Existing Solutions
+Successful sim-to-real transfer requires careful consideration of the reality gap. Methods
+addressing this challenge typically target one or more of the previously introduced sources
+of the reality gap (Section 3). We mainly distinguish between approaches that attempt to
+reduce the gap by improving different aspects of the simulation (i.e., eliminating sources of
+the reality gap) and approaches that attempt to overcome the gap by making the system
+agnostic, adaptive, and/or passive to certain simulation aspects that cannot be accurately
+modeled. Figure 3 summarizes the different methods that can be used for reducing and
+overcoming the different reality gaps. A general recipe for successful sim-to-real transfer
+includes the following steps.
+Sim-to-Real Recipe
+1. Design a simulation that represents all variables relevant for the target appli-
+cation.
+2. Attempt to reduce the different components of the reality gap as much as
+possible.
+3. Design training methods that can help overcome the remaining gap.
+4. Train policies in simulation (ideally under massive parallelization).
+5. Evaluate policies in the target real-world environment.
+6. Adjust simulation parameters based on real performance and retrain.
+4.1.Reducing the Gap
+Toreducethegap,weneedtomakesystemmodificationsthateitheri)improvethesimula-
+tion’sfidelity(seesection4.1.1),ii)selectinputandoutputmodalitiesandrepresentations
+that have a smaller reality gap (see section 4.1.2), or iii) design systems with components
+and constraints that induce a smaller gap (see section 4.1.3).
+4.1.1.Improving Simulation. It is possible to improve different aspects of the simulated
+environment, such as its physical fidelity, sensor models, and many other components that
+influence the gaps introduced in section 3.
+• SystemIdentification. hasbeenrepeatedlyshowntobeacrucialaspectforsuccessful
+Sys-IDhelpsreduce
+sim-to-real transfer in multiple domains such as navigation (8), locomotion (4, 44), and
+thedynamics gap.
+manipulation (45, 46). One recent trend is to do online and iterative system identifica-
+tion with data collected at different iterations of real-world evaluations (47, 48, 49, 50).
+In addition to physical parameters, it is common to identify and match system-level
+parameters representing different aspects of a physical environment, such as its latency,
+control frequency, and actuation delay (4, 44, 6, 21).
+Learned residual • Learned Residual Models. When discrepancies between the simulated parametric
+modelscanreduce modelandthereal-worldarelarge,forexamplewhenthesimulatedphysicsmodelmakes
+severalsourcesof
+fundamentally-inaccurateassumptions(e.g.,rigid-bodydynamicsformodelingcompliant
+reality gap.
+bodies),systemidentificationmaybeineffective. Residualsimulation,ontheotherhand,
+proposesacompellingsolution: learnamodelthatmodifiesanimperfectsimulator,such
+that the composite dynamics model more accurately reflects the real world. Residual
+simulation approaches often use learning to modify the outputs of a simulator, namely
+12 Aljalboutetal.
+
+--- Page Suivante ---
+
+the predicted states, in order to better reflect real-world observations. Golemo et al.
+(51) first trained an Long-Short Term Memory neural network on differences between
+simulated trajectories and real-world trajectories to improve policy transfer. Ajay et al.
+(52)trainedastochasticRecurrentNeuralNetworktoaugmentadeterministicsimulator
+tocaptureuncertaintyincontactdynamics. Gruensteinetal.(53)trainedanetworkto
+augmentananalyticalmodeltocaptureunmodeledcomplianceandfriction. Bauersfeld
+etal.(54)trainedaneuralnetworktoaugmentablade-element-momentumaerodynamic
+model, capturing residual forces and torques for high-speed quadrotor flight. Gao et al.
+(55)extendedresidualsimulationtosoftrobotics,traininganetworktoapplycorrective
+forces to a finite-element model of a pneumatic arm. Other residual simulation efforts
+have proposed a learning technique to modify the inputs of a simulator, namely the
+applied actions, so that the resulting states more closely reflect the real world. For
+instance, Christiano et al. (56) trained policies for a manipulator in simulation, and
+afterwardslearnedaninversedynamicsmodelthatmapsasimulatedactiontoacorrected
+real-world action that produces the state transition intended by the simulator. Hanna
+et al. (57) took a similar approach, but also augmented the simulator with the action
+transformation model before training the policy.
+• Real-to-Sim First. A variety of techniques have aimed to use real-world data to con-
+struct visually and dynamically accurate simulation environments on the fly at test
+time (58, 59, 60, 61, 62, 46, 63, 64, 65, 66, 67, 68). Real-to-sim environment cre- Real-to-simcan
+reducevariouskinds
+ation involves creating environments in simulation from data collected in the real world
+ofreality gap.
+D ={(z,a,z′) }N . This “inverse” problem has multiple facets – constructing accu-
+real i i=1
+rate geometry of the environment, constructing accurate kinematics and dynamics, and
+lastly constructing accurate visuals and rendering.
+For geometry identification, techniques for real-to-sim often build on 3D reconstruc-
+tion (69, 70) and novel-view synthesis methods for reconstructing geometry from multi-
+viewdata. Alternatively,amorerecentclassofmonocular-3Dmethodshasusedlearning-
+based priors to generate entire 3D meshes from single RGB images of objects (71).
+Intermsofidentifyingkinematicsanddynamics,thereisarangeoftechniquesthathave
+been proposed to take constructed geometries and imbue them with physical properties
+needed for manipulation. Kinematic identification involves accurately inferring object
+and scene articulation, and degrees of freedom from real data. This is particularly
+challengingwheneachoftheseDoFsisnotdirectlyactivatedduringdatacollection (67).
+Avarietyofrecentmethods (66,72,68)haveattemptedtoinferarticulationfromvideo
+or image sequences using foundation models. While they provide a reasonable starting
+point, there is still a considerable gap with respect to the real world. Finally, to obtain
+accurate environment renderings, novel-view synthesis methods have been particularly
+effective (73, 74). These techniques enable high-fidelity neural rendering learned from
+purely real-world data, while enabling 3D, multiview image queries.
+4.1.2.Choice of Modalities and Representations. For most robotic tasks, it is possible to
+definedifferentobservationandactionspaces. Thischoiceofinterfacedefinesthepotential
+behaviors of the resulting system and can have strong implications on the reality gap (25,
+75, 76, 77, 78, 79, 80, 81).
+• ChoiceofModalities. Differentsensorsandactuatorscanyielddifferentgaps(82,83).
+Forinstance,usingdepthobservationn,orpointcloudsyieldsasmallerrealitygapthan
+images, and this approach is a common practice in the field (84, 75, 79, 80, 81). RGB
+www.annualreviews.org • TheRealityGapinRobotics 13
+
+--- Page Suivante ---
+
+images are hard to render photo-realistically, and often include artifacts and features
+Choice of
+that are very complex to model, such as the ones discussed in section 3.2.1.
+modalities &
+representations • State Representations. Similar to sensor modalities, the choice of state representa-
+affectsthe tions can strongly influence the reality gap (85, 86, 87, 88, 89). While using inferred
+perception gap. depthmapscanbeapopularchoiceintheliterature,otherrepresentationssuchaskey-
+pointdetections(87),visualfeaturetracking(90)orfoundationmodelembeddings(89)
+have also been proved to be good abstractions for reducing the sensory reality gap.
+Choice of action • Action Representations. The action space plays a crucial role in reducing the sim-
+representations to-real gap as demonstrated across robotics domains including navigation (91), locomo-
+affectstheactuation
+tion (92), and manipulation (25). For instance, for manipulation, previous studies have
+gap.
+showntheadvantagesofusing jointvelocitycontrolspacesforsim-to-realtransfer(25).
+4.1.3.Design Choices. Another important factor to reduce the reality gap is the system
+design and implementations. When designing a robotic system, multiple choices need to
+be made depending on the task requirements. This design, however, strongly influences
+the transferability of any behavior from simulation to the real world. Hence, it is quite
+important to consider the reality gap when designing the system, including its hardware,
+the controller’s implementations, constraints, and even the software stack.
+• Low-levelControllerImprovements. Whilehigh-levelpolicylearningtypicallytakes
+Low-level placeinsimulation,thefinalinteractionwiththerealworldisgovernedbylow-levelcon-
+controller trollers. Improvingtherobustnessandfidelityofthesecontrollersisthereforecrucialfor
+improvementscan overcoming the reality gap. One effective approach is to increase the control frequency
+reducetheactuation
+or bandwidth, allowing the system to respond more quickly to discrepancies and better
+gap.
+handle latency, noise, or unmodeled dynamics. For example, Zhang et al. (93) show
+that high-frequency impedance controllers can significantly improve sim-to-real trans-
+fer in manipulation tasks by stabilizing behavior under real-world disturbances. Such
+Software stack improvements on the low-level controllers can make the system more resilient to imper-
+alignmentcan fections in both the simulator and the real-world environment.
+reducebothreality • Software Stack Alignment. Beyondphysicalrealism,achievingsuccessfulsim-to-real
+gapandperformance
+transferalsorequiresconsistencyinthesoftwarestackbetweensimulationandreal-world
+gap.
+deployment. Evensmalldiscrepancies,suchasmismatchedcontrolrates,missingfilters,
+orunmodeledsafetychecks,canleadtounexpectedbehavioranddegradedperformance.
+Replicating consistent software components ensures that the policy is exposed to the
+same control dynamics during both training and real-world execution.
+Hardware design • Hardware Design. The design of the robot itself can also significantly influence the
+canaffecttheof sim-to-realgap. Hardwarechoicesthatsimplifymodelingorimprovephysicalrobustness
+dynamics gaps and
+canmakeiteasiertosimulatethesystemaccuratelyandimproverobustnesstodiscrep-
+theactuation gap.
+ancies. For example, using actuators with low latency and consistent torque output,
+or sensors with well-characterized noise profiles, can improve the fidelity of simulation
+andreducetheneedforcomplexsystemidentification. Additionally,hardwarewithpas-
+sive stability, compliant actuators, or simple kinematics can better tolerate control and
+perceptionerrors,whichcouldfurtherimprovethechancesofsuccessfultransfer. These
+principlesalignwithrecentadvancesinreal-worldimitationlearning,suchas(94),where
+careful co-design of hardware and learning pipelines enables effective policy learning.
+• Constraining System Dynamics. Anotherpracticalstrategyforreducingthereality
+gapistoinitiallylimittherobot’sdynamiccomplexityduringdeployment. Byoperating
+at lower speeds or avoiding aggressive maneuvers, the system becomes less sensitive to
+14 Aljalboutetal.
+
+--- Page Suivante ---
+
+modelinginaccuracies,actuatordelays,andperceptionnoise. Suchnon-dynamicbehav-
+Constraining
+iorsreducetheburdenonboththecontrollerandsimulator,improvingrobustnessunder
+system dynamics
+real-worlduncertainties. Forexample,Chenetal.(95)showthatconstrainingmotionto canreducethe
+quasi-staticregimescanleadtomorereliablesim-to-realtransferinmanipulationtasks. dynamics gapand
+theperception gap.
+4.2.Overcoming the Gap
+In the previous section, we discussed different paradigms to reduce the reality gap with
+different measures to bring the simulated and real-world environments closer together. An
+orthogonal family of methods assumes a fixed reality gap and attempts to overcome it by
+either making the policies agnostic to the choice of models and parameters or making the
+policy capable of detecting and reacting to different physical and systematic parameters.
+4.2.1.Domain Generalization and Adaptation. One of the most common approaches to
+overcome the reality gap is to expose the policy to a large variation of the system and
+dynamics parameters during training. As a result, the policy should be robust to different
+instantiations of these parameters, including the ones representing the real world.
+• Domain randomization (DR).Amongthemostpopularandwidely-usedapproaches
+to achieve this is DR. In DR, we train the policy in simulation using a broad distribu- Domain
+tion of simulated environments spanning different simulation parameters such as visual randomizationcan
+reduceallkindsof
+(more generally sensory) parameters like texture and lighting, observation and action
+reality gaps.
+noise,physicsparameterssuchasmassandinertia,systemdelays,objectproperties,and
+others. Consequently, the policy can learn a behavior that is applicable to such a large
+distribution of environments. DR mitigates the need for painstaking system identifica-
+tionandsimulatorcalibration(96). OneoftheearliestapplicationsofDRwastodrone
+navigation(11). Theparadigmhasgainedsignificantpopularityeversinceandhasbeen
+used to produce some of the most impressive robotics milestones, including dexterous
+manipulation (3), quadruped locomotion (4, 44), and champion-level drone racing (8).
+TofurtherimprovetraditionalDR,multipleapproacheshavebeenproposedtoautomate
+the choice of parameter distributions. For instance, Akkaya et al. (3) proposed auto-
+maticDRtoprogressivelyexpandtherangeofrandomdynamicsasthepolicybecomes
+successful. Tibonietal.(97)proposetouseanofflinereal-worlddatasettoestimatethe
+optimalDRrangesallowingtocompensateforunmodeledeffects. Similarly,Chebotaret
+al.(48)proposedusingreal-worlddatatoinfersimulationparametersforonlinetraining.
+The lowest-return dynamics from an ensemble effectively acts like adversarial samples
+for training. For a comprehensive review of DR methods, see (98). Adversarial
+• AdversarialTrainingsystematicallygeneratesdatatoenforcerobustnessandenhance trainingcanreduce
+model resilience beyond standard training. Pinto et al. (99) propose robust adversarial theactuation gap,
+perception gap,and
+reinforcementlearning,whereinadditiontothemainagent,anadversaryagentistrained
+dynamics gap.
+to apply disturbances to destabilize the main agent’s policy.
+• Meta Learningisanotherparadigmfordomainadaptation. Forinstance,in(100),the
+Meta learning
+authorsproposetousemeta-learningforpolicylearninginsimulationunderalargedis-
+adaptsthe
+tributionofsimulationparameters,allowingthepolicytointernallyrecognizevariations simulation
+of parameters and act according to its internal understanding. This family of methods parameterstoreduce
+leveragesmetareinforcementlearningtoadaptthepolicytovariationsofsimulationpa- thereality gap.
+rameters (101). While domain-randomization-based methods aim to learn a policy that
+can generalize to a large distribution of simulation parameters, methods such as meta-
+www.annualreviews.org • TheRealityGapinRobotics 15
+
+--- Page Suivante ---
+
+learning aim to adapt the policy as inspired by adaptive control methods (102, 103).
+One famous example of such methods beyond explicit meta learning, is rapid motor
+adaptation (RMA) (104). RMA learns an encoder that infers latent representations
+of the environment’s dynamics using privileged information in simulation. Given such
+an encoder, the policy can adapt its actions based on the inferred latent environment
+representations.
+• DomainAdaptationcansimilarlybeusedtoenhancetheadaptivenessofthepolicyto
+Domain variationsinenvironmentvariablesanddynamics(10,105,48,106). Comparedtometa
+adaptationcan learningandRMA,domainadaptationmethodsforsim-to-realtransferaimtomakethe
+reducethe
+policy more robust to the sim-to-real distribution shift. In other words, the main focus
+perception gap.
+of these methods is to enable observation adaptation in the policy and not necessarily
+adaptation to the changing dynamics.
+4.2.2.Data Selection and Exploration. Another important category of methods to over-
+come the reality gap is to carefully select and curate the training data and exploration
+strategies used in simulation. These methods focus on generating training data that most
+closely resemble the target real-world data or data from worst-case behaviors.
+• Incorporating real-world data to inform simulation training can greatly improve
+transfer. For instance, Niu et al. (107) proposed integrating limited real-world data
+Real world data with simulated experiences, while adaptively penalizing learning from simulated state-
+canbeusedto action pairs that exhibit significant discrepancies from real-world dynamics. Torne et
+reduceallkindsof
+al. (58) proposed a real-to-sim-to-real pipeline that first uses real-world data to train
+reality gaps.
+a vision-based policy that is later used to train a teacher policy in simulation. The
+teacheristhenusedtotrainavision-basedstudentpolicyinsimulationusingamixture
+of RL with simulated rollouts and behavior cloning using real-world data. This work
+demonstrated the benefits of co-training with real-world data versus training with only
+simulationdata. Ankileetal.(108)proposedaresidualRLschemetocombinereal-world
+andsimulateddataforvision-basedmanipulation. Maddukurietal.(109)demonstrated
+the effectiveness of co-training vision-based manipulation policies with simulation and
+real-world data. Co-training has also been shown to be beneficial for training robotic
+foundation models (110, 111).
+Sim-to-real-driven • Sim-to-real-driven exploration methods aim to explore the state-action space in
+explorationcan waysthatexposethepolicytointeractionslikelytoenhanceitstransferfromsimulation
+reducethe totherealworld. Forinstance,Liangetal.(112)proposedlearningexplorationpolicies
+perception gap, that are executed in the real world to identify critical system parameters. Given this
+dynamics gap,and
+improved model of the environment, they perform trajectory optimization to solve the
+actuation gap.
+downstream tasks in the real-world environment. Another approach is to leverage the
+simulationtolearnexplorationpoliciesthataretransferredtotherealworldforthesole
+purpose of learning and fine-tuning policies with real-world interactions (113, 46).
+4.2.3.Policy Architecture and Regularization. In addition to the data a policy is exposed
+to at training time, the policy’s architecture and constraints can play a crucial role in the
+transfertotherealworld. Inthissection,wedescribedifferentwaystostructurethepolicy
+and regularize it in a way that helps sim-to-real transfer.
+• Modularityofthesystemandpolicyarchitecturehasalsobeenshowntobebeneficial
+for sim-to-real transfer. Clavera et al. (114) proposed decomposing the system into
+16 Aljalboutetal.
+
+--- Page Suivante ---
+
+distinct modules, where vision and low-level control are managed independently from
+Modularitycan
+the policy. Their work demonstrated robust transfer of pushing policies. Mueller et
+reducethe
+al. (115) proposed a similar architecture for autonomous driving. Similarly, Zhang et perception gap,
+al.(116)proposelearningperceptionandcontrolnetworkswithdifferentlossesandfine- dynamics gap,and
+tuning the end-to-end policy network combining perception and control modules using actuation gap.
+aweightedloss. Julianetal.(117)proposedahierarchicalarchitecture,learningseveral
+low-level skills and a high-level policy coordinating them. By decomposing the policy
+intomultipleskills,theyreducetheamountofdataneededtogeneralizetoanewdomain
+and environment, such as the real world.
+• Privilegedinformationisavailabletotheagentattrainingtimeinsimulationbutnot
+duringdeploymentintherealworld. Suchinformationcanboostlearningefficiencyand
+Privileged
+enable larger-scale training in simulation (118, 119, 120). One popular example of such information
+method is the previously discussed RMA algorithm (104). RMA uses privileged infor- addressesthe
+mationtotrainalatentspaceonlineaspartofasystemidentificationmodule. Pintoet perception gap,
+dynamics gap,and
+al.(121)proposeanasymmetricactor-criticarchitecture,wherethecriticisconditioned
+actuation gap.
+on privileged information, while the actor policy is conditioned on true observations.
+Radosavovicetal.(7)trainedateacherpolicyforhumanoidlocomotionwithprivileged
+information and then distilled the teacher behavior into a student agent conditioned on
+the observations. To overcome student-teacher asymmetry, they propose a loss combin-
+ingRLandteacherdistillation,similartotheapproachpreviouslyproposedin(122)for
+blockpicking. ThemaindifferencebetweenthesetwomethodsishowtheycombineRL
+andimitationlearninglossesusingeitherfixedcoefficients(122)oraschedule(7). More
+recently, Krinner et al. (123) proposed using privileged state information in state-space
+worldmodelstoimprovethetrainingefficiencyofamodel-basedRLagent. Theproposed
+approach was successfully demonstrated on vision-based high-speed drone racing.
+• Representation learning leverages self-supervised objectives to learn representations
+thatcanbebettersuitedforpolicysearchandsim-to-realtransfer. Bycarefullydesign-
+ingtherepresentationlearningloss,wecanenforcethelearnedrepresentationproperties
+thataredesirabletoovercomecertainsourcesoftherealitygap. Whiledomainrandom- Representation
+ization and adaptation methods improve domain robustness via exposing the policy to learningcanhelp
+reducethe
+a wider set of data with the hope of out-of-distribution generalization, representation
+perception gap.
+learningmethodsleveragelossfunctionstolearnrobustfeatures. Forinstance,Tanwani
+etal.(124)proposedanapproachthatleveragesreal-worlddatatoalignthedistributions
+of the state representations in simulation and the real world, making the features more
+robust to the corresponding domain shift. Yoneda et al. (125) propose to use adversar-
+ial training to adapt the observation encoder learned in simulation once it encounters
+real-worldsamples. Thisprocessiscombinedwithadynamicsconsistencylosstoensure
+that latent transitions in the target domain remain faithful to the dynamics learned in
+the source domain, thereby preserving policy effectiveness despite visual discrepancies.
+Xingetal.(126)proposedacontrastivelearningapproachtolearnbackground-agnostic
+andtask-relevantrepresentations,ensuringeffectivefeaturelearningforthedownstream
+task while ignoring irrelevant, noisy background information.
+• Policy regularization can change the behavior of the policy in a manner that helps
+overcometherealitygapforsim-to-realtransfer. Regularizationtypicallyoccursthrough Policy
+loss functions or elaborate reward designs for RL agents. For instance, it has become a regularizationcan
+reducethedynamics
+commonpracticetopenalizethemagnitudeofactionsandconsecutiveactiondifferences
+gap.
+through reward terms or penalties (44, 21, 127, 128, 25). Some works even penalize
+www.annualreviews.org • TheRealityGapinRobotics 17
+
+--- Page Suivante ---
+
+themagnitudesofexplicitmeasuressuchasvelocityandaccelerations(128,44),aswell
+as power loss (129). While all of these works rely on RL penalties to enforce desirable
+propertiessuchassmoothnessonthelearnedpolicies,suchpoliciescanalsobeimposed
+using loss functions. For instance, Mysore et al. (130) introduced smoothness losses to
+thepolicytrainingalgorithmtominimizethetemporalandspatialLipschitzconstraints
+of a quadrotor control policy function. Their work demonstrated a clear advantage
+of loss function regularization over reward engineering. Chen et al. (131) presented
+similar findings for humanoids locomotion. While these methods enforce properties on
+the policy to overcome the reality gap, Niu et al. (107) proposed incorporating real-
+world data during training to penalize the action-value function in simulation when
+interactionsexhibitsignificantdiscrepanciesindynamicsbetweenthesimulatedandreal
+environments.
+5.Evaluation Metrics
+Researchonsim-to-realtransferhasleveragedvariousmetricsforevaluation. Inthissection,
+we survey such metrics while making a clear distinction between metrics evaluating the
+reality gap itself and metrics that evaluate the sim-to-real transfer performance.
+5.1.Assessing the Reality Gap
+Awell-designedevaluationframeworkforassessingthegapbetweensimulationandthereal
+world is critical for reducing the reality gap, as well as for understanding, diagnosing, and
+ultimately improving the transferability of learned policies.
+• Sim-to-real Correlation Coefficient. One key question in sim-to-real transfer is
+whetherperformanceimprovementobservedinsimulationreliablyleadstobetterperfor-
+manceintherealworld. Toaddressthis,Kadian,etal.(132)introducedthesim-to-real
+Correlation Coefficient (SRCC). SRCC is defined as the Pearson correlation coefficient
+between the performance metrics of the agents in simulation and the real world,
+PN (x −x¯)(y −y¯)
+SRCC= i=1 i i , 6.
+q q
+PN (x −x¯)2 PN (y −y¯)2
+i=1 i i=1 i
+where x and y denote the the task evaluation performance (e.g., success rates) of the
+i i
+i-thpolicyinsimulationandtherealworld,respectively,andx¯,y¯aretheircorresponding
+means. A coefficient close to +1 indicates a strong positive correlation, suggesting that
+the simulation performance is a good predictor of real-world performance. In contrast,
+valuesnear0implypoorcorrelation,meaningsimulationresultsofferlittleguidancefor
+real-worldevaluation. Importantly,asimulatorwithhighaveragereal-worldperformance
+but low SRCC is still problematic. Without a reliable correlation, improvements in
+simulation may have unpredictable effects in the real world, making it difficult to make
+informeddesigndecisions. Mostofthechangesneedtobevalidatedonaphysicalrobot,
+which defeats the purpose of using simulation to accelerate development.
+• OfflineReplayError. Whendirectreal-worldpolicydeploymentisnotfeasible,offline
+replay error provides a practical alternative for evaluating sim-to-real transfer. This
+situation often arises during early prototyping stages or when deployment is limited
+by cost, safety concerns, or hardware availability. Offline replay error compares state
+18 Aljalboutetal.
+
+--- Page Suivante ---
+
+trajectories between a real-world trajectory and the equivalent simulation trajectory
+when replaying the real-world actions in an open-loop fashion (25). Formally, given a
+trajectory of real-world policy rollout states {sreal} and corresponding actions {a }, the
+t t
+offline replay error is defined as
+1 X T
+E = ∥ssim−sreal∥2, 7.
+replay T t t
+t=1
+where T is the length of the trajectory, and ssim is obtained by rolling out the real-
+t
+world actions in an open-loop fashion in simulation. This metric is appealing due to
+its simplicity and low cost: no real-time interaction is required, and evaluation can be
+doneofflineusingloggeddata. Itprovidesaquickdiagnosticofhowwellthesimulation
+representsthetargetreal-worldenvironmentunderthedistributioninducedbythepolicy.
+A policy having a high offline replay error is a strong indicator of a large reality gap.
+• Visual Fidelity Analysis. Assessing the perceptual domain gap between simulated
+and real-world environments is particularly relevant for visuomotor policies that map
+visualobservationsdirectlytocontrolcommands,aswellasvisualstaterepresentations
+methods. Toquantifythevisualsimilarity,avarietyofmetricshavebeenproposedthat
+operate at either the pixel level or in the space of learned image embeddings. These in-
+cludebothdistribution-levelmetrics,whichassesstheglobalcharacteristicsofimagesets,
+and single-image metrics, which compare individual simulated images to corresponding
+real ones (133). For distribution-level evaluation, commonly used metrics include In-
+ception Score (IS) (134), Fr´echet Inception Distance (FID) (135), and Kernel Inception
+Distance (KID) (136), TSNE dimensionality reduction (137, 138, 126), all of which op-
+erate on feature representations extracted from pretrained networks. For single-image
+evaluation, metrics such as the Structural Similarity Index (SSIM) and Peak Signal-to-
+Noise Ratio (PSNR) (134), Instance Performance Difference (IPD) (139) are used to
+measure differences in luminance, contrast, and structural details.
+5.2.Assessing Sim-to-Real Transfer
+Whileevaluatingtherealitygapisveryvaluabletoanalyzethelimitationsofthesimulation
+and further improve it, metrics that evaluate the sim-to-real transfer performance under a
+fixed reality gap are also necessary. This category includes metrics such as success rate,
+cumulative reward (in reinforcement learning), and task-specific indicators tailored to dif-
+ferent domains. In this section, we will discuss in detail the evaluation metrics commonly
+used to quantify sim-to-real transfer performance.
+• Success ratemeasurestheproportionoftrialsinwhichapolicysuccessfullycompletes
+the intended task, written as Success Rate= Nsuccess. It is widely used as a simple and
+reliable indicator of sim-to-real transfer effectiv N entoetasls. This measure is most informative
+when proper randomization is performed on all involved variables, such as the initial
+environmentstateandsimulationseeds,amongmanyothers. Successratesarecommonly
+reportedindiversedomains,includingmanipulation(140,23,26,14,77,141,142,143),
+navigation (144, 145, 132, 146), autonomous racing (8, 147), legged locomotion (104,
+44, 104). High task success rates in the real world often indicate that a policy has
+successfully transferred key competencies learned in simulation. However, such metrics
+are often binary or aggregate and do not reveal where or why the transfer might have
+www.annualreviews.org • TheRealityGapinRobotics 19
+
+--- Page Suivante ---
+
+failed. For example, two policies with the same success rate might differ significantly in
+robustness, and some of the failure modes can be critical in real-world deployment.
+• Cumulative reward. Forpolicieslearnedusingreinforcement learning (RL)orwitha
+predefinedrewardstructure,thecumulativerewardmeasureshowwellapolicyachieves
+long-term objectives by summing the reward signal over time: R = PT r , where r
+t=0 t t
+is the reward at timestep t and T is the total duration of the episode. Unlike binary
+successmetrics,itcancapturetheprogressandefficiencyofthepolicyrollouts,offering
+a more fine-grained view of sim-to-real performance. However, its interpretability de-
+pendsonconsistentandwell-designedrewardfunctionsacrosssimulationandreal-world
+domains (148, 113, 48). This can make the comparison of different sim-to-real tech-
+niques under varying RL configurations difficult, especially when reward formulations
+differ across tasks or platforms.
+• Task-specific metrics. In addition to general success or reward-based metrics, most
+ofthesuccessfulsim-to-realstudiesevaluateperformanceusingtask-specificcriteriatai-
+lored to the target domain. For example, navigation tasks may use path efficiency or
+time-to-goal(145),whilemanipulationtaskstypicallyuseobject-centricmetrics,suchas
+object-distance-to-goalforobjectpushing(25). Thesemetricsofferfine-grainedinsights
+intopolicybehaviorandfailuremodesthatarenotcapturedbysuccessratealone. How-
+ever, for real-world deployment, it will be challenging to provide standardization across
+benchmarks, which can hinder fair comparison between methods.
+6.Discussion and Open Problems
+Despite the reality gap and the challenges it creates, sim-to-real transfer has been a very
+successfulandpopularparadigminrobotics. However,itisunclearwhethersimulationwill
+remain a major tool for robotics development as many challenges persist. We believe that
+thereisstilluntappedpotentialforsimulationinroboticsanddiscusssomeofthechallenges
+and opportunities next.
+6.1.Wrong Models, Better Controllers
+Asbrieflymentionedinsection2.3,itismoreimportantinpracticetoreducethesim-to-real
+performance gap than to reduce the reality gap. This motivates the question of whether
+accurate physics modeling is needed to perform reliable model-based control. Model-based
+approaches,suchasmodel-basedRLandmodelpredictivecontrol(MPC)tendtobemore
+data efficient than model-free RL and thus leveraging them in sim-to-real contexts can
+decreasethescaleofdatagenerationnecessaryforsufficientlyreliablecontrol. Particularly,
+researchers have examined how training for model-based RL can be adapted to not focus
+on accurately capturing the underlying physics, but instead learning a dynamics model
+that improves control performance (149, 150). Results show that focusing on learning a
+model accurately near high-return areas outperforms the alternative of trying to learn a
+model with uniform accuracy across the state-action space (149). Guzman et al. (150)
+examine the use of Bayesian optimization for MPC, where they sample different physical
+parameters in simulation for tuning the MPC controller. Results show that optimizing for
+controlperformanceoutperformsplanningwiththemostlikelymodelestimate. Assuch,an
+openquestionremainsastohowarobotcanmostefficientlyuseasimulatorwithincorrect
+parametrization to learn either a policy or stochastic world model for use in generating
+20 Aljalboutetal.
+
+--- Page Suivante ---
+
+robust, real-world performance.
+6.2.Differentiable Simulators.
+Differentiablesimulatorsofferthecomputationofgradientsofquantitiesinvolvedinthesim-
+ulationwhichallowsthemtobeintegratedingradient-basedoptimizationworkflows(151).
+While traditional simulators, such as MuJoCo (19) and Bullet (43) can often be useful in
+such applications by leveraging finite differences, a differentiable simulator typically offers
+fastand analyticallycorrectgradients. Themethods tocomputesuchderivativestypically
+fallintotwocategories: automaticdifferentiationleveragingthechainruleofdifferentiation,
+and manual computed analytical gradients. The most common form of Autodiff, reverse-
+mode automatic differentiation, accumulates gradients for the inputs from each operation,
+given the output gradients. Autodiff can be realized through a tape to record the opera-
+tions of the computation path which allows the (reverse) playback in the backward pass.
+Frameworks,suchasNVIDIAWarp(152),Taichi(153),JAX(154),andPyTorch’scompi-
+lation option (155) allow code to be generated for the backward pass, which is critical for
+performance. As such, an open question remains as to how to best leverage differentiable
+simulation and augment it with learning-based dynamics model.
+6.3.Video and World Models
+Video models are primarily designed to process, generate, or predict sequences of visual
+frames. Their core objective is to model temporal dynamics and evolving visual content
+within video data. These models address a wide range of tasks, including future frame
+prediction based on observed sequences and conditional video generation from text, ac-
+tions, or other modalities (156). World models pursue a broader goal: learning internal
+representationsofanenvironmentthatenablesimulationandpredictionoffuturestatesin
+response to agent actions or external events (157, 158, 159). These models seek to encode
+thecausalstructureoftheworldtosupportplanning,imagination,andcounterfactualrea-
+soning (160). Despite recent progress, key challenges remain with significant opportunities
+for future research. Video models, while effective at generating dynamic visual content,
+struggle with maintaining temporal consistency, physical plausibility, fine-grained control-
+lability, and computational efficiency—issues that hinder their reliability in robotics and
+simulation. Worldmodelsofferapromisingalternativetowhite-boxsimulatorsandcanbe
+learnedusingreal-worlddata,potentiallycreatingasmallerrealitygap. However,theyface
+problems such as compounding errors in long-term predictions, poor generalization to new
+environments, difficulty balancing abstraction with realism, and high data requirements.
+Addressing these challenges will require innovations in model architecture, integration of
+physical priors, and improved training strategies. In future iterations, the paradigms of
+worldmodelingandsimulationmaynotbesodistinct,withsimulatorsnaturallyproviding
+data to bootstrap world models for deployment in reality.
+6.4.Simulation-Based Inference
+Simulation-based inference (161) is a statistical technique to approximate the posterior
+distribution of simulation parameters θ. Given a prior distribution p(θ), simulation dy-
+namics model T (s |s ,a ), a set of simulation observations {ss}S and a set of real
+s t+1 t t i i=1
+state observations {sr}R , the posterior can be computed following the Bayes’ rule as
+i i=1
+www.annualreviews.org • TheRealityGapinRobotics 21
+
+--- Page Suivante ---
+
+p(θ|{sr}R ,{ss}S )∝p({sr}R |θ)p(θ). The main challenge is that the likelihood term is
+i i=1 j j=1 i i=1
+generally intractable. If we consider simulation as a generative process, ss = g(P ,θ),
+s
+where ss are simulated states or observations, the likelihood term can be defined as
+p({sr}R |θ) = R p({sr}R ,ss|θ)dss. To compute this explicitly would require integrat-
+i i=1 i i=1
+ingoverallpossibletrajectoriesthesimulatorcouldgenerateforaspecificparametrization
+θ. This is not feasible for the majority of robotics simulators that involve complex physics
+models (including contact models), observation models, and numerical solvers. To address
+thisissue,approximateinferencemethodshavebeenproposedbasedonMonteCarlotech-
+niques such as Approximate Bayesian Computation (162), and variational inference (163).
+Also, note that computing the posterior is an ill-posed inverse problem, as there are possi-
+blymanysimulationparametersthatcangeneratethesametrajectories. Forexample,ina
+pushingtaskwhereamanipulatorpushesablockonatable,theresistanceofthemotioncan
+beattributedtohighermass, higherfriction, orboth. Thisleadstoposteriordistributions
+thatarehighlymultimodal. Toaccountforgenericposteriorsandsidesteptheapproxima-
+tion of the likelihood term directly, recent works in robotics have used techniques where a
+neuralnetworkistrainedtodirectlyoutputtheposteriordistributionp(θ|{sr}R ,{ss}S ).
+i i=1 j j=1
+This is known as neural posterior estimation (164, 165) and has been used in robotics
+recently(166,167,168,169,170,171,172). Theposteriorcanthenbeusedastherandom-
+ization distribution for domain randomization. For a review of simulation-based inference
+methodsappliedtodomainrandomization,see(98). Webelievesimulation-basedinference
+methods will continue to be a popular research topic in robotics.
+6.5.Simulation for Large Robotics Models
+In recent years, there have been substantial efforts to collect real-world data to train large
+models for robotics with techniques such as imitation learning (173, 174, 158). However,
+realistically,real-worlddatacollectionofaction-labeleddatasetsislimitedbyseveralfactors
+such as human efforts and hardware resources. Simulation represents a great opportunity
+to augment such efforts with massive-scale synthetic data generation. Many recent works
+exploredthisavenueandproposednovelpipelinestoprocedurallygeneratesimulateddata
+based on real-world demonstrations (175, 176). As with RL, simulated data would need
+to have a small reality gap to be valuable in real-world deployments. An open question
+is whether the methods and assumptions needed to reduce these gaps would themselves
+be limiting factors to the scale of data that can be collected in simulation (under these
+assumptions and using these methods).
+Another recent trend is to leverage simulation to evaluate real-world policies in a sys-
+tematic and reproducible manner (177, 178). In this context, a proper calibration of the
+realitygapiscrucialforsimulationtobeagoodproxyfortherealworld. Whilemethodsto
+reduce this gap are very similar to the ones used for sim-to-real transfer, an open question
+ishowtoovercometherealitygapforthespecificdownstreampurposeofmodelevaluations
+such that the performance of a policy in simulation matches the performance in the real
+environment.
+7.Conclusion
+This survey is an attempt at dissecting the very complex yet very important problem of
+the reality gap in robotics. We discussed the sources of these gaps, the problems they
+22 Aljalboutetal.
+
+--- Page Suivante ---
+
+create and solutions to alleviate them, together with evaluation metrics and opportunities
+for future research. By better understanding the problem, we can more clearly situate
+ourselves as a community to face future research challenges. Leveraging simulation to the
+best of our capabilities will enable a cost-effective alternative for the development of the
+future generation of robotics systems.
+DISCLOSURE STATEMENT
+The authors are not aware of any affiliations, memberships, funding, or financial holdings
+that might be perceived as affecting the objectivity of this review.
+AUTHOR CONTRIBUTIONS
+EA and FR defined the structure of the survey and its focus. EA wrote the abstract,
+sections 1, 4, and 7 and contributed subsections to sections 2, 3, and 6. He also revised
+and updated many paragraphs throughout the text. EA and JX made the illustrations.
+JX wrote sections 3.2, section 5, and many paragraphs throughout the text. AR wrote
+most of section 2, section 3.1, and section 3.3. IA wrote section 6.3. CG provided general
+comments and suggestions and updated section 1. EH wrote section 6.2. AG contributed
+to different parts of section 4. TH wrote section 6.1. YN contributed to section 4.1. DF
+and DS provided feedback, corrections and suggestions on the content of the article. FR
+conceptualizedtheworkwithEA,wrotesection6.4,andrevisedandupdatedseveralparts
+of the article.
+ACKNOWLEDGMENTS
+ThisworkwassupportedbytheEuropeanResearchCouncil(ERC)undergrantagreement
+No. 864042 (AGILEFLIGHT).
+LITERATURE CITED
+1. KirillovA,MintunE,RaviN,MaoH,RollandC,etal.2023.Segmentanything.InProceedings
+of the IEEE/CVF international conference on computer vision,pp.4015–4026
+2. AchiamJ,AdlerS,AgarwalS,AhmadL,AkkayaI,etal.2023.Gpt-4technicalreport.arXiv
+preprint arXiv:2303.08774
+3. Akkaya I, Andrychowicz M, Chociej M, Litwin M, McGrew B, et al. 2019. Solving rubik’s
+cubewitharobothand.arXiv preprint arXiv:1910.07113
+4. TanJ,ZhangT,CoumansE,IscenA,BaiY,etal.2018.Sim-to-real: Learningagilelocomotion
+forquadrupedrobots.Robotics: Science and Systems XIV
+5. TangB,LinMA,AkinolaIA,HandaA,SukhatmeGS,etal.2023.IndustReal: Transferring
+Contact-RichAssemblyTasksfromSimulationtoReality.InProceedingsofRobotics: Science
+and Systems.Daegu,RepublicofKorea
+6. LeeJ,HwangboJ,WellhausenL,KoltunV,HutterM.2020.Learningquadrupedallocomotion
+overchallengingterrain.Science robotics 5(47):eabc5986
+7. RadosavovicI,XiaoT,ZhangB,DarrellT,MalikJ,SreenathK.2024.Real-worldhumanoid
+locomotionwithreinforcementlearning.Science Robotics 9(89):eadi9579
+8. KaufmannE,BauersfeldL,LoquercioA,Mu¨llerM,KoltunV,ScaramuzzaD.2023.Champion-
+leveldroneracingusingdeepreinforcementlearning.Nature 620(7976):982–987
+www.annualreviews.org • TheRealityGapinRobotics 23
+
+--- Page Suivante ---
+
+9. Muratore F, Gienger M, Peters J. 2019. Assessing transferability from simulation to reality
+forreinforcementlearning.IEEE transactions on pattern analysis and machine intelligence
+10. Rusu AA, Veˇcer´ık M, Roth¨orl T, Heess N, Pascanu R, Hadsell R. 2017. Sim-to-real robot
+learning from pixels with progressive nets.InCoRL,pp.262–270.PMLR
+11. Sadeghi F, Levine S. 2017. Cad2rl: Real single-image flight without a single real image.
+Robotics: Science and Systems
+12. Tobin J, Fong R, Ray A, Schneider J, Zaremba W, Abbeel P. 2017. Domain randomization
+for transferring deep neural networks from simulation to the real world. In 2017 IEEE/RSJ
+international conference on intelligent robots and systems (IROS),pp.23–30.IEEE
+13. Nagabandi A, Clavera I, Liu S, Fearing RS, Abbeel P, et al. 2018. Learning to Adapt in
+Dynamic, Real-World Environments through Meta-Reinforcement Learning.InInternational
+Conference on Learning Representations
+14. Andrychowicz OM, Baker B, Chociej M, Jozefowicz R, McGrew B, et al. 2020. Learning
+dexterousin-handmanipulation.The International Journal of Robotics Research 39(1):3–20
+15. ZhuangZ,FuZ,WangJ,AtkesonC,SchwertfegerS,etal.2023.RobotParkourLearning.In
+Conference on Robot Learning (CoRL)
+16. MittalM,YuC,YuQ,LiuJ,RudinN,etal.2023.Orbit: Aunifiedsimulationframeworkfor
+interactiverobotlearningenvironments.IEEE Robotics and Automation Letters 8(6)
+17. MakoviychukV,WawrzyniakL,GuoY,LuM,StoreyK,etal.2021.Isaacgym: Highperfor-
+mancegpu-basedphysicssimulationforrobotlearning.arXiv preprint arXiv:2108.10470
+18. Liang J, Makoviychuk V, Handa A, Chentanez N, Macklin M, Fox D. 2018. Gpu-accelerated
+robotic simulation for distributed reinforcement learning.InCoRL.PMLR
+19. Todorov E, Erez T, Tassa Y. 2012. Mujoco: A physics engine for model-based control.
+IEEE/RSJ IROS
+20. Rudin N, Hoeller D, Reist P, Hutter M. 2022. Learning to walk in minutes using massively
+parallel deep reinforcement learning.InConference on Robot Learning,pp.91–100.PMLR
+21. Song Y, Romero A, Mu¨ller M, Koltun V, Scaramuzza D. 2023. Reaching the limit
+in autonomous racing: Optimal control versus reinforcement learning. Science Robotics
+8(82):eadg1462
+22. ZhangM,MaY,MikiT,HutterM.2024.LearningtoOpenandTraverseDoorswithaLegged
+Manipulator.In8th Annual Conference on Robot Learning
+23. Fu Z, Cheng X, Pathak D. 2023. Deep whole-body control: learning a unified policy for ma-
+nipulation and locomotion.InConference on Robot Learning,pp.138–149.PMLR
+24. GrandiaR,KnoopE,HopkinsMA,WiedebachG,BishopJ,etal.2024.Design and Control
+of a Bipedal Robotic Character.InProceedings of Robotics: Science and Systems
+25. AljalboutE,FrankF,KarlM,vanderSmagtP.2024.Ontheroleoftheactionspaceinrobot
+manipulationlearningandsim-to-realtransfer.IEEE Robotics and Automation Letters 9(6)
+26. Alles M, Aljalbout E. 2022. Learning to centralize dual-arm assembly. Frontiers in Robotics
+and AI 9:830007
+27. D’AmbrosioDB,JaitlyN,SindhwaniV,OslundK,XuP,etal.2023.Robotic Table Tennis:
+A Case Study into a High Speed Learning System.InRobotics: Science and Systems
+28. NVIDIA. 2023. Isaac sim documentation. https://docs.omniverse.nvidia.com/isaacsim/
+latest/.Accessed: 2025-05-26
+29. DosovitskiyA,RosG,CodevillaF,LopezA,KoltunV.2017.CARLA:Anopenurbandriving
+simulator.InConference on robot learning,pp.1–16.PMLR
+30. ShahS,DeyD,LovettC,KapoorA.2018.Airsim: High-fidelityvisualandphysicalsimulation
+for autonomous vehicles. In Field and Service Robotics: Results of the 11th International
+Conference,pp.621–635.Springer
+31. SavvaM,KadianA,MaksymetsO,ZhaoY,WijmansE,etal.2019.Habitat: Aplatformfor
+embodied ai research.InIEEE/CVF international conference on computer vision
+32. KoenigN,HowardA.2004.DesignanduseparadigmsforGazebo,anopen-sourcemulti-robot
+24 Aljalboutetal.
+
+--- Page Suivante ---
+
+simulator.InIEEE/RSJ IROS
+33. Catmull EE. 1974. A subdivision algorithm for computer display of curved surfaces. The
+UniversityofUtah
+34. TremblayJea.2018.Training deep networks with synthetic data: Bridging the reality gap by
+domain randomization.InCVPR Workshops
+35. Nguyen CV, Izadi S, Lovell D. 2012. Modeling kinect sensor noise for improved 3d recon-
+struction and tracking. In 2012 second international conference on 3D imaging, modeling,
+processing, visualization & transmission,pp.524–530.IEEE
+36. HuangJ,ValentinJ,etal.2019.DeepFusion: Real-TimeDense3DReconstructionforMonoc-
+ular SLAM Using Single-View Depth and Gradient Predictions.InCVPR
+37. LaconteJ,DeschˆenesSP,Labussi`ereM,PomerleauF.2018.Lidarmeasurementbiasestimation
+viareturnwaveformmodellinginacontextof3dmapping.arXiv preprint arXiv:1810.01619
+38. Susperregi L, Sierra B, Castrillo´n M, Lorenzo J, Mart´ınez-Otzeta JM, Lazkano E. 2013. On
+the use of a low-cost thermal sensor to improve kinect people detection in a mobile robot.
+Sensors 13(11):14687–14713
+39. White J, Proakis JG. 2008. Digital Signal Processing: Principles, Algorithms, and Applica-
+tions.PrenticeHall
+40. Barshan B, Durrant-Whyte H. 1995. Noise characterization of an ultrasonic sensor. IEEE
+Transactions on Instrumentation and Measurement 44(3):764–768
+41. PengXB,CoumansE,ZhangT,LeeTWE,TanJ.2020.Learning Agile Robotic Locomotion
+Skills by Imitating Animals.InRobotics: Science and Systems (RSS)
+42. Arm P, Mittal M, Kolvenbach H, Hutter M. 2024. Pedipulate: Enabling manipulation skills
+using a quadruped robot’s leg. In 2024 IEEE International Conference on Robotics and Au-
+tomation (ICRA),pp.5717–5723.IEEE
+43. Coumans E, Bai Y. 2016–2021. Pybullet, a python module for physics simulation for games,
+roboticsandmachinelearning.http://pybullet.org
+44. Hwangbo J, Lee J, Dosovitskiy A, Bellicoso D, Tsounis V, et al. 2019. Learning agile and
+dynamicmotorskillsforleggedrobots.Science Robotics 4(26):eaau5872
+45. Golemo F, Taiga AA, Courville A, Oudeyer PY. 2018. Sim-to-real transfer with neural-
+augmented robot simulation.InConference on Robot Learning,pp.817–828.PMLR
+46. Memmel M, Wagenmaker A, Zhu C, Fox D, Gupta A. 2024. ASID: Active Exploration for
+System Identification in Robotic Manipulation. In The Twelfth International Conference on
+Learning Representations
+47. Farchy A, Barrett S, MacAlpine P, Stone P. 2013. Humanoid robots learning to walk faster:
+Fromtherealworldtosimulationandback.InProceedingsofthe2013internationalconference
+on Autonomous agents and multi-agent systems,pp.39–46
+48. Chebotar Y, Handa A, Makoviychuk V, Macklin M, Issac J, et al. 2019. Closing the sim-to-
+realloop: Adaptingsimulationrandomizationwithrealworldexperience.In2019International
+Conference on Robotics and Automation (ICRA),pp.8973–8979.IEEE
+49. Allevato AD, Schaertl Short E, Pryor M, Thomaz AL. 2020. Iterative residual tuning for
+systemidentificationandsim-to-realrobotlearning.Autonomous Robots 44(7):1167–1182
+50. Du Y, Watkins O, Darrell T, Abbeel P, Pathak D. 2021. Auto-tuned sim-to-real transfer. In
+2021 IEEE International Conference on Robotics and Automation (ICRA),pp.1290–1296
+51. Golemo F, Mart´ın-Mart´ın R, Pal C, Meger D. 2018. Sim-to-Real Transfer with Neural-
+Augmented Robot Simulation.InConference on Robot Learning (CoRL)
+52. Ajay A, Wu J, Fazeli N, Bauza M, Kaelbling LP, et al. 2018. Augmenting physical simula-
+tors with stochastic neural networks: Case study of planar pushing and bouncing. In 2018
+IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pp. 3066–
+3073.IEEE
+53. Gruenstein J, Chen T, Doshi N, Agrawal P. 2021. Residual model learning for microrobot
+control. In 2021 IEEE International Conference on Robotics and Automation (ICRA), pp.
+www.annualreviews.org • TheRealityGapinRobotics 25
+
+--- Page Suivante ---
+
+7219–7226.IEEE
+54. BauersfeldL,KaufmannE,FoehnP,SunS,ScaramuzzaD.2021.Neurobem: Hybridaerody-
+namicquadrotormodel.Robotics Science and Systems
+55. Gao J, Shi Y, Garg A. 2024. Sim-to-real of soft robots with learned residual physics. IEEE
+Robotics and Automation Letters (RA-L)
+56. Christiano P, Shah Z, Mordatch I, Schneider J, Blackwell T, et al. 2016. Transfer from
+simulation to real world through learning deep inverse dynamics model. arXiv preprint
+arXiv:1610.03518
+57. HannaJ,StoneP.2017.GroundedActionTransformationforRobotLearninginSimulation.
+InAAAI Conference on Artificial Intelligence
+58. TorneM,SimeonovA,LiZ,ChanA,ChenT,etal.2024.Reconcilingrealitythroughsimula-
+tion: Areal-to-sim-to-realapproachforrobustmanipulation.arXivpreprintarXiv:2403.03949
+59. Torne M, Jain A, Yuan J, Macha V, Ankile L, et al. 2024. Robot learning with super-linear
+scaling
+60. DanP,KediaK,ChaoA,DuanEW,PaceMA,etal.2025.X-sim: Cross-embodimentlearning
+viareal-to-sim-to-real
+61. JiangH,HsuHY,ZhangK,YuHN,WangS,LiY.2025.Phystwin: Physics-informedrecon-
+structionandsimulationofdeformableobjectsfromvideos
+62. Patel S, Yin X, Huang W, Garg S, Nayyeri H, et al. 2025. A real-to-sim-to-real approach to
+roboticmanipulationwithvlm-generatediterativekeypointrewards.arXiv preprint
+63. HuangP,ZhangX,CaoZ,LiuS,XuM,etal.2023.WhatWentWrong? ClosingtheSim-to-
+Real Gap via Differentiable Causal Discovery.InConference on Robot Learning (CoRL)
+64. Pfaff N, Fu E, Binagia J, Isola P, Tedrake R. 2025. Scalable real2sim: Physics-aware asset
+generationviaroboticpick-and-placesetups
+65. ChenY,LiX,GuoS,NgXY,AngM.2022.Real2simorsim2real: Roboticsvisualinsertion
+usingdeepreinforcementlearningandreal2simpolicyadaptation
+66. Chen Z, Walsman A, Memmel M, Mo K, Fang A, et al. 2024. URDFormer: A Pipeline
+forConstructingArticulatedSimulationEnvironmentsfromReal-WorldImages.InRobotics:
+Science and Systems (RSS)
+67. Hsu CC, Jiang Z, Zhu Y. 2023. Ditto in the House: Building Articulation Models of Indoor
+Scenes through Interactive Perception. In IEEE International Conference on Robotics and
+Automation (ICRA).Codeavailableathttps://github.com/UT-Austin-RPL/HouseDitto
+68. ZhaoM,WengY,BauerD,SongS.2024.Real2code: Reconstructarticulatedobjectsviacode
+generation.arXiv preprint arXiv:2406.08474
+69. Scho¨nberger JL, Frahm JM. 2016. Structure-from-Motion Revisited. In Conference on Com-
+puter Vision and Pattern Recognition (CVPR)
+70. Scho¨nberger JL, Zheng E, Pollefeys M, Frahm JM. 2016. Pixelwise View Selection for Un-
+structured Multi-View Stereo.InEuropean Conference on Computer Vision (ECCV)
+71. Wang N, Zhang Y, Li Z, Fu Y, Liu W, Jiang YG. 2018. Pixel2mesh: Generating 3d mesh
+modelsfromsinglergbimages.InProceedingsoftheEuropeanconferenceoncomputervision
+72. LeL,XieJ,LiangW,WangHJ,YangY,etal.2025.Articulate-Anything: AutomaticModeling
+ofArticulatedObjectsviaaVision-LanguageFoundationModel.InInternationalConference
+on Learning Representations (ICLR).Poster
+73. Kerbl B, Kopanas G, Leimku¨hler T, Drettakis G. 2023. 3d gaussian splatting for real-time
+radiancefieldrendering.ACM Trans. Graph.42(4):139–1
+74. MildenhallB,SrinivasanPP,TancikM,BarronJT,RamamoorthiR,NgR.2021.Nerf: Rep-
+resentingscenesasneuralradiancefieldsforviewsynthesis.Communications of the ACM
+75. Mahler J, Liang J, Niyaz S, Laskey M, Doan R, et al. 2017. Dex-net 2.0: Deep learning to
+planrobustgraspswithsyntheticpointcloudsandanalyticgraspmetrics.Robotics: Science
+and Systems XIII
+76. Tai L, Paolo G, Liu M. 2017. Virtual-to-real deep reinforcement learning: Continuous con-
+26 Aljalboutetal.
+
+--- Page Suivante ---
+
+trol of mobile robots for mapless navigation.In2017 IEEE/RSJ international conference on
+intelligent robots and systems (IROS),pp.31–36.IEEE
+77. Ding Z, Tsai YY, Lee WW, Huang B. 2021. Sim-to-real transfer for robotic manipulation
+with tactile sensory. In 2021 IEEE/RSJ International Conference on Intelligent Robots and
+Systems (IROS),pp.6778–6785.IEEE
+78. Kollar T, Laskey M, Stone K, Thananjeyan B, Tjersland M. 2022. Simnet: Enabling robust
+unknown object manipulation from pure synthetic data via stereo. In Conference on Robot
+Learning,pp.938–948.PMLR
+79. MikiT,LeeJ,HwangboJ,WellhausenL,KoltunV,HutterM.2022.Learningrobustpercep-
+tivelocomotionforquadrupedalrobotsinthewild.Science robotics 7(62):eabk2822
+80. Agarwal A, Kumar A, Malik J, Pathak D. 2023. Legged locomotion in challenging terrains
+using egocentric vision.InConference on robot learning,pp.403–415.PMLR
+81. Zhu H, Wang Y, Huang D, Ye W, Ouyang W, He T. 2024. Point cloud matters: Rethinking
+theimpactofdifferentobservationspacesonrobotlearning.AdvancesinNeuralInformation
+Processing Systems 37:77799–77830
+82. Zhou B, Kr¨ahenbu¨hl P, Koltun V. 2019. Does computer vision matter for action? Science
+Robotics 4(30):eaaw6661
+83. ChenB,SaxA,LewisF,ArmeniI,SavareseS,etal.2021.RobustPoliciesviaMid-LevelVisual
+Representations: An Experimental Study in Manipulation and Navigation.InProceedings of
+the 2020 Conference on Robot Learning, ed. J Kober, F Ramos, C Tomlin, pp. 2328–2346,
+vol.155ofProceedings of Machine Learning Research,pp.2328–2346
+84. Loquercio A, Kaufmann E, Ranftl R, Mu¨ller M, Koltun V, Scaramuzza D. 2021. Learning
+high-speedflightinthewild.Science Robotics 6(59):eabg5810
+85. James S, Wohlhart P, Kalakrishnan M, Kalashnikov D, Irpan A, et al. 2019. Sim-To-Real
+via Sim-To-Sim: Data-Efficient Robotic Grasping via Randomized-To-Canonical Adaptation
+Networks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern
+Recognition (CVPR)
+86. SoJ,XieA,JungS,EdlundJ,ThakkerR,etal.2022.Sim-to-RealviaSim-to-Seg: End-to-end
+Off-road Autonomous Driving Without Real Data.InConference on Robot Learning
+87. ZhangY,ZhangZ,KeL,SrinivasaS,GuptaA.2024.ATK:AutomaticTask-drivenKeypoint
+selectionforPolicyTransferfromSimulationtoRealWorld.InCoRLWorkshoponLearning
+Robot Fine and Dexterous Manipulation: Perception and Control
+88. HoD,RaoK,XuZ,JangE,KhansariM,BaiY.2021.Retinagan: Anobject-awareapproach
+to sim-to-real transfer.In2021 IEEE International Conference on Robotics and Automation
+(ICRA),pp.10920–10926.IEEE
+89. SilwalS,YadavK,WuT,VakilJ,MajumdarA,etal.2024.What do we learn from a large-
+scalestudyofpre-trainedvisualrepresentationsinsimandrealenvironments? In2024IEEE
+International Conference on Robotics and Automation (ICRA),pp.17515–17521.IEEE
+90. KaufmannE,LoquercioA,RanftlR,Mu¨llerM,KoltunV,ScaramuzzaD.2020.Deep Drone
+Acrobatics.InProceedings of Robotics: Science and Systems.Corvalis,Oregon,USA
+91. KaufmannE,BauersfeldL,ScaramuzzaD.2022.Abenchmarkcomparisonoflearnedcontrol
+policiesforagilequadrotorflight.In2022InternationalConferenceonRoboticsandAutoma-
+tion (ICRA),pp.10504–10510.IEEE
+92. Kim D, Berseth G, Schwartz M, Park J. 2023. Torque-based deep reinforcement learning for
+task-and-robotagnosticlearningonbipedalrobotsusingsim-to-realtransfer.IEEE Robotics
+and Automation Letters 8(10):6251–6258
+93. Zhang X, Tomizuka M, Li H. 2024. Bridging the sim-to-real gap with dynamic compliance
+tuning for industrial insertion.In2024 IEEE International Conference on Robotics and Au-
+tomation (ICRA),pp.4356–4363.IEEE
+94. ChiC,XuZ,PanC,CousineauE,BurchfielB,etal.2024.Universalmanipulationinterface:
+In-the-wildrobotteachingwithoutin-the-wildrobots.arXiv preprint arXiv:2402.10329
+www.annualreviews.org • TheRealityGapinRobotics 27
+
+--- Page Suivante ---
+
+95. Chen T, He Z, Ciocarlie M. 2021. Hardware as Policy: Mechanical and Computational Co-
+Optimization using Deep Reinforcement Learning.InConference on Robot Learning
+96. PengXB,AndrychowiczM,ZarembaW,AbbeelP.2018.Sim-to-real transfer of robotic con-
+trol with dynamics randomization. In 2018 IEEE international conference on robotics and
+automation (ICRA),pp.3803–3810.IEEE
+97. TiboniG,ArndtK,KyrkiV.2023.Dropo: Sim-to-realtransferwithofflinedomainrandom-
+ization.Robotics and Autonomous Systems :104432
+98. Muratore F, Ramos F, Turk G, Yu W, Gienger M, Peters J. 2022. Robot learning from ran-
+domizedsimulations: Areview.Frontiers in Robotics and AI 9:799893
+99. PintoL,DavidsonJ,SukthankarR,GuptaA.2017.RobustAdversarialReinforcementLearn-
+ing.InProceedingsofthe34thInternationalConferenceonMachineLearning,ed.DPrecup,
+YWTeh,pp.2817–2826,vol.70ofProceedingsofMachineLearningResearch,pp.2817–2826
+100. ArndtK,HazaraM,GhadirzadehA,KyrkiV.2020.Metareinforcementlearningforsim-to-
+real domain adaptation. In 2020 IEEE international conference on robotics and automation
+(ICRA),pp.2725–2731.IEEE
+101. Ren AZ, Dai H, Burchfiel B, Majumdar A. 2023. AdaptSim: Task-Driven Simulation Adap-
+tation for Sim-to-Real Transfer.In7th Annual Conference on Robot Learning
+102. ˚Astr¨om KJ. 1995. Adaptive control. In Mathematical System Theory: The Influence of RE
+Kalman.Springer
+103. Sastry S, Isidori A. 1989. Adaptive control of linearizable systems. IEEE Transactions on
+Automatic Control 34(11):1123–1131
+104. Kumar A, Fu Z, Pathak D, Malik J. 2021. Rma: Rapid motor adaptation for legged robots.
+Robotics: Science and Systems
+105. Bousmalis K, Irpan A, Wohlhart P, Bai Y, Kelcey M, et al. 2018. Using simulation and
+domainadaptationtoimproveefficiencyofdeeproboticgrasping.In2018IEEEinternational
+conference on robotics and automation (ICRA),pp.4243–4250.IEEE
+106. Zhang F, Leitner J, Ge Z, Milford M, Corke P. 2019. Adversarial discriminative sim-to-real
+transferofvisuo-motorpolicies.The International Journal of Robotics Research 38
+107. NiuH,QiuY,LiM,ZhouG,HuJ,etal.2022.Whentotrustyoursimulator: Dynamics-aware
+hybrid offline-and-online reinforcement learning. Advances in Neural Information Processing
+Systems 35:36599–36612
+108. AnkileL,SimeonovA,ShenfeldI,TorneM,AgrawalP.2024.Fromimitationtorefinement–
+residualrlforpreciseassembly.arXiv preprint arXiv:2407.16677
+109. MaddukuriA,JiangZ,ChenLY,NasirianyS,XieY,etal.2025.Sim-and-realco-training: A
+simplerecipeforvision-basedroboticmanipulation.arXiv preprint arXiv:2503.24361
+110. Nasiriany S, Maddukuri A, Zhang L, Parikh A, Lo A, et al. 2024. RoboCasa: Large-Scale
+SimulationofEverydayTasksforGeneralistRobots.InRobotics: ScienceandSystems(RSS)
+111. BjorckJ,Castan˜edaF,CherniadevN,DaX,DingR,etal.2025.Gr00tn1: Anopenfoundation
+modelforgeneralisthumanoidrobots.arXiv preprint arXiv:2503.14734
+112. LiangJ,SaxenaS,KroemerO.2020.LearningActiveTask-OrientedExplorationPoliciesfor
+Bridging the Sim-to-Real Gap.InRobotics: Science and Systems
+113. WagenmakerA,HuangK,KeL,JamiesonK,GuptaA.2024.Overcomingthesim-to-realgap:
+Leveraging simulation to learn to explore for real-world rl. Advances in Neural Information
+Processing Systems 37:78715–78765
+114. ClaveraI,HeldD,AbbeelP.2017.Policytransferviamodularityandrewardguiding.In2017
+IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS).IEEE
+115. MuellerM,DosovitskiyA,GhanemB,KoltunV.2018.DrivingPolicyTransferviaModularity
+and Abstraction.InConference on Robot Learning,pp.1–15.PMLR
+116. Zhang F, Leitner J, Milford M, Corke P. 2017. Modular deep Q networks for sim-to-real
+transfer of visuo-motor policies. In Australasian Conference on Robotics and Automation
+2017,pp.62–71.AustralianRoboticsandAutomationAssociation(ARAA)
+28 Aljalboutetal.
+
+--- Page Suivante ---
+
+117. JulianR,HeidenE,HeZ,ZhangH,SchaalS,etal.2020.Scaling simulation-to-real transfer
+by learning composable robot skills. In Proceedings of the 2018 International Symposium on
+Experimental Robotics,pp.267–279.Springer
+118. ChenD,ZhouB,KoltunV,Kr¨ahenbu¨hlP.2020.Learningbycheating.InConferenceonrobot
+learning,pp.66–75.PMLR
+119. HuES,SpringerJ,RybkinO,JayaramanD.2024.PrivilegedSensingScaffoldsReinforcement
+Learning.InThe Twelfth International Conference on Learning Representations
+120. MessikommerN,XingJ,AljalboutE,ScaramuzzaD.2025.Student-InformedTeacherTrain-
+ing.InThe Thirteenth International Conference on Learning Representations
+121. PintoL,AndrychowiczM,WelinderP,ZarembaW,AbbeelP.2018.Asymmetricactorcritic
+forimage-basedrobotlearning.Robotics: Science and Systems
+122. NguyenHH,BaiseroA,WangD,AmatoC,PlattR.2022.LeveragingFullyObservablePolicies
+for Learning under Partial Observability.In6th Annual Conference on Robot Learning
+123. KrinnerM,AljalboutE,RomeroA,ScaramuzzaD.2025.Acceleratingmodel-basedreinforce-
+mentlearningwithstate-spaceworldmodels.arXiv preprint arXiv:2502.20168
+124. Tanwani A. 2021. DIRL: Domain-invariant representation learning for sim-to-real transfer.
+InConference on Robot Learning,pp.1558–1571.PMLR
+125. Yoneda T, Yang G, Walter MR, Stadie BC. 2022. Invariance Through Latent Alignment. In
+Proceedings of Robotics: Science and Systems (RSS)
+126. XingJ,BauersfeldL,SongY,XingC,ScaramuzzaD.2024.Contrastivelearningforenhancing
+robust scene transfer in vision-based agile flight. In 2024 IEEE International Conference on
+Robotics and Automation (ICRA),pp.5330–5337.IEEE
+127. XingJ,GelesI,SongY,AljalboutE,ScaramuzzaD.2024.Multi-taskreinforcementlearning
+forquadrotors.IEEE Robotics and Automation Letters
+128. HandaA,AllshireA,MakoviychukV,PetrenkoA,SinghR,etal.2023.Dextreme: Transferof
+agilein-handmanipulationfromsimulationtoreality.In2023IEEEInternationalConference
+on Robotics and Automation (ICRA),pp.5977–5984.IEEE
+129. Aractingi M, L´eziart PA, Flayols T, Perez J, Silander T, Sou`eres P. 2023. Controlling the
+solo12quadrupedrobotwithdeepreinforcementlearning.scientific Reports 13(1):11945
+130. Mysore S, Mabsout B, Mancuso R, Saenko K. 2021. Regularizing action policies for smooth
+controlwithreinforcementlearning.In2021IEEEInternationalConferenceonRoboticsand
+Automation (ICRA),pp.1810–1816.IEEE
+131. Chen Z, He X, Wang YJ, Liao Q, Ze Y, et al. 2024. Learning smooth humanoid locomotion
+throughlipschitz-constrainedpolicies.arxiv Preprint arXiv:2410.11825
+132. Kadian A, Truong J, Gokaslan A, Clegg A, Wijmans E, et al. 2020. Sim2real predictivity:
+Doesevaluationinsimulationpredictreal-worldperformance? IEEE RA-L5(4):6670–6677
+133. LambertenghiSC,StoccoA.2024.Assessingqualitymetricsforneuralrealitygapinputmit-
+igation in autonomous driving testing.In2024 IEEE Conference on Software Testing, Veri-
+fication and Validation (ICST),pp.173–184.IEEE
+134. SalimansT,GoodfellowI,ZarembaW,CheungV,RadfordA,ChenX.2016.Improvedtech-
+niquesfortraininggans.Advances in neural information processing systems 29
+135. HeuselM,RamsauerH,UnterthinerT,NesslerB,HochreiterS.2017.Ganstrainedbyatwo
+time-scaleupdateruleconvergetoalocalnashequilibrium.NeurIPS 2017
+136. YuJ,XuX,GaoF,ShiS,WangM,etal.2020.Towardrealisticfacephoto–sketchsynthesis
+viacomposition-aidedgans.IEEE transactions on cybernetics 51(9):4350–4362
+137. VanderMaatenL,HintonG.2008.Visualizingdatausingt-sne.Journalofmachinelearning
+research 9(11)
+138. BirudugantiS,YardiY,AnkileL.2025.Bridgingthesim2realgap: Visionencoderpre-training
+forvisuomotorpolicytransfer.arXiv preprint arXiv:2501.16389
+139. ChenBH,NegrutD.2024.Instanceperformancedifference: Ametrictomeasurethesim-to-
+realgapincamerasimulation.arXiv preprint arXiv:2411.07375
+www.annualreviews.org • TheRealityGapinRobotics 29
+
+--- Page Suivante ---
+
+140. James S, Wohlhart P, Kalakrishnan M, Kalashnikov D, Irpan A, et al. 2019. Sim-to-real via
+sim-to-sim: Data-efficientroboticgraspingviarandomized-to-canonicaladaptationnetworks.
+InProceedings of the IEEE/CVF conference on computer vision and pattern recognition
+141. LinT,SachdevK,FanL,MalikJ,ZhuY.2025.Sim-to-realreinforcementlearningforvision-
+baseddexterousmanipulationonhumanoids.arXiv preprint arXiv:2502.20396
+142. Dalal M, Liu M, Talbott W, Chen C, Pathak D, et al. 2024. Local policies enable zero-shot
+long-horizonmanipulation.arXiv preprint arXiv:2410.22332
+143. SinghR,AllshireA,HandaA,RatliffN,VanWykK.2024.Dextrah-rgb: Visuomotorpolicies
+tograspanythingwithdexteroushands.arXiv preprint arXiv:2412.01791
+144. ZengKH,ZhangZ,EhsaniK,HendrixR,SalvadorJ,etal.2024.Poliformer: Scalingon-policy
+rlwithtransformersresultsinmasterfulnavigators.8thAnnualConferenceonRobotLearning
+145. GervetT,ChintalaS,BatraD,MalikJ,ChaplotDS.2023.Navigatingtoobjectsinthereal
+world.Science Robotics 8(79):eadf6991
+146. Chang M, Gervet T, Khanna M, Yenamandra S, Shah D, et al. 2024. GOAT: GO to Any
+Thing.InProceedings of Robotics: Science and Systems (RSS)
+147. XingJ,RomeroA,BauersfeldL,ScaramuzzaD.2024.Bootstrappingreinforcementlearning
+withimitationforvision-basedagileflight.arXiv preprint arXiv:2403.12203
+148. Sandha SS, Garcia L, Balaji B, Anwar F, Srivastava M. 2021. Sim2real transfer for deep
+reinforcementlearningwithstochasticstatetransitiondelays.InConferenceonrobotlearning
+149. LambertN,AmosB,YadanO,CalandraR.2018.Objective Mismatch in Model-based Rein-
+forcement Learning.InLearning for Dynamics and Control
+150. Guzman R, Oliveira R, Ramos F. 2022. Bayesian Optimisation for Robust Model Predictive
+Control under Model Parameter Uncertainty. In International Conference on Robotics and
+Automation (ICRA),pp.5539–5545
+151. NewburyR,CollinsJ,HeK,PanJ,PosnerI,etal.2024.Areviewofdifferentiablesimulators.
+IEEE Access
+152. NVIDIACorporation.2024.Nvidiawarp: Differentiablespatialcomputingforpython.https:
+//developer.nvidia.com/warp-python.Version1.5
+153. HuY,AndersonL,LiTM,SunQ,CarrN,etal.2020.Difftaichi: Differentiableprogramming
+forphysicalsimulation.International Conference on Learning Representations (ICLR)
+154. Bradbury J, Frostig R, Hawkins P, Johnson MJ, Leary C, et al. 2018. JAX: Composable
+transformationsofPython+NumPyprograms.http://github.com/google/jax
+155. AnselJ,YouK,TeamP.2023.Torchdynamoandtorchinductor: Pytorchcompilationstack.
+https://pytorch.org/docs/stable/torch.compiler.html.Accessed2025-06-27
+156. Ming R, Huang Z, Ju Z, Hu J, Peng L, Zhou S. 2024. A survey on future frame synthesis:
+Bridgingdeterministicandgenerativeapproaches.arXiv preprint arXiv:2401.14718
+157. Bruce J, Dennis MD, Edwards A, Parker-Holder J, Shi Y, et al. 2024. Genie: Generative
+Interactive Environments.InForty-first International Conference on Machine Learning
+158. Hassan M, Stapf S, Rahimi A, Rezende P, Haghighi Y, et al. 2025. Gem: A generalizable
+ego-vision multimodal world model for fine-grained ego-motion, object dynamics, and scene
+composition control.InConference on Computer Vision and Pattern Recognition (CVPR)
+159. Agarwal N, Ali A, Bala M, Balaji Y, Barker E, et al. 2025. Cosmos world foundation model
+platformforphysicalai.arXiv preprint arXiv:2501.03575
+160. DingJ,ZhangY,ShangY,ZhangY,ZongZ,etal.2024.Understandingworldorpredicting
+future? acomprehensivesurveyofworldmodels.arXiv preprint arXiv:2411.14499
+161. Cranmer K, Brehmer J, Louppe G. 2020. The frontier of simulation-based inference. Proc.
+Natl. Acad. Sci.117(48):30055–30062
+162. SissonSA,FanY,BeaumontM,ed.2018.Handbook of Approximate Bayesian Computation.
+NewYork: ChapmanandHall/CRC
+163. Gl¨ocklerM,DeistlerM,MackeJH.2022.Variationalmethodsforsimulation-basedinference.
+arXiv preprint arXiv:2203.04176
+30 Aljalboutetal.
+
+--- Page Suivante ---
+
+164. Papamakarios G, Murray I. 2016. Fast ϵ-free Inference of Simulation Models with Bayesian
+Conditional Density Estimation.InAdvances in Neural Information Processing Systems
+165. Radev ST, Mertens UK, Voss A, Ardizzone L, K¨othe U. 2022. Bayesflow: Learning complex
+stochastic models with invertible neural networks. IEEE Transactions on Neural Networks
+and Learning Systems 34(7):3694–3708
+166. Ramos F, Possas R, Fox D. 2019. BayesSim: Adaptive Domain Randomization Via Proba-
+bilistic Inference for Robotics Simulators. In Proceedings of Robotics: Science and Systems.
+FreiburgimBreisgau,Germany
+167. Barcelos L, Oliveira R, Possas R, Ott L, Ramos F. 2020. DISCO: Double Likelihood-free
+InferenceStochasticControl.InProceedingsoftheIEEEInternationalConferenceonRobotics
+and Automation (ICRA).IEEE
+168. Matl C, Narang Y, Bajcsy R, Ramos F, Fox D. 2020. Inferring the Material Properties of
+Granular Media for Robotic Tasks. In Proceedings of the IEEE International Conference on
+Robotics and Automation (ICRA),pp.2770–2777.IEEE
+169. Possas R, Barcelos L, Oliveira R, Fox D, Ramos F. 2020. Online BayesSim for Combined
+Simulator Parameter Inference and Policy Improvement. In 2020 IEEE/RSJ International
+Conference on Intelligent Robots and Systems (IROS),pp.8005–8012.IEEE
+170. AntonovaR,YangJ,SundaresanP,FoxD,RamosF,BohgJ.2021.Abayesiantreatmentof
+real-to-simfordeformableobjectmanipulation.arXiv preprint arXiv:2112.05068
+171. Muratore F, Gruner T, Wiese F, Belousov B, Gienger M, Peters J. 2022. Neural Posterior
+Domain Randomization.InProceedings of the 5th Conference on Robot Learning
+172. MatlC,NarangY,FoxD,BajcsyR,RamosF.2021.STReSSD:Sim-To-RealfromSoundfor
+Stochastic Dynamics.InProceedings of the Conference on Robot Learning (CoRL),vol.155
+173. O’NeillA,RehmanA,MaddukuriA,GuptaA,PadalkarA,etal.2024.Open x-embodiment:
+Roboticlearningdatasetsandrt-xmodels: Openx-embodimentcollaboration0.In2024IEEE
+International Conference on Robotics and Automation (ICRA),pp.6892–6903.IEEE
+174. Khazatsky A, Pertsch K, Nair S, Balakrishna A, Dasari S, et al. 2024. Droid: A large-scale
+in-the-wildrobotmanipulationdataset.arXiv preprint arXiv:2403.12945
+175. LiuG,DengY,ZhaoR,ZhouH,ChenJ,etal.2025.DexScale: AutomatingDataScalingfor
+Sim2Real Generalizable Robot Control.InInternational Conference on Machine Learning
+176. Mandlekar A, Nasiriany S, Wen B, Akinola I, Narang Y, et al. 2023. MimicGen: A Data
+GenerationSystemforScalableRobotLearningusingHumanDemonstrations.InConference
+on Robot Learning,pp.1820–1864.PMLR
+177. LiX,HsuK,GuJ,PertschK,MeesO,etal.2024.Evaluatingreal-worldrobotmanipulation
+policiesinsimulation.8th Anal Conference on Robot Learning
+178. BarreirosJ,BeaulieuA,BhatA,CoryR,CousineauE,etal.2025.Acarefulexaminationof
+largebehaviormodelsformultitaskdexterousmanipulation.arXivpreprintarXiv:2507.05331
+www.annualreviews.org • TheRealityGapinRobotics 31
