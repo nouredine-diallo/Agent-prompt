@@ -49,7 +49,6 @@ async def status():
 @app.post("/generate")
 async def generate(req: GenReq = Body(...)):
     """Main endpoint - runs full agent pipeline"""
-    # TODO: mieux gérer l'absence de clé OpenAI
     if not os.getenv("OPENAI_API_KEY") and not req.mock:
         pass  # RAG fonctionne sans clé
 
@@ -69,7 +68,7 @@ async def generate(req: GenReq = Body(...)):
             query_id=req.query_id
         )
 
-        # Petit hack - vérifier que sources existe
+        # Vérifier que sources existe
         if "sources" not in result:
             result["sources"] = []
         

@@ -58,7 +58,7 @@ def chunk_text(txt: str, target: int, overlap: int) -> List[str]:
             curr_words += wc
         else:
             chunks.append(" ".join(curr))
-            # TODO: optimize overlap logic
+            # Gestion de l'overlap entre chunks
             if overlap > 0:
                 overlap_txt = " ".join(" ".join(curr).split()[-overlap:])
                 curr = [overlap_txt, s] if overlap_txt else [s]

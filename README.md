@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
 [![Tests](https://img.shields.io/badge/Tests-3%2F3%20passing-brightgreen.svg)](test_meta_prompting.py)
-[![Code Quality](https://img.shields.io/badge/AI%20Score-7.5%25-success.svg)](ARCHITECTURE_PROJET.md)
+[![Code Quality](https://img.shields.io/badge/Quality-Production-success.svg)](ARCHITECTURE_PROJET.md)
 
 Agent RAG (Retrieval-Augmented Generation) capable de générer des prompts optimisés via un pipeline Meta-Prompting en 4 phases, avec validation sécurité et base de connaissances (ArXiv, guides, GitHub).
 
@@ -118,7 +118,6 @@ python scripts/evaluate_recall.py
 | Fichiers sources | 44 | ✅ |
 | Chunks indexés | 1735 | ✅ |
 | Tests passants | 3/3 | ✅ |
-| Score IA (humanisation) | 7.5% | ✅ |
 | Validation sécurité | PII + Injection | ✅ |
 
 ## 🛠️ Stack Technique
@@ -143,7 +142,7 @@ python scripts/evaluate_recall.py
 1. **Meta-Prompting 4-phases** : Pipeline structuré Parse→Fetch→Build→Validate
 2. **Orchestration robuste** : Fallback gracieux si dépendances manquantes
 3. **Qualité industrielle** : Validation PII, détection injection, tests automatisés
-4. **Code organique** : Score IA 7.5% (certification "Biologique Chaotique")
+4. **Code maintenable** : Architecture claire et documentée
 5. **Localisation française** : Commentaires et documentation en français
 
 ## 🔥 Roadmap

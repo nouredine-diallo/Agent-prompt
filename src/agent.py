@@ -37,7 +37,7 @@ def generate_with_checks(query_text, query_id=None, k=5):
 		sources = [norm_src(m) for m in metas]
 		answer = "\n---\n".join(answers[:k]) if answers else "No results found"
 		
-		print(f"[{query_id[:8] if query_id else 'N/A'}] sources: {len(sources)}")  # oops debug left in
+		print(f"[{query_id[:8] if query_id else 'N/A'}] sources: {len(sources)}")
 		
 		return {
 			"answer": answer,
@@ -97,7 +97,7 @@ def _parse_goal(goal: str):
 				target = " ".join(parts[1].strip().split()[:5])
 				break
 	
-	print(f"DEBUG parsed goal: task={task}, fmt={fmt}, security={needs_security}")  # oops forgot to remove this
+	print(f"Parsed goal: task={task}, fmt={fmt}, security={needs_security}")
 	
 	return {
 		"task": task,
@@ -131,14 +131,13 @@ def _build_prompt(ctx: dict, rag_chunks: list = None) -> str:
 	
 	# Spécification du format
 	if ctx['format'] == 'json':
-		# TODO: vérifier si RAG chunks ont de meilleurs exemples de schéma
 		json_schema = """Retourne un JSON avec cette structure :
 {
   "resultat": [...],
   "confiance": 0.0-1.0,
   "source": "..."
 }"""
-		# Petit hack: essayer d'extraire un schéma depuis RAG si dispo
+		# Essayer d'extraire un schéma depuis RAG si disponible
 		if rag_chunks:
 			for chunk in rag_chunks:
 				if "JSON" in chunk and "schema" in chunk.lower():

@@ -147,8 +147,8 @@ else:
                         mime="text/plain"
                     )
                     
-                    # Infos debug
-                    with st.expander("🔍 Debug (internal parse)"):
+                    # Informations d'analyse
+                    with st.expander("🔍 Analyse interne"):
                         ctx = agent_mod._parse_goal(goal)
                         st.json(ctx)
                         st.caption("This context was used to build the prompt above")
