@@ -1,48 +1,11 @@
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+*.pyc
+.env
+.env.local
 .venv/
 venv/
-ENV/
-env/
-*.egg-info/
-dist/
-build/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-*.log
-logs/
-dedup.log
-eval.log
-experiments.log
-fetch_data.log
-ingestion.log
-step1_run.log
-
-# Data & Cache
 chroma_db/
-chroma_db_backup_*/
-nltk_data/
-.pytest_cache/
-agent_memory.json
-
-# Metrics & Reports
-metrics/
-plots/
-benchmarks/
-reports/
-
-# Temporary files
-*.tmp
+*.log
 .DS_Store
-docs/github/
+*.Zone.Identifier
+*.db
