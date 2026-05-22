@@ -53,9 +53,8 @@ def generate_with_checks(query_text, query_id=None, k=5):
 		}
 
 
-# ============================================================================
+
 # META-PROMPTING - Générer des prompts optimisés depuis des objectifs
-# ============================================================================
 
 def _parse_goal(goal: str):
 	"""Quick & dirty parser - détecte task type, format, security flags"""
@@ -87,7 +86,7 @@ def _parse_goal(goal: str):
 		"privé", "protection", "guardrail", "safe", "rgpd"
 	])
 	
-	# Extraire données cible (découpage hacky)
+	# Extraire données cible 
 	target = goal
 	for keyword in ["extraire", "classifier", "résumer", "valider"]:
 		if keyword in txt:
@@ -110,7 +109,7 @@ def _parse_goal(goal: str):
 def _build_prompt(ctx: dict, rag_chunks: list = None) -> str:
 	"""Assemble le prompt final - template-based approach"""
 	
-	# Mapping rôle (simple dict lookup)
+	# Mapping rôle 
 	roles = {
 		"extraction": "Tu es un assistant expert en extraction de données structurées.",
 		"classification": "Tu es un expert en classification et catégorisation de texte.",

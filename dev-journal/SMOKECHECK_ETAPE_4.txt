@@ -1,4 +1,4 @@
-# Résultats Smoke Check — ETAPE 4 (réel)
+# Résultats Smoke Check — ETAPE 4 (
 
 ## 1. Lancer l'API FastAPI
 ```

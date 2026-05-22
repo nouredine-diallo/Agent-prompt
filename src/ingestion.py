@@ -43,7 +43,7 @@ def read_file(path: str) -> str:
         return ""
 
 def chunk_text(txt: str, target: int, overlap: int) -> List[str]:
-    """Split text into chunks of ~target words with overlap"""
+    """decoupe les texte en chunks et on utilise un overlap pour eviter les coupures de phrases brute et obtnir plus de contexte """
     sents = sent_tokenize(txt)
     chunks = []
     curr = []

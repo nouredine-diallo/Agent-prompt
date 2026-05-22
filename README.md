@@ -1,6 +1,6 @@
 # Agent-Prompt — Pipeline RAG avec Meta-Prompting
 
-> Génère des prompts optimisés via un pipeline RAG 4 phases.
+> Pipeline RAG utilisé pour générer des prompts structurés à partir de sources techniques (GitHub, ArXiv, documentation). 
 > Évalué quantitativement avec Ragas (faithfulness, relevancy) et métriques custom (Recall@5, MRR).
 
 ---

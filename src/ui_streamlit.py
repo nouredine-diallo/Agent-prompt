@@ -5,7 +5,7 @@ import uuid
 import os
 import sys
 
-# Hack import - conflit fichier agent.py vs dossier agent/
+#Definition du Frontend avec streamlit pour interagir avec l'API FASTAPI 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import importlib.util
 spec = importlib.util.spec_from_file_location("agent_mod", os.path.join(os.path.dirname(__file__), "agent.py"))
@@ -21,7 +21,7 @@ API_PORT = int(os.getenv("FASTAPI_PORT", 8000))
 API_URL = f"http://{API_HOST}:{API_PORT}/generate"
 API_STATUS = f"http://{API_HOST}:{API_PORT}/"
 
-st.title("🤖 Meta-Prompting Architect")
+st.title(" Meta-Prompting Architect")
 st.caption("Q&A RAG or Prompt Generation")
 
 # Sélecteur de mode
@@ -31,11 +31,11 @@ mode = st.radio(
     help="Q&A: ask questions. Generate: get optimized prompts from goals."
 )
 
-# ============================================================================
-# MODE 1: Q&A RAG
-# ============================================================================
-if mode == "💬 Q&A RAG":
-    st.markdown("### 💬 Ask about Prompt Engineering")
+
+# MODE : Q&A RAG
+
+if mode == " Q&A RAG":
+    st.markdown("###  Ask about Prompt Engineering")
     
     # Vérifier si l'API est accessible
     api_ok = False
@@ -75,7 +75,7 @@ if mode == "💬 Q&A RAG":
         
         with st.chat_message("assistant"):
             placeholder = st.empty()
-            placeholder.markdown("🧠 Agent thinking (RAG + CoT + validation)...")
+            placeholder.markdown(" Agent thinking (RAG + CoT + validation)...")
             
             try:
                 qid = str(uuid.uuid4())
@@ -85,7 +85,7 @@ if mode == "💬 Q&A RAG":
                 data = resp.json()
                 
                 placeholder.markdown(data.get("answer", "*No answer received*"))
-                with st.expander("📜 Details (sources, meta)"):
+                with st.expander(" Details (sources, meta)"):
                     st.json(data)
                 
                 st.session_state.messages.append({"role": "assistant", "content": data})
@@ -103,15 +103,15 @@ if mode == "💬 Q&A RAG":
                 placeholder.error(err)
                 st.session_state.messages.append({"role": "assistant", "content": err})
 
-# ============================================================================
+
 # MODE 2: GÉNÉRATION DE PROMPT
-# ============================================================================
+
 else:
-    st.markdown("### ✨ Prompt Generation")
+    st.markdown("###  Prompt Generation")
     st.info("Describe what you want to accomplish → get an optimized prompt")
     
     goal = st.text_area(
-        "🎯 Your goal:",
+        " Your goal:",
         placeholder="Example: 'Extract email addresses from PDFs'\n"
                     "Example: 'Classify tweets as positive/negative with data protection'\n"
                     "Example: 'Summarize medical reports in JSON format'",
@@ -127,28 +127,28 @@ else:
     
     if gen_btn:
         if not goal or len(goal.strip()) < 10:
-            st.warning("⚠️ Please provide more details (at least 10 chars)")
+            st.warning(" Please provide more details (at least 10 chars)")
         else:
-            with st.spinner("🧠 Generating prompt (parse → RAG → build → validate)..."):
+            with st.spinner(" Generating prompt (parse → RAG → build → validate)..."):
                 try:
                     # Appel du générateur
                     prompt_out = generer_meta_prompt(goal)
                     
                     st.success("✅ Prompt generated!")
                     
-                    st.markdown("#### 📋 Your optimized prompt:")
+                    st.markdown("####  Your optimized prompt:")
                     st.code(prompt_out, language="markdown")
                     
                     # Bouton téléchargement
                     st.download_button(
-                        label="💾 Download Prompt",
+                        label="Download Prompt",
                         data=prompt_out,
                         file_name="optimized_prompt.txt",
                         mime="text/plain"
                     )
                     
                     # Informations d'analyse
-                    with st.expander("🔍 Analyse interne"):
+                    with st.expander("Analyse interne"):
                         ctx = agent_mod._parse_goal(goal)
                         st.json(ctx)
                         st.caption("This context was used to build the prompt above")

@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 from typing import Optional
 from fastapi.middleware.cors import CORSMiddleware
 
-# Hack import - fichier agent.py (pas le dossier agent/)
+# import , pour eviter qu'on se trompe et qu'on selectionne le bon fichier 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import importlib.util
+
 agent_path = os.path.join(os.path.dirname(__file__), 'agent.py')
 spec = importlib.util.spec_from_file_location("agent_core", agent_path)
 agent_core = importlib.util.module_from_spec(spec)
@@ -25,7 +26,7 @@ app = FastAPI(
     description="Meta-Prompting Architect API",
     version="1.0.0"
 )
-
+#Utilisation de Pydantic pour valider les requetes , leur type ....
 class GenReq(BaseModel):
     query: str
     mock: Optional[bool] = False
@@ -50,7 +51,7 @@ async def status():
 async def generate(req: GenReq = Body(...)):
     """Main endpoint - runs full agent pipeline"""
     if not os.getenv("OPENAI_API_KEY") and not req.mock:
-        pass  # RAG fonctionne sans clé
+        pass  
 
     try:
         print(f"[{req.query_id[:8]}] Query: '{req.query[:50]}...'")
