@@ -131,28 +131,39 @@ else:
         else:
             with st.spinner(" Generating prompt (parse → RAG → build → validate)..."):
                 try:
-                    # Appel du générateur
-                    prompt_out = generer_meta_prompt(goal)
-                    
-                    st.success("✅ Prompt generated!")
-                    
+                    prompt_result = agent_mod.generate_prompt_with_metadata(goal)
+                    prompt_out = prompt_result["prompt"]
+
+                    if prompt_result["mode"] == "fallback_template":
+                        st.warning(
+                            f"⚠️ Fallback template used: {prompt_result['fallback_reason']}"
+                        )
+                    else:
+                        st.success("✅ Prompt generated with Ollama")
+
                     st.markdown("####  Your optimized prompt:")
                     st.code(prompt_out, language="markdown")
-                    
-                    # Bouton téléchargement
+
                     st.download_button(
                         label="Download Prompt",
                         data=prompt_out,
                         file_name="optimized_prompt.txt",
                         mime="text/plain"
                     )
-                    
-                    # Informations d'analyse
+
                     with st.expander("Analyse interne"):
                         ctx = agent_mod._parse_goal(goal)
                         st.json(ctx)
+                        st.json(
+                            {
+                                "mode": prompt_result["mode"],
+                                "fallback_reason": prompt_result["fallback_reason"],
+                                "sources": prompt_result["sources"],
+                                "reasoning_steps": prompt_result["reasoning_steps"],
+                            }
+                        )
                         st.caption("This context was used to build the prompt above")
-                
+
                 except Exception as e:
                     st.error(f"❌ Generation failed: {e}")
                     st.exception(e)

@@ -1,57 +1,138 @@
 
 import os
 import json
-import re
+
 import chromadb
+import ollama
 from sentence_transformers import SentenceTransformer
-from chromadb.config import Settings
+
+from src.prompts.meta_architect_prompt import (
+    FEW_SHOT_EXAMPLES,
+    JSON_OUTPUT_SCHEMA,
+    SECURITY_GUARDRAILS,
+    SYSTEM_PROMPT,
+    build_meta_prompt,
+    validate_generated_prompt,
+)
 
 MODEL = "all-MiniLM-L6-v2"
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "chroma_db")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+
+
+def _normalize_source(meta):
+    src = (meta or {}).get("source") or (meta or {}).get("title")
+    if not src:
+        return ""
+    rel = os.path.relpath(src, os.path.dirname(os.path.dirname(__file__)))
+    return rel.replace("\\", "/")
+
+
+def _retrieve_documents(query_text, k=5):
+    model = SentenceTransformer(MODEL)
+    client = chromadb.PersistentClient(path=DB_DIR)
+    col = client.get_or_create_collection("docs")
+
+    q_emb = model.encode([query_text], convert_to_numpy=True)
+    res = col.query(
+        query_embeddings=q_emb.tolist(),
+        n_results=k,
+        include=["documents", "metadatas"],
+    )
+
+    docs = res.get("documents", [[]])[0]
+    metas = res.get("metadatas", [[]])[0]
+    return docs, metas
+
+
+def _build_llm_system_prompt():
+    return "\n\n".join(
+        [
+            SYSTEM_PROMPT,
+            "=== SECURITY_GUARDRAILS ===",
+            SECURITY_GUARDRAILS,
+            "=== JSON_OUTPUT_SCHEMA ===",
+            json.dumps(JSON_OUTPUT_SCHEMA, ensure_ascii=False, indent=2),
+            "=== FEW_SHOT_EXAMPLES ===",
+            json.dumps(FEW_SHOT_EXAMPLES[:1], ensure_ascii=False, indent=2),
+        ]
+    )
+
+
+def _build_llm_user_prompt(goal, ctx, rag_chunks):
+    rag_context = "\n\n".join(rag_chunks[:6]) if rag_chunks else "[Aucun chunk RAG disponible]"
+    contract = {
+        "goal": goal,
+        "task": ctx["task"],
+        "format": ctx["format"],
+        "security": ctx["security"],
+        "target": ctx["target"],
+    }
+
+    return (
+        f"{build_meta_prompt(goal, rag_context)}\n\n"
+        f"=== JSON_CONTRACT ===\n{json.dumps(contract, ensure_ascii=False, indent=2)}"
+    )
+
+
+def _validate_llm_payload(payload):
+    if not isinstance(payload, dict):
+        return {"valid": False, "errors": ["LLM output is not a JSON object"], "warnings": []}
+
+    validation = validate_generated_prompt(json.dumps(payload, ensure_ascii=False))
+    if validation.get("valid"):
+        return validation
+
+    if not isinstance(payload.get("prompt_final"), str) or not payload.get("prompt_final", "").strip():
+        validation["errors"].append("prompt_final must be a non-empty string")
+
+    if not isinstance(payload.get("sources_rag"), list):
+        validation["errors"].append("sources_rag must be a list")
+
+    return validation
+
+
+def _build_fallback_result(prompt, sources, reason):
+    return {
+        "prompt": prompt,
+        "mode": "fallback_template",
+        "fallback_reason": reason,
+        "sources": sources,
+        "reasoning_steps": [
+            "Fallback template used because the LLM output was invalid or unavailable."
+        ],
+    }
+
+
+def _invoke_ollama(model_name, messages, llm_client=None):
+    if llm_client is not None:
+        return llm_client.chat(model=model_name, messages=messages, format="json")
+
+    return ollama.chat(model=model_name, messages=messages, format="json")
+
 
 def generate_with_checks(query_text, query_id=None, k=5):
-	"""RAG pipeline: embed query, search ChromaDB, return chunks"""
-	try:
-		model = SentenceTransformer(MODEL)
-		client = chromadb.PersistentClient(path=DB_DIR)
-		col = client.get_or_create_collection("docs")
-		
-		q_emb = model.encode([query_text], convert_to_numpy=True)
-		res = col.query(
-			query_embeddings=q_emb.tolist(),
-			n_results=k,
-			include=["documents", "metadatas", "distances"]
-		)
-		
-		answers = res.get("documents", [[]])[0]
-		metas = res.get("metadatas", [[]])[0]
-		
-		# Normaliser les chemins source
-		def norm_src(m):
-			src = m.get("source") or m.get("title")
-			if src:
-				rel = os.path.relpath(src, os.path.dirname(os.path.dirname(__file__)))
-				return rel.replace('\\', '/')
-			return ""
-		
-		sources = [norm_src(m) for m in metas]
-		answer = "\n---\n".join(answers[:k]) if answers else "No results found"
-		
-		print(f"[{query_id[:8] if query_id else 'N/A'}] sources: {len(sources)}")
-		
-		return {
-			"answer": answer,
-			"sources": sources,
-			"metadata": {"query_id": query_id, "failure_reason": "ok"}
-		}
-	
-	except Exception as e:
-		return {
-			"answer": "",
-			"sources": [],
-			"metadata": {"query_id": query_id, "failure_reason": str(e)}
-		}
+    """RAG pipeline: embed query, search ChromaDB, return chunks"""
+    try:
+        answers, metas = _retrieve_documents(query_text, k=k)
+        sources = [_normalize_source(m) for m in metas if _normalize_source(m)]
+        answer = "\n---\n".join(answers[:k]) if answers else "No results found"
 
+        print(f"[{query_id[:8] if query_id else 'N/A'}] sources: {len(sources)}")
+
+        return {
+            "answer": answer,
+            "contexts": answers[:k],
+            "sources": sources,
+            "metadata": {"query_id": query_id, "failure_reason": "ok"},
+        }
+    except Exception as e:
+        return {
+            "answer": "",
+            "contexts": [],
+            "sources": [],
+            "metadata": {"query_id": query_id, "failure_reason": str(e)},
+        }
 
 
 # META-PROMPTING - Générer des prompts optimisés depuis des objectifs
@@ -225,53 +306,81 @@ Suis scrupuleusement le format de sortie et les contraintes ci-dessus.
 	return prompt
 
 
+def _fetch_prompt_context(ctx):
+    rag_chunks = []
+    sources = []
+
+    queries = [
+        f"techniques de prompt pour {ctx['task']}",
+        f"structurer un prompt pour {ctx['format']}",
+    ]
+    if ctx.get("security"):
+        queries.append("guardrails de sécurité dans les prompts")
+
+    for query in queries:
+        docs, metas = _retrieve_documents(query, k=3)
+        rag_chunks.extend(docs)
+        sources.extend([_normalize_source(meta) for meta in metas if _normalize_source(meta)])
+
+    return rag_chunks, list(dict.fromkeys(sources))
+
+
+def generate_prompt_with_metadata(goal, rag_chunks=None, llm_client=None, model=None):
+    """Build a prompt using the hybrid flow: RAG + optional Ollama generation + template fallback."""
+    ctx = _parse_goal(goal)
+    if rag_chunks is None:
+        rag_chunks, sources = _fetch_prompt_context(ctx)
+    else:
+        sources = []
+
+    fallback_prompt = _build_prompt(ctx, rag_chunks)
+    fallback_result = _build_fallback_result(
+        fallback_prompt,
+        sources,
+        "LLM output unavailable; using the template-based fallback.",
+    )
+
+    if llm_client is None:
+        llm_client = ollama
+
+    try:
+        messages = [
+            {"role": "system", "content": _build_llm_system_prompt()},
+            {"role": "user", "content": _build_llm_user_prompt(goal, ctx, rag_chunks)},
+        ]
+
+        raw_response = _invoke_ollama(model or OLLAMA_MODEL, messages, llm_client=llm_client)
+        payload = raw_response.get("message", {}).get("content") if isinstance(raw_response, dict) else raw_response
+
+        if isinstance(payload, str):
+            payload = json.loads(payload)
+
+        validation = _validate_llm_payload(payload)
+        if not validation.get("valid", False):
+            fallback_result["fallback_reason"] = "; ".join(validation.get("errors", ["LLM validation failed"]))
+            return fallback_result
+
+        menu_sources = payload.get("sources_rag") or sources
+        reasoning_steps = payload.get("reasoning_steps") or [
+            "LLM generated the prompt using the hybrid RAG + constraints workflow."
+        ]
+
+        return {
+            "prompt": payload["prompt_final"].strip(),
+            "mode": "llm",
+            "fallback_reason": None,
+            "sources": menu_sources,
+            "reasoning_steps": reasoning_steps,
+        }
+    except Exception as exc:
+        fallback_result["fallback_reason"] = f"fallback_template: {exc}"
+        return fallback_result
+
+
 def generer_meta_prompt(goal: str, max_retries: int = 2) -> str:
-	"""
-	Main entry point - generates optimized prompt from user goal
-	
-	Works by: parse goal → fetch RAG examples → build template → return
-	"""
-	ctx = _parse_goal(goal)
-	print(f"[Meta-Prompt] Context: task={ctx['task']}, format={ctx['format']}")
-	
-	# Récupérer chunks RAG pour exemples/techniques
-	rag_chunks = []
-	try:
-		model = SentenceTransformer(MODEL)
-		client = chromadb.PersistentClient(path=DB_DIR)
-		coll = client.get_or_create_collection("docs")
-		
-		# Construire requêtes selon contexte
-		queries = [
-			f"techniques de prompt pour {ctx['task']}",
-			f"structurer un prompt pour {ctx['format']}",
-		]
-		if ctx.get('security'):
-			queries.append("guardrails de sécurité dans les prompts")
-		
-		for q in queries:
-			emb = model.encode([q], convert_to_numpy=True)
-			res = coll.query(query_embeddings=emb.tolist(), n_results=3, include=["documents"])
-			chunks = res.get("documents", [[]])[0]
-			rag_chunks.extend(chunks)
-		
-		print(f"[Meta-Prompt] Found {len(rag_chunks)} RAG chunks")
-	except Exception as e:
-		# Arrive quand ChromaDB est down ou collection n'existe pas encore
-		print(f"[WARNING] RAG fetch failed: {e} - continuing with defaults")
-		rag_chunks = []
-	
-	# Build the prompt (with retry logic in case validation fails)
-	for attempt in range(max_retries):
-		prompt = _build_prompt(ctx, rag_chunks)
-		
-		# Basic sanity check
-		if len(prompt) > 100 and "RÔLE" in prompt:
-			print(f"[Meta-Prompt] ✓ Generated (attempt {attempt+1})")
-			return prompt
-		
-		print(f"[Meta-Prompt] Retry {attempt+1}: prompt too short or malformed")
-	
-	# Fallback: return whatever we got
-	print("[Meta-Prompt] ⚠ Validation failed but returning anyway")
-	return prompt
+    """Backward-compatible wrapper returning only the prompt text."""
+    result = generate_prompt_with_metadata(goal)
+    return result["prompt"]
+
+
+  
