@@ -1,4 +1,7 @@
-# scripts/debug_retrieval.py
+
+#vérifier si tes embeddings sont bons, verifier que les docs sont bon , debug la qualité du rag ( pertinence des result) , affiche les distance 
+
+
 from src.ingestion import model, collection
 import json, sys
 

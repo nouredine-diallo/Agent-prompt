@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-# scripts/deduplicate_chroma.py
-# Supprime near-duplicates dans Chroma (cosine similarity)
-# Usage: python scripts/deduplicate_chroma.py --threshold 0.92 --batch 500
+#ettoyer ta base ChromaDB en supprimant les doublons  en utilisant le calcul de distance , si distance similaire = doublon
+#si distance >0.92  on considere comme un doublon et on conserve le plus petit index et on supprime celui qu'on vient juste de stocker  
 
 import os
 import argparse

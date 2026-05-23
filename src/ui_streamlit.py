@@ -7,13 +7,17 @@ import sys
 
 #Definition du Frontend avec streamlit pour interagir avec l'API FASTAPI 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import importlib.util
-spec = importlib.util.spec_from_file_location("agent_mod", os.path.join(os.path.dirname(__file__), "agent.py"))
-agent_mod = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(agent_mod)
-generer_meta_prompt = agent_mod.generer_meta_prompt
+from agent_core import (
+    generer_meta_prompt,
+    generate_prompt_with_metadata,
+    _parse_goal,
+)
+import os
 
-st.set_page_config(page_title="Meta-Prompting Architect 🤖", page_icon="🤖", layout="wide")
+os.environ["NO_PROXY"] = "localhost,127.0.0.1"
+os.environ["no_proxy"] = "localhost,127.0.0.1"
+
+st.set_page_config(page_title="Meta-Prompting Architect ", page_icon="", layout="wide")
 
 # Config API
 API_HOST = os.getenv("FASTAPI_HOST", "127.0.0.1")
@@ -24,10 +28,11 @@ API_STATUS = f"http://{API_HOST}:{API_PORT}/"
 st.title(" Meta-Prompting Architect")
 st.caption("Q&A RAG or Prompt Generation")
 
+
 # Sélecteur de mode
 mode = st.radio(
     "Choose mode:",
-    ["💬 Q&A RAG", "✨ Generate Prompt"],
+    ["Q&A RAG", " Generate Prompt"],
     help="Q&A: ask questions. Generate: get optimized prompts from goals."
 )
 
@@ -61,7 +66,7 @@ if mode == " Q&A RAG":
                 st.markdown(msg["content"])
             elif isinstance(msg["content"], dict) and "answer" in msg["content"]:
                 st.markdown(msg["content"]["answer"])
-                with st.expander("📜 Details (sources, meta)"):
+                with st.expander(" Details (sources, meta)"):
                     st.json(msg["content"])
             else:
                 st.error(str(msg["content"]))
@@ -123,7 +128,7 @@ else:
         gen_btn = st.button("✨ Generate", type="primary")
     with col2:
         if goal:
-            st.caption(f"📊 {len(goal.split())} words")
+            st.caption(f" {len(goal.split())} words")
     
     if gen_btn:
         if not goal or len(goal.strip()) < 10:
@@ -131,7 +136,7 @@ else:
         else:
             with st.spinner(" Generating prompt (parse → RAG → build → validate)..."):
                 try:
-                    prompt_result = agent_mod.generate_prompt_with_metadata(goal)
+                    prompt_result = generate_prompt_with_metadata(goal)
                     prompt_out = prompt_result["prompt"]
 
                     if prompt_result["mode"] == "fallback_template":
@@ -152,7 +157,7 @@ else:
                     )
 
                     with st.expander("Analyse interne"):
-                        ctx = agent_mod._parse_goal(goal)
+                        ctx = _parse_goal(goal)
                         st.json(ctx)
                         st.json(
                             {
@@ -169,7 +174,7 @@ else:
                     st.exception(e)
     
     # Section aide
-    with st.expander("❓ Tips for better prompts"):
+    with st.expander(" Tips for better prompts"):
         st.markdown("""
         **How to write good goals:**
         

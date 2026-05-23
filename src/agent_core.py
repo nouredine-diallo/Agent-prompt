@@ -6,7 +6,7 @@ import chromadb
 import ollama
 from sentence_transformers import SentenceTransformer
 
-from src.prompts.meta_architect_prompt import (
+from prompts.meta_architect_prompt import  (
     FEW_SHOT_EXAMPLES,
     JSON_OUTPUT_SCHEMA,
     SECURITY_GUARDRAILS,
@@ -17,7 +17,7 @@ from src.prompts.meta_architect_prompt import (
 
 MODEL = "all-MiniLM-L6-v2"
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "chroma_db")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral:7b")
 
 
 def _normalize_source(meta):
@@ -46,7 +46,7 @@ def _retrieve_documents(query_text, k=5):
 
 
 def _build_llm_system_prompt():
-    return "\n\n".join(
+    return "\n\n".join( 
         [
             SYSTEM_PROMPT,
             "=== SECURITY_GUARDRAILS ===",
@@ -54,7 +54,7 @@ def _build_llm_system_prompt():
             "=== JSON_OUTPUT_SCHEMA ===",
             json.dumps(JSON_OUTPUT_SCHEMA, ensure_ascii=False, indent=2),
             "=== FEW_SHOT_EXAMPLES ===",
-            json.dumps(FEW_SHOT_EXAMPLES[:1], ensure_ascii=False, indent=2),
+            json.dumps(FEW_SHOT_EXAMPLES[:1], ensure_ascii=False, indent=2), 
         ]
     )
 
@@ -108,10 +108,12 @@ def _invoke_ollama(model_name, messages, llm_client=None):
     if llm_client is not None:
         return llm_client.chat(model=model_name, messages=messages, format="json")
 
-    return ollama.chat(model=model_name, messages=messages, format="json")
+    return ollama.chat(model=model_name, messages=messages, format="json",host="http://127.0.0.1:11434")
 
 
-def generate_with_checks(query_text, query_id=None, k=5):
+
+
+def generate_with_checks(query_text, query_id=None, k=5): #similaire a retreve test de l'ingestion sauf qu'on normalise les chemins
     """RAG pipeline: embed query, search ChromaDB, return chunks"""
     try:
         answers, metas = _retrieve_documents(query_text, k=k)
@@ -135,10 +137,10 @@ def generate_with_checks(query_text, query_id=None, k=5):
         }
 
 
-# META-PROMPTING - Générer des prompts optimisés depuis des objectifs
+# Générer des prompts optimisés depuis des objectifs
 
 def _parse_goal(goal: str):
-	"""Quick & dirty parser - détecte task type, format, security flags"""
+	""" détecte task type, format, security flags"""
 	txt = goal.lower()
 	
 	# Détection tâche - matching simple par mots-clés
@@ -229,7 +231,7 @@ def _build_prompt(ctx: dict, rag_chunks: list = None) -> str:
 	else:
 		format_spec = "Retourne ta réponse en texte clair et structuré."
 	
-	# Exemples (few-shot)
+	# Exemples (
 	examples = []
 	if rag_chunks:
 		for chunk in rag_chunks:
@@ -259,7 +261,7 @@ Output: {"email": "marie.dupont@test.fr", "confiance": 0.98}"""]
 		constraints.insert(1, "- Anonymiser les données si nécessaire")
 		constraints.insert(2, "- Respecter le RGPD et la confidentialité")
 	
-	# Optionnel: récupérer contraintes du RAG (approche fainéante - juste le premier chunk)
+	# recup le premier chunk de contrainte du rag 
 	if rag_chunks:
 		for chunk in rag_chunks:
 			if any(w in chunk.lower() for w in ["contrainte", "règle", "attention", "important"]):
@@ -326,7 +328,7 @@ def _fetch_prompt_context(ctx):
 
 
 def generate_prompt_with_metadata(goal, rag_chunks=None, llm_client=None, model=None):
-    """Build a prompt using the hybrid flow: RAG + optional Ollama generation + template fallback."""
+    """construit un prompt base sur RAG + LLM generation et template based si fallback """
     ctx = _parse_goal(goal)
     if rag_chunks is None:
         rag_chunks, sources = _fetch_prompt_context(ctx)
@@ -378,7 +380,7 @@ def generate_prompt_with_metadata(goal, rag_chunks=None, llm_client=None, model=
 
 
 def generer_meta_prompt(goal: str, max_retries: int = 2) -> str:
-    """Backward-compatible wrapper returning only the prompt text."""
+    """Appelle le pipeline complet , recup le prompt final de l'etape precedente """
     result = generate_prompt_with_metadata(goal)
     return result["prompt"]
 

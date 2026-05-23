@@ -4,23 +4,26 @@ from src.ingestion import model, collection
 from sentence_transformers import CrossEncoder, util
 import numpy as np
 
+#retrieve top 50 , rerank avec CrossEncoder , recalcul recall +MRR
+
+
 CE_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
-def retrieve_top_n(query, n=50):
+def retrieve_top_n(query, n=50):  #récupérer TOP N documents similaires
     q_emb = model.encode([query], convert_to_numpy=True)
     res = collection.query(query_embeddings=q_emb.tolist(), n_results=n, include=["documents","metadatas","distances"])
     docs = res.get("documents",[[]])[0]
     metas = res.get("metadatas",[[]])[0]
     return docs, metas
 
-def rerank(query, docs):
+def rerank(query, docs):  #on rerank ses docs et pour chaque pair on lui donne un score , proche de 1 = bien
     ce = CrossEncoder(CE_MODEL)
     pairs = [(query, d) for d in docs]
     scores = ce.predict(pairs)
-    idxs = np.argsort(scores)[::-1]
+    idxs = np.argsort(scores)[::-1] #trie decroissant pour recup les meilleur docs
     return idxs, scores
 
-def evaluate_one(query, expected_sources, k=5):
+def evaluate_one(query, expected_sources, k=5):  # on verifie donc si le bon doc est dans le top 5
     docs, metas = retrieve_top_n(query, n=50)
     idxs, scores = rerank(query, docs)
     returned_sources = [metas[i].get("title") or metas[i].get("source") for i in idxs[:k]]

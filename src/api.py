@@ -11,13 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # import , pour eviter qu'on se trompe et qu'on selectionne le bon fichier 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import importlib.util
-
-agent_path = os.path.join(os.path.dirname(__file__), 'agent.py')
-spec = importlib.util.spec_from_file_location("agent_core", agent_path)
-agent_core = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(agent_core)
-generate_with_checks = agent_core.generate_with_checks
+from agent_core import generate_with_checks
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 

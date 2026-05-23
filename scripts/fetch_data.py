@@ -22,23 +22,23 @@ REPO_LIST_FILE = os.path.join(BASE_DIR, "repos.txt")
 
 # --- 1. Download from URL List ---
 def download_from_urls():
-    print(f"[Phase 1/5] Téléchargement depuis {URL_LIST_FILE}...")
+    print(f"Telechargement depuis cette url  {URL_LIST_FILE}...")
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
     if not os.path.exists(URL_LIST_FILE):
         print("INFO: Fichier d'URLs non trouvé, étape sautée.", file=sys.stderr)
         return
     with open(URL_LIST_FILE, "r", encoding="utf-8") as f:
-        urls = [u.strip() for u in f if u.strip()]
+        urls = [u.strip() for u in f if u.strip()] #enleve les espace dans le fichier pour lire les url 
     for url in urls:
-        try:
-            r = requests.get(url, timeout=20, headers={'User-Agent': 'Mozilla/5.0'})
+        try: 
+            r = requests.get(url, timeout=20, headers={'User-Agent': 'Mozilla/5.0'})  #  headers pour faire croire qu'on est un humain sur un navigateur
             r.raise_for_status()
-            ct = r.headers.get("content-type", "")
+            ct = r.headers.get("content-type", "")  #recup le type du fichier ( pdf html....)
             p = urlparse(url).path
             name = os.path.basename(p) or "index"
             if "pdf" in ct or url.lower().endswith(".pdf"):
                 path = os.path.join(DOWNLOAD_DIR, name if name.endswith(".pdf") else name + ".pdf")
-                with open(path, "wb") as w: w.write(r.content)
+                with open(path, "wb") as w: w.write(r.content) #mettre le fichier pdf en bin pour le telecharger
                 print(f"  Saved PDF: {path}")
             else:
                 path = os.path.join(DOWNLOAD_DIR, name if name.endswith(".html") else name + ".html")
@@ -47,9 +47,9 @@ def download_from_urls():
         except Exception as e:
             print(f"  ERREUR (Download): {url} - {e}", file=sys.stderr)
 
-# --- 2. Fetch ArXiv ---
+# ---  Fetch ArXiv ---
 def fetch_arxiv(query: str = "prompt engineering techniques", max_results: int = 10):
-    print(f"\n[Phase 2/5] Récupération d'ArXiv (Query: '{query}')...")
+    print(f"\n Récupération d'ArXiv (Query: '{query}')...")
     os.makedirs(ARXIV_DIR, exist_ok=True)
     try:
         search = arxiv.Search(query=query, max_results=max_results, sort_by=arxiv.SortCriterion.SubmittedDate)
@@ -64,9 +64,9 @@ def fetch_arxiv(query: str = "prompt engineering techniques", max_results: int =
     except Exception as e:
         print(f"ERREUR (ArXiv) : {e}", file=sys.stderr)
 
-# --- 3. Clone Repos ---
+# --- Clone Repos ---
 def clone_repos():
-    print(f"\n[Phase 3/5] Clonage des dépôts depuis {REPO_LIST_FILE}...")
+    print(f"\n Clonage des dépôts depuis {REPO_LIST_FILE}...")
     os.makedirs(GITHUB_DIR, exist_ok=True)
     if not os.path.exists(REPO_LIST_FILE):
         print("INFO: Fichier de dépôts non trouvé, étape sautée.", file=sys.stderr)
@@ -89,7 +89,7 @@ def clone_repos():
 
 # --- 4. Convert PDFs to TXT ---
 def convert_pdfs_to_txt():
-    print("\n[Phase 4/5] Conversion des PDFs en TXT...")
+    print("\n Conversion des PDFs en TXT...")
     os.makedirs(TXT_DIR, exist_ok=True)
     pdf_files = glob.glob(os.path.join(DOCS_DIR, "**/*.pdf"), recursive=True)
     print(f"  {len(pdf_files)} PDFs trouvés à convertir.")
@@ -110,7 +110,7 @@ def convert_pdfs_to_txt():
 
 # --- 5. Convert HTML and Code to TXT ---
 def convert_others_to_txt():
-    print("\n[Phase 5/5] Conversion des HTML/Code en TXT...")
+    print("\n Conversion des HTML/Code en TXT...")
     html_files = glob.glob(os.path.join(DOWNLOAD_DIR, "**/*.html"), recursive=True)
     for html in html_files:
         txt_filename = os.path.basename(html)[:-5] + ".txt"
@@ -142,7 +142,7 @@ def convert_others_to_txt():
             print(f"  ERREUR (Code Convert): {code_file} - {e}", file=sys.stderr)
 
 def main():
-    print("--- DÉBUT DU SOURCING DE DONNÉES (Étape 1) ---")
+    print("--- DÉBUT DU SOURCING DE DONNÉES  ---")
     download_from_urls()
     fetch_arxiv(query="prompt engineering techniques", max_results=10)
     clone_repos()

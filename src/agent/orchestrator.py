@@ -14,7 +14,7 @@ sys.path.insert(0, parent_dir)
 # Livre de recettes : le system prompt
 from prompts.meta_architect_prompt import SYSTEM_PROMPT, build_meta_prompt
 
-# Commis : la fonction RAG (agent.py est un fichier, pas un package)
+# 
 import importlib.util
 spec = importlib.util.spec_from_file_location("agent", os.path.join(parent_dir, "agent.py"))
 agent_module = importlib.util.module_from_spec(spec)

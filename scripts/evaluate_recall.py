@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
-# scripts/evaluate_recall.py
-# Usage: python scripts/evaluate_recall.py --queries queries.jsonl --k 5
+#EVALUE LE RAG 
+#On fait un embedding de query et compare a ce qui est present dans la chromaDB ? 1 = identique 0.8 proche 0.3 eloigne
 
 import argparse
 import os

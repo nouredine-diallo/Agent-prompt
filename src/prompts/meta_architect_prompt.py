@@ -1,21 +1,18 @@
 """
-Chain-of-Thought  CODER PAR L HUMAIN 
-================================================
+Chain-of-Thought 
 
-Ce fichier contient le "Cerveau" de l'agent - le system prompt qui orchestre
-la génération de prompts optimisés basés sur le RAG.
 
- logique de raisonnement de l'agent , les contraintes de sécurité, et le format de sortie JSON.
+Ce fichier est  le system prompt qui orchestre
+la génération de prompts  basés sur le RAG.
 
-À IMPLÉMENTER :
-- SYSTEM_PROMPT : Le prompt principal avec phases de raisonnement CoT
-- GUARDRAILS : Contraintes de sécurité (PII, toxicité, injection)
-- OUTPUT_FORMAT : Schéma JSON strict pour la sortie
+ logique de raisonnement  , les contraintes de sécurité, et le format de sortie JSON.
+
+
 """
 
-# ==============================================================================
+
 # SYSTEM PROMPT
-# ==============================================================================
+
 
 SYSTEM_PROMPT = """
 RÔLE : Tu es un expert en Prompt engineering.
@@ -48,9 +45,8 @@ Définir le schéma JSON optimiser  attendu qui respecte strictement la config d
 """
 
 
-# ==============================================================================
+
 # GUARDRAILS
-# ==============================================================================
 
 SECURITY_GUARDRAILS = """
 - Détection PII (emails, SSN, numéros de téléphone, cartes bancaires, etc.)
@@ -61,9 +57,9 @@ SECURITY_GUARDRAILS = """
 """
 
 
-# ==============================================================================
+
 # OUTPUT FORMAT
-# ==============================================================================
+
 
 JSON_OUTPUT_SCHEMA = {
     "type": "object",
@@ -87,13 +83,13 @@ JSON_OUTPUT_SCHEMA = {
 }
 
 
-# ==============================================================================
+
 # EXEMPLES FEW-SHOT 
-# ==============================================================================
+
 
 FEW_SHOT_EXAMPLES = [
     {
-        # ===== INPUT DE L'EXEMPLE =====
+        #  INPUT DE L'EXEMPLE 
         "input": {
             "user_objective": "Donne un exemple de réponse JSON strict pour une extraction d'entités.",
             "rag_context": """
@@ -107,7 +103,7 @@ Pour les extractions, validez chaque étape : lecture → identification → val
             """
         },
 
-        # ===== OUTPUT ATTENDU (le JSON que l'agent doit générer) =====
+        # OUTPUT ATTENDU (le JSON que l'agent doit générer)
         "output": {
             "prompt_final": (
                 "Tu es un expert en extraction d'informations structurées.\n\n"
@@ -169,13 +165,12 @@ Pour les extractions, validez chaque étape : lecture → identification → val
 ]
 
 
-# ==============================================================================
-# FONCTION D'ASSEMBLAGE DU PROMPT ( CODER PAR L HUMAIN )
-# ==============================================================================
+# FONCTION D'ASSEMBLAGE DU PROMP
+
 
 def build_meta_prompt(user_objective: str, rag_context: str = "") -> str:
     """
-    Assemble le meta-prompt final en combinant :
+    Assemble le prompt final en combinant :
     - Le SYSTEM_PROMPT
     - L'objectif utilisateur
     - Le contexte RAG récupéré
@@ -192,9 +187,9 @@ def build_meta_prompt(user_objective: str, rag_context: str = "") -> str:
     return SYSTEM_PROMPT + a + user_objective + a + rag_context 
 
 
-# ==============================================================================
+
 # VALIDATION DU PROMPT GÉNÉRÉ ( CODER PAR L HUMAIN )
-# ==============================================================================
+
 
 def validate_generated_prompt(prompt: str) -> dict:
     """
@@ -217,7 +212,7 @@ def validate_generated_prompt(prompt: str) -> dict:
     errors = []
     warnings = []
     
-    # ========== ÉTAPE 1 : TEST DU FORMAT ==========
+    # TEST DU FORMAT JSON
     try:
         # Essayer de charger le JSON
         prompt_obj = json.loads(prompt)
@@ -229,7 +224,7 @@ def validate_generated_prompt(prompt: str) -> dict:
         errors.append(f"Erreur inattendue lors du parsing JSON : {str(e)}")
         return {"valid": False, "errors": errors, "warnings": warnings}
     
-    # ========== ÉTAPE 2 : TEST DU CONTENU ==========
+    #TEST DU CONTENU 
     required_keys = ["prompt_final", "sources_rag"]
     for key in required_keys:
         if key not in prompt_obj:
@@ -249,7 +244,7 @@ def validate_generated_prompt(prompt: str) -> dict:
         if not isinstance(prompt_obj["sources_rag"], list):
             errors.append("Le champ 'sources_rag' doit être une liste")
     
-    # ========== ÉTAPE 3 : TEST DE SÉCURITÉ (PII détectées ?) ==========
+    # TEST DE SÉCURITÉ PII détectées ?
     # Récupérer le texte brut du prompt_final pour analyse sécurité
     prompt_text = prompt_obj.get("prompt_final", "")
     
@@ -292,7 +287,7 @@ def validate_generated_prompt(prompt: str) -> dict:
         if re.search(pattern, prompt_text, re.IGNORECASE):
             warnings.append(f"Tentative d'injection de prompt détectée (pattern: '{pattern}')")
     
-    # ========== RÉSULTAT FINAL ==========
+    # RÉSULTAT FINAL
     valid = len(errors) == 0
     
     return {

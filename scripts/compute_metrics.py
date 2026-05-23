@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 
+#Tableau de performance , recall : le bon doc est dans le top ? MRR la position du bon document ,fallback_rate : combien de fois de requetes ont echouees , latency_ms : temps moy de reponses 
 if len(sys.argv) < 2:
     print("Usage: python compute_metrics.py metrics/benchmarks.csv")
     sys.exit(1)

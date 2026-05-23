@@ -58,7 +58,7 @@ def chunk_text(txt: str, target: int, overlap: int) -> List[str]:
             curr_words += wc
         else:
             chunks.append(" ".join(curr))
-            # Gestion de l'overlap entre chunks
+            # Gestion de l'overlap entre chunks pour recup le context 
             if overlap > 0:
                 overlap_txt = " ".join(" ".join(curr).split()[-overlap:])
                 curr = [overlap_txt, s] if overlap_txt else [s]
@@ -72,6 +72,7 @@ def chunk_text(txt: str, target: int, overlap: int) -> List[str]:
     return chunks
 
 def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = OVERLAP):
+    "map les source pour garder une trace , fais l'embedding et stock ses vecteur dans ChromaDB"
     print(f"Starting ingestion from {src_dir}")
     files = glob.glob(os.path.join(src_dir, "*.txt"))
     
@@ -107,7 +108,7 @@ def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = O
             
             ids.append(doc_id)
             
-            # Detect language (quick hack)
+            # Detect language 
             try:
                 lang = detect(chunk)
             except:
@@ -129,10 +130,10 @@ def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = O
     if not docs:
         print("Nothing new to ingest")
         return
-    
+    #embedding des chunks ( vectorisation)
     print(f"Embedding {len(docs)} chunks...")
     embeddings = model.encode(docs, show_progress_bar=True, convert_to_numpy=True)
-    
+    # on stock ses vecteur dans la bd ChromaDB
     print("Adding to ChromaDB...")
     batch = 5000
     for i in range(0, len(ids), batch):
@@ -146,16 +147,16 @@ def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = O
     print(f"Done. DB at {DB_DIR}")
 
 def test_retrieval(q: str, k: int = 5):
-    """Quick RAG test"""
-    print(f"\nTesting RAG: '{q}'")
+    """ Transforme une query en vecteur , recherche dans chroma db les distance le splus proche et retourne les doc les plus proche"""
+    print(f"\nTesting RAG: '{q}'") #transforme query en vecteur ( embedding)
     q_emb = model.encode([q], convert_to_numpy=True)
     
-    try:
+    try:  #recherche de similarités par chromaDB ( cosin distance)
         res = col.query(
             query_embeddings=q_emb.tolist(),
             n_results=k,
             include=["documents", "metadatas", "distances"]
-        )
+        )  
     except Exception as e:
         print(f"Query failed: {e}. Empty DB?", file=sys.stderr)
         return None
@@ -164,7 +165,7 @@ def test_retrieval(q: str, k: int = 5):
         print("No results found")
         return None
     
-    for i, doc in enumerate(res["documents"][0]):
+    for i, doc in enumerate(res["documents"][0]):  #pour chaque doc on donne les metadata des docs ainsi que la distance calcule precedemment 
         meta = res["metadatas"][0][i]
         dist = res["distances"][0][i]
         print(f"\n[{i+1}] dist={dist:.4f} | {meta.get('title', 'N/A')}")

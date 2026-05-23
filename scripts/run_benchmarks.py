@@ -4,6 +4,8 @@ import requests
 import csv
 import os
 from datetime import datetime
+#simule appels API  mesure latence API , recall reel , erreurs , fallback 
+
 
 API_URL = "http://127.0.0.1:8000/generate"
 QUERIES_PATH = "tests/queries_agent_20.jsonl"
