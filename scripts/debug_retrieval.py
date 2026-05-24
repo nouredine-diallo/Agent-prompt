@@ -1,9 +1,12 @@
 
 #vérifier si tes embeddings sont bons, verifier que les docs sont bon , debug la qualité du rag ( pertinence des result) , affiche les distance 
 
-
-from src.ingestion import model, collection
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.ingestion import model, col as collection
 import json, sys
+
 
 q = sys.argv[1] if len(sys.argv)>1 else "q08's text here"
 k = int(sys.argv[2]) if len(sys.argv)>2 else 10

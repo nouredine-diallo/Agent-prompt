@@ -1,191 +1,103 @@
 import streamlit as st
-import requests
 import json
-import uuid
 import os
 import sys
 
-#Definition du Frontend avec streamlit pour interagir avec l'API FASTAPI 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from agent_core import (
-    generer_meta_prompt,
+# Definition du Frontend avec streamlit pour interagir avec l'Agent
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if not os.path.exists("chroma_db"):
+    st.write("Initialisation de la base vectorielle (Ingestion)...")
+    from src.ingestion import run_ingestion
+    run_ingestion() 
+
+from src.agent_core import (
     generate_prompt_with_metadata,
     _parse_goal,
 )
-import os
 
 os.environ["NO_PROXY"] = "localhost,127.0.0.1"
 os.environ["no_proxy"] = "localhost,127.0.0.1"
 
-st.set_page_config(page_title="Meta-Prompting Architect ", page_icon="", layout="wide")
+st.set_page_config(page_title="Meta-Prompting Architect", page_icon="✨", layout="wide")
 
-# Config API
-API_HOST = os.getenv("FASTAPI_HOST", "127.0.0.1")
-API_PORT = int(os.getenv("FASTAPI_PORT", 8000))
-API_URL = f"http://{API_HOST}:{API_PORT}/generate"
-API_STATUS = f"http://{API_HOST}:{API_PORT}/"
+st.title("Agent prompt ")
+st.caption("Generate optimized, structured, and secure prompts from your goals.")
 
-st.title(" Meta-Prompting Architect")
-st.caption("Q&A RAG or Prompt Generation")
+st.info("Describe what you want to accomplish → get an optimized prompt")
 
-
-# Sélecteur de mode
-mode = st.radio(
-    "Choose mode:",
-    ["Q&A RAG", " Generate Prompt"],
-    help="Q&A: ask questions. Generate: get optimized prompts from goals."
+goal = st.text_area(
+    "📝 Your goal:",
+    placeholder="Example: 'Extract email addresses from PDFs'\n"
+                "Example: 'Classify tweets as positive/negative with data protection'\n"
+                "Example: 'Summarize medical reports in JSON format'",
+    height=100
 )
 
+col1, col2 = st.columns([1, 4])
+with col1:
+    gen_btn = st.button(" Generate Prompt", type="primary")
+with col2:
+    if goal:
+        st.caption(f"{len(goal.split())} words")
 
-# MODE : Q&A RAG
-
-if mode == " Q&A RAG":
-    st.markdown("###  Ask about Prompt Engineering")
-    
-    # Vérifier si l'API est accessible
-    api_ok = False
-    try:
-        r = requests.get(API_STATUS, timeout=5)
-        if r.ok and r.json().get("status") == "Agent-Prompt API is running":
-            api_ok = True
-    except:
-        pass
-
-    if not api_ok:
-        st.error(f"⚠️ API not reachable at {API_STATUS}\n\n"
-                 f"Start it with: `uvicorn src.api:app --host {API_HOST} --port {API_PORT} --reload`")
-        st.stop()
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # Afficher l'historique du chat
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            if msg["role"] == "user":
-                st.markdown(msg["content"])
-            elif isinstance(msg["content"], dict) and "answer" in msg["content"]:
-                st.markdown(msg["content"]["answer"])
-                with st.expander(" Details (sources, meta)"):
-                    st.json(msg["content"])
-            else:
-                st.error(str(msg["content"]))
-
-    query = st.chat_input("What prompt do you need help with?")
-
-    if query:
-        st.session_state.messages.append({"role": "user", "content": query})
-        with st.chat_message("user"):
-            st.markdown(query)
-        
-        with st.chat_message("assistant"):
-            placeholder = st.empty()
-            placeholder.markdown(" Agent thinking (RAG + CoT + validation)...")
-            
+if gen_btn:
+    if not goal or len(goal.strip()) < 10:
+        st.warning(" Please provide more details (at least 10 chars)")
+    else:
+        with st.spinner(" Generating prompt (Parse → RAG → Build → Validate)..."):
             try:
-                qid = str(uuid.uuid4())
-                payload = {"query_text": query, "query_id": qid}
-                resp = requests.post(API_URL, json=payload, timeout=120)
-                resp.raise_for_status()
-                data = resp.json()
-                
-                placeholder.markdown(data.get("answer", "*No answer received*"))
-                with st.expander(" Details (sources, meta)"):
-                    st.json(data)
-                
-                st.session_state.messages.append({"role": "assistant", "content": data})
-            
-            except requests.exceptions.ConnectionError:
-                err = f"Can't connect to API at {API_URL}. Did you start the server?"
-                placeholder.error(err)
-                st.session_state.messages.append({"role": "assistant", "content": err})
-            except requests.exceptions.Timeout:
-                err = "Timeout: API didn't respond in 120s"
-                placeholder.error(err)
-                st.session_state.messages.append({"role": "assistant", "content": err})
-            except Exception as e:
-                err = f"Unexpected error: {e}"
-                placeholder.error(err)
-                st.session_state.messages.append({"role": "assistant", "content": err})
+                # Appel direct a l'agent
+                prompt_result = generate_prompt_with_metadata(goal)
+                prompt_out = prompt_result["prompt"]
 
+                if prompt_result["mode"] == "fallback_template":
+                    st.warning(
+                        f"🛡️ Fallback template used: {prompt_result['fallback_reason']}"
+                    )
+                else:
+                    st.success("✅ Prompt generated successfully with Groq (Llama 3.1)")
 
-# MODE 2: GÉNÉRATION DE PROMPT
+                st.markdown("####  Your optimized prompt:")
+                st.code(prompt_out, language="markdown")
 
-else:
-    st.markdown("###  Prompt Generation")
-    st.info("Describe what you want to accomplish → get an optimized prompt")
-    
-    goal = st.text_area(
-        " Your goal:",
-        placeholder="Example: 'Extract email addresses from PDFs'\n"
-                    "Example: 'Classify tweets as positive/negative with data protection'\n"
-                    "Example: 'Summarize medical reports in JSON format'",
-        height=100
-    )
-    
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        gen_btn = st.button("✨ Generate", type="primary")
-    with col2:
-        if goal:
-            st.caption(f" {len(goal.split())} words")
-    
-    if gen_btn:
-        if not goal or len(goal.strip()) < 10:
-            st.warning(" Please provide more details (at least 10 chars)")
-        else:
-            with st.spinner(" Generating prompt (parse → RAG → build → validate)..."):
-                try:
-                    prompt_result = generate_prompt_with_metadata(goal)
-                    prompt_out = prompt_result["prompt"]
+                st.download_button(
+                    label="⬇ Download Prompt",
+                    data=prompt_out,
+                    file_name="optimized_prompt.txt",
+                    mime="text/plain"
+                )
 
-                    if prompt_result["mode"] == "fallback_template":
-                        st.warning(
-                            f"⚠️ Fallback template used: {prompt_result['fallback_reason']}"
-                        )
-                    else:
-                        st.success("✅ Prompt generated with Ollama")
-
-                    st.markdown("####  Your optimized prompt:")
-                    st.code(prompt_out, language="markdown")
-
-                    st.download_button(
-                        label="Download Prompt",
-                        data=prompt_out,
-                        file_name="optimized_prompt.txt",
-                        mime="text/plain"
+                with st.expander(" Analyse interne (Debug)"):
+                    ctx = _parse_goal(goal)
+                    st.markdown("**1. Objectif parsé :**")
+                    st.json(ctx)
+                    st.markdown("**2. Traçabilité (Data Lineage) :**")
+                    st.json(
+                        {
+                            "mode": prompt_result["mode"],
+                            "fallback_reason": prompt_result["fallback_reason"],
+                            "sources": prompt_result["sources"],
+                            "reasoning_steps": prompt_result["reasoning_steps"],
+                        }
                     )
 
-                    with st.expander("Analyse interne"):
-                        ctx = _parse_goal(goal)
-                        st.json(ctx)
-                        st.json(
-                            {
-                                "mode": prompt_result["mode"],
-                                "fallback_reason": prompt_result["fallback_reason"],
-                                "sources": prompt_result["sources"],
-                                "reasoning_steps": prompt_result["reasoning_steps"],
-                            }
-                        )
-                        st.caption("This context was used to build the prompt above")
+            except Exception as e:
+                st.error(f"❌ Generation failed: {e}")
+                st.exception(e)
 
-                except Exception as e:
-                    st.error(f"❌ Generation failed: {e}")
-                    st.exception(e)
+# Section aide
+with st.expander(" Tips for better prompts"):
+    st.markdown("""
+    **How to write good goals:**
     
-    # Section aide
-    with st.expander(" Tips for better prompts"):
-        st.markdown("""
-        **How to write good goals:**
-        
-        1. **Be specific**: State clearly what to extract/classify/summarize
-        2. **Mention format**: JSON? Text? List?
-        3. **Add context**: PDF, email, article, medical data, etc.
-        4. **Security**: If handling sensitive data, say "with security" or "confidential"
-        
-        **Good examples:**
-        - ✅ "Extract email addresses and phone numbers from CVs in JSON format"
-        - ✅ "Classify customer reviews as positive/negative/neutral with privacy protection"
-        - ✅ "Summarize technical documentation keeping only key features"
-        - ❌ "do something with data" (too vague)
-        """)
+    1. **Be specific**: State clearly what to extract/classify/summarize
+    2. **Mention format**: JSON? Text? List?
+    3. **Add context**: PDF, email, article, medical data, etc.
+    4. **Security**: If handling sensitive data, say "with security" or "confidential"
+    
+    **Good examples:**
+    - ✅ "Extract email addresses and phone numbers from CVs in JSON format"
+    - ✅ "Classify customer reviews as positive/negative/neutral with privacy protection"
+    - ✅ "Summarize technical documentation keeping only key features"
+    - ❌ "do something with data" (too vague)
+    """)

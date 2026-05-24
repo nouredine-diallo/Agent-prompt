@@ -1,36 +1,41 @@
 import os
 import uvicorn
-import uuid
 import sys
 from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 
-# import , pour eviter qu'on se trompe et qu'on selectionne le bon fichier 
+# Importation sécurisée
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from agent_core import generate_with_checks
+from src.agent_core import generate_prompt_with_metadata
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 app = FastAPI(
     title="Agent-Prompt API",
-    description="Meta-Prompting Architect API",
+    description="API for the Meta-Prompting Architect - Generate structured prompts.",
     version="1.0.0"
 )
-#Utilisation de Pydantic pour valider les requetes , leur type ....
-class GenReq(BaseModel):
-    query: str
-    mock: Optional[bool] = False
-    max_tokens: Optional[int] = 512
-    query_id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
 
-# CORS pour l'UI Streamlit
+# Utilisation de Pydantic pour valider la requête utilisateur
+class GeneratePromptReq(BaseModel):
+    goal: str
+    mock: Optional[bool] = False
+
+# Utilisation de Pydantic pour documenter et valider la réponse
+class GeneratePromptRes(BaseModel):
+    prompt: str
+    mode: str
+    fallback_reason: Optional[str]
+    sources: List[str]
+    reasoning_steps: List[str]
+
+# CORS pour autoriser l'accès depuis n'importe quel frontend 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -41,38 +46,30 @@ async def status():
     return {"status": "Agent-Prompt API is running"}
 
 
-@app.post("/generate")
-async def generate(req: GenReq = Body(...)):
-    """Main endpoint - runs full agent pipeline"""
-    if not os.getenv("OPENAI_API_KEY") and not req.mock:
-        pass  
-
+@app.post("/generate", response_model=GeneratePromptRes)
+async def generate(req: GeneratePromptReq = Body(...)):
+    """Génère un prompt optimisé basé sur un objectif métier """
     try:
-        print(f"[{req.query_id[:8]}] Query: '{req.query[:50]}...'")
+        print(f"Goal received: '{req.goal[:50]}...'")
 
         if req.mock:
             return {
-                "answer": f"Mock response for: {req.query}",
-                "sources": [],
-                "metadata": {"query_id": req.query_id, "mock": True, "failure_reason": "ok"}
+                "prompt": f"Mock prompt generated for: {req.goal}",
+                "mode": "mock",
+                "fallback_reason": None,
+                "sources": ["mock_source.txt"],
+                "reasoning_steps": ["1. Mock analysis completed."]
             }
 
-        # Appel du moteur agent
-        result = generate_with_checks(
-            query_text=req.query,
-            query_id=req.query_id
-        )
-
-        # Vérifier que sources existe
-        if "sources" not in result:
-            result["sources"] = []
         
-        print(f"[{req.query_id[:8]}] Done")
+        result = generate_prompt_with_metadata(goal=req.goal)
+        
+        print("Prompt generation done.")
         return result
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
-        raise HTTPException(status_code=500, detail="Agent processing failed")
+        raise HTTPException(status_code=500, detail="Prompt generation failed")
 
 if __name__ == "__main__":
     print("Starting API on http://127.0.0.1:8000")

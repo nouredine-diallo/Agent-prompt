@@ -1,61 +1,70 @@
-# Agent-Prompt — Pipeline RAG avec Meta-Prompting
+# Agent-Prompt : Générateur de Prompts Sécurisé (RAG + Fallback)
 
-> Pipeline RAG utilisé pour générer des prompts structurés à partir de sources techniques (GitHub, ArXiv, documentation). 
-> Évalué quantitativement avec Ragas (faithfulness, relevancy) et métriques custom (Recall@5, MRR).
+> Pipeline RAG orchestrant un LLM pour générer des prompts structurés à partir de documentations techniques sur le prompt eengerring (ArXiv, GitHub). Conçu avec une architecture résiliente axée sur la validation des données et la sécurité.
 
----
-
-## 📊 Métriques d'évaluation (Ragas — 2026)
-
-| Métrique          | Score | Cible  | Statut |
-|-------------------|-------|--------|--------|
-| Faithfulness      | À MESURER | > 0.80 | 🟡 |
-| Answer Relevancy  | À MESURER | > 0.75 | 🟡 |
-| Recall@5 (custom) | 0.40  | 0.60   | 🔴 |
-| MRR (custom)      | 0.32  | 0.50   | 🔴 |
-
-*→ Reproduire l'évaluation : `python scripts/evaluate_ragas.py`*
-*→ Dataset utilisé : 20 requêtes annotées (`data/queries_agent_20.jsonl`)*
+##  À quoi sert ce projet ?
+Les LLMs génèrent souvent des prompts vagues ou formatés de manière aléatoire. Ce projet résout ce problème en :
+1. Récupérant les meilleures pratiques de Prompt Engineering via recherche vectorielle.
+2. Forçant le LLM à générer un prompt structuré (Chain-of-Thought, JSON) basé sur ces pratiques.
+3. Bloquant la réponse si elle contient des failles de sécurité (PII), pour basculer sur un système de secours.
 
 ---
 
-## Architecture
+## Preuves d'Ingénierie & Fonctionnalités
 
-Le pipeline récupère d'abord les meilleures pratiques depuis ArXiv, GitHub et des guides techniques, puis les utilise comme contexte pour générer des prompts validés et sécurisés.
-
-1. **Ingestion :** Chunking sémantique avec overlap 50 mots, détection de langue.
-2. **Retrieval :** Embedding + recherche vectorielle ChromaDB.
-3. **Meta-Prompting :** 4 phases de génération structurée.
-4. **Validation :** `validator.py` vérifie l'absence de PII, d'injection de prompt et la conformité du schéma JSON.
+- **Génération sous contrainte (Structured Output) :** Utilisation de l'API Groq (Llama 3.1) en forçant un format de sortie `json_object` strictement validé par Pydantic.
+- **Sécurité (Guardrails) :** Validation post-génération par Regex. Le système intercepte et bloque la sortie du LLM si elle hallucine des données sensibles (Cartes bancaires, SSN, emails non anonymisés) ou des tentatives d'injection.
+- **Résilience  :** Si le LLM échoue, timeout, ou génère du PII, le système ne crash pas. Il bascule automatiquement sur un mode `fallback_template` déterministe pour garantir une réponse à l'utilisateur.
 
 ---
 
-## Lancer localement
+## Évaluation  (Metrics)
+
+Le système d'ingestion (Chunking sémantique) a été évalué sur un *Gold Set* manuel de 20 requêtes catégorisées :
+
+| Métrique | Score | Notes |
+| :--- | :--- | :--- |
+| **Recall@5** | 0.30 | Identifié : les requêtes courtes (< 5 mots) pénalisent le score. |
+| **MRR** | 0.30 | Un reranking par cross-encoder est prévu pour l'optimisation. |
+| **Latence Retrieval** | ~180 ms | Temps moyen d'exécution sur le dataset de test. |
+
+*→ Script d'évaluation reproductible : `python scripts/evaluate_recall.py`*
+
+
+
+---
+
+## 💻 Stack Technique
+- **Orchestration LLM :** API Groq (Llama 3.1)
+- **Data & RAG :** ChromaDB, SentenceTransformers (`all-MiniLM-L6-v2`)
+- **Backend & UI :** Python, FastAPI, Streamlit
+- **Qualité :** Validation JSON stricte, Tests unitaires (Pytest)
+
+
+
+---
+## Limites actuelles : 
+Le pipeline intègre des guardrails déterministes (Regex PII, Injection patterns). Cependant, l'architecture actuelle présente des limites documentées :
+- **Bypass linguistique (Cross-lingual) :** Les filtres d'injection sont actuellement optimisés pour le français et l'anglais via Regex. Ils sont théoriquement vulnérables à des attaques dans des langues moins représentées dans les patterns de sécurité.
+- **Limites des Regex :** Les Regex ne suffisent pas à capturer l'intention malveillante . 
+  - *Roadmap :* Transition prévue vers une validation via **"LLM-as-a-Judge"** (un modèle séparé qui valide la sortie du premier) pour une détection sémantique plutôt que lexicale.
+## 🚀 Lancer localement
 
 ```bash
-git clone https://github.com/nouredine-diallo/Agent-prompt
+git clone [https://github.com/nouredine-diallo/Agent-prompt](https://github.com/nouredine-diallo/Agent-prompt)
 cd Agent-prompt
+
+# Créer l'environnement et installer les dépendances
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env    # Ajouter la clé API OpenAI/Vertex
 
-# Ingestion de la base de connaissances
-python src/ingestion.py
+# Ajouter la clé API Groq
+cp .env.example .env 
 
-# Lancement de l'interface
-streamlit run ui_streamlit.py
-```
+# Lancer l'API (Terminal 1)
+uvicorn src.api:app --reload --port 8000
 
----
+# Lancer l'interface (Terminal 2)
+streamlit run src/ui_streamlit.py
 
-## Limites connues & Tradeoffs
-
-**Recall@5 = 0.40 (cible 0.60) :** La stratégie de chunking actuelle n'est pas optimale pour les requêtes courtes. L'ajout d'un reranking par cross-encoder est nécessaire.
-
-**MRR = 0.32 :** Le système peine à remonter la meilleure source en position 1.
-
-**Performances :** L'absence de cache des requêtes entraîne des appels API redondants.
-
-## Roadmap
-
-- [ ] Cross-encoder reranking pour améliorer le Recall@5.
-- [ ] Implémentation d'un cache mémoire.

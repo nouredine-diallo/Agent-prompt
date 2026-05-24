@@ -33,6 +33,7 @@ except LookupError:
 model = SentenceTransformer(MODEL)
 client = chromadb.PersistentClient(path=DB_DIR)
 col = client.get_or_create_collection("docs")
+collection = col
 
 def read_file(path: str) -> str:
     try:
