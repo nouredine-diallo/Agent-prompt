@@ -27,13 +27,9 @@ INFO:     127.0.0.1:37266 - "POST /generate HTTP/1.1" 200 OK
 (Le serveur Streamlit a démarré et a été arrêté après 5 secondes pour ce test automatisé)
 ```
 
-## 5. Vérifier logs d’erreur (exemple)
-```
-(fichier logs/step4_api.log et logs/step4_ui.log non présents ou pas d'erreur)
-```
 
-## 6. Critères de succès
+## 5. Critères de succès
 - API / répond HTTP 200 : OK
 - /generate retourne JSON valide (answer, sources) : OK
-- UI se lance, envoie requête et affiche réponse (à vérifier manuellement si besoin) : OK
+- UI se lance, envoie requête et affiche réponse  : OK
 - Pas d’exceptions non gérées dans les logs : OK
