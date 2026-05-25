@@ -13,6 +13,3 @@ Résultats actuels :
 - Conciseness : 0.90
 
 
-
-Notes :
-- logs disponibles dans logs/agent_eval.log
