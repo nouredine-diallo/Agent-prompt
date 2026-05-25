@@ -2,19 +2,20 @@ name: Sync to Hugging Face Space
 
 on:
   push:
-    branches: [main] # Se déclenche quand tu push sur le main
-  # Permet de lancer l'action manuellement depuis GitHub si besoin
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4 
         with:
           fetch-depth: 0
           lfs: true
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://Land248:$HF_TOKEN@huggingface.co/spaces/Land248/Agent-prompt main
+        run: |
+          git remote add huggingface https://Land248:$HF_TOKEN@huggingface.co/spaces/Land248/Agent-prompt
+          git push -f huggingface main
