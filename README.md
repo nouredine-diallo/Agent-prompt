@@ -1,3 +1,12 @@
+---
+title: Agent Prompt Architect
+emoji: ✨
+colorFrom: blue
+colorTo: indigo
+sdk: streamlit
+app_file: src/ui_streamlit.py
+pinned: false
+---
 # Agent-Prompt : Générateur de Prompts Sécurisé (RAG + Fallback)
 
 > Pipeline RAG orchestrant un LLM pour générer des prompts structurés à partir de documentations techniques sur le prompt eengerring (ArXiv, GitHub). Conçu avec une architecture résiliente axée sur la validation des données et la sécurité.
