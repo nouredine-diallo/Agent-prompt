@@ -10,4 +10,4 @@ chroma_db/
 *.Zone.Identifier
 *.db
 docs/arxiv/*.pdf
-docs/github/
+docs/github/*.pdf
