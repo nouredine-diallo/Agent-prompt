@@ -9,3 +9,5 @@ chroma_db/
 .DS_Store
 *.Zone.Identifier
 *.db
+docs/arxiv/*.pdf
+docs/github/
