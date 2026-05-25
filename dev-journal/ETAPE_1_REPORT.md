@@ -1,7 +1,6 @@
 # Étape 1 — Data sourcing & ingestion RAG
 
-## Statut
-Terminé.
+
 
 ## Travail réalisé
 
@@ -24,6 +23,3 @@ Terminé.
 - Le chunking actuel reste améliorable pour les requêtes courtes.
 - Le reranking n’est pas encore implémenté.  
 
-## Notes
-
-Les logs complets et scripts intermédiaires utilisés pendant le développement ont été conservés dans ce dossier à titre de référence technique. 
