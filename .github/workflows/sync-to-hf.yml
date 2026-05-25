@@ -11,23 +11,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1 
+          fetch-depth: 1
       
+      - name: Nettoyage force brute des PDF
+        run: |
+          # Le robot détruit tous les fichiers PDF avant l'envoi
+          find . -name "*.pdf" -type f -delete
+          
       - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # 1. Configuration de l'identité du robot
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # 2. Création d'une branche sans aucun historique (Orphan)
           git checkout --orphan hf-deploy
-          
-          # 3. On ajoute les fichiers actuels (sans les PDF supprimés)
           git add .
-          git commit -m "Deploy to Hugging Face (Clean History)"
-          
-          # 4. On force l'envoi de cette version propre sur le main de Hugging Face
+          git commit -m "Deploy to Hugging Face (Zero PDF Guarantee)"
           git remote add huggingface https://Land248:$HF_TOKEN@huggingface.co/spaces/Land248/Agent-prompt
           git push -f huggingface hf-deploy:main
