@@ -18,6 +18,20 @@ Les LLMs génèrent souvent des prompts vagues ou formatés de manière aléatoi
 3. Bloquant la réponse si elle contient des failles de sécurité (PII), pour basculer sur un système de secours.
 
 ---
+* [Tester la Démo Live sur Hugging Face Spaces](https://huggingface.co/spaces/Land248/Agent-prompt)**
+
+*(Note : Si l'application affiche une erreur de quota API Groq, vous pouvez entrer votre propre clé API dans le menu de l'application pour la tester en illimité).*
+
+--- 
+---
+
+## Démonstration 
+
+[[Demo](https://github.com/user-attachments/assets/e476c117-6402-4539-8faa-aad20c8ff8f5)]
+
+*Le pipeline extrait les bonnes pratiques depuis ChromaDB(RAG), construit la structure, vérifie la sécurité (Guardrails), et force une sortie JSON via Llama 3.1.*
+
+---
 
 ## Preuves d'Ingénierie & Fonctionnalités
 
