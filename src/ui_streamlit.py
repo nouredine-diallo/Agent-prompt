@@ -8,8 +8,8 @@ def main():
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if not os.path.exists("chroma_db"):
         st.write("Initialisation de la base vectorielle (Ingestion)...")
-        from src.ingestion import run_ingestion
-        run_ingestion() 
+        from src.ingestion import ingest
+        ingest() 
 
     from src.agent_core import (
         generate_prompt_with_metadata,
