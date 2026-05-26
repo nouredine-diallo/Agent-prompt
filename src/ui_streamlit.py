@@ -18,6 +18,13 @@ def main():
 
     os.environ["NO_PROXY"] = "localhost,127.0.0.1"
     os.environ["no_proxy"] = "localhost,127.0.0.1"
+    api_key = st.sidebar.text_input(" Clé API Groq (Optionnel si hébergé en local)", type="password")
+
+    if api_key:
+        os.environ["GROQ_API_KEY"] = api_key
+    elif not os.getenv("GROQ_API_KEY"):
+        st.warning("Veuillez entrer une clé API Groq dans la barre latérale pour tester l'Agent.")
+        st.stop()
 
     st.set_page_config(page_title="Meta-Prompting Architect", page_icon="✨", layout="wide")
 
