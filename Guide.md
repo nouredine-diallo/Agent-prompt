@@ -3,7 +3,8 @@ Quick Start : Pipeline Meta-Prompting
 Bash
 # Activer l'environnement virtuel
 source .venv/bin/activate
-
+# Faites l ingestion si le dossier chroma_db n'est pas present :
+python src/ingestion.py
 # Lancer le serveur d'interface
 streamlit run src/ui_streamlit.py --server.port 8501
 L'interface est accessible via http://localhost:8501.

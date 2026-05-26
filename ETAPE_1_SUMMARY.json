@@ -1,8 +1,0 @@
-{
-  "baseline": 0.40,
-  "final_recall": 0.40,
-  "final_mrr": 0.40,
-  "best_chunk": 300,
-  "best_overlap": 20,
-  "iterations": 1
-}
