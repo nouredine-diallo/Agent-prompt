@@ -9,13 +9,13 @@ pinned: false
 ---
 # Agent-Prompt : Générateur de Prompts Sécurisé (RAG + Fallback)
 
-> Pipeline RAG orchestrant un LLM pour générer des prompts structurés à partir de documentations techniques sur le prompt eengerring (ArXiv, GitHub). Conçu avec une architecture résiliente axée sur la validation des données et la sécurité.
+> Pipeline RAG orchestrant un LLM pour générer des prompts structurés à partir de documentations techniques sur le prompt eengerring (ArXiv, GitHub). 
 
 ##  À quoi sert ce projet ?
-Les LLMs génèrent souvent des prompts vagues ou formatés de manière aléatoire. Ce projet résout ce problème en :
+Les LLMs génèrent souvent des prompts vagues ou  de manière aléatoire. Ce projet résout ce problème en :
 1. Récupérant les meilleures pratiques de Prompt Engineering via recherche vectorielle.
-2. Forçant le LLM à générer un prompt structuré (Chain-of-Thought, JSON) basé sur ces pratiques.
-3. Bloquant la réponse si elle contient des failles de sécurité (PII), pour basculer sur un système de secours.
+2. Forçant le LLM à générer un prompt structuré  basé sur ces pratiques.
+3. Bloquant la réponse si elle contient des failles de sécurité (PII), pour basculer sur un fallback.
 
 ---
 * [Tester la Démo Live sur Hugging Face Spaces](https://huggingface.co/spaces/Land248/Agent-prompt)**
@@ -35,8 +35,8 @@ Les LLMs génèrent souvent des prompts vagues ou formatés de manière aléatoi
 
 ## Preuves d'Ingénierie & Fonctionnalités
 
-- **Génération sous contrainte (Structured Output) :** Utilisation de l'API Groq (Llama 3.1) en forçant un format de sortie `json_object` strictement validé par Pydantic.
-- **Sécurité (Guardrails) :** Validation post-génération par Regex. Le système intercepte et bloque la sortie du LLM si elle hallucine des données sensibles (Cartes bancaires, SSN, emails non anonymisés) ou des tentatives d'injection.
+- **Structured Output :** Utilisation de l'API Groq (Llama 3.1) en forçant un format de sortie `json_object` validé par Pydantic.
+- **Guardrails :** Validation post-génération par Regex. Le système intercepte et bloque la sortie du LLM si elle hallucine des données sensibles (Cartes bancaires, SSN, emails non anonymisés) ou des tentatives d'injection.
 - **Résilience  :** Si le LLM échoue, timeout, ou génère du PII, le système ne crash pas. Il bascule automatiquement sur un mode `fallback_template` déterministe pour garantir une réponse à l'utilisateur.
 
 ---
@@ -47,8 +47,8 @@ Le système d'ingestion (Chunking sémantique) a été évalué sur un *Gold Set
 
 | Métrique | Score | Notes |
 | :--- | :--- | :--- |
-| **Recall@5** | 0.30 | Identifié : les requêtes courtes (< 5 mots) pénalisent le score. |
-| **MRR** | 0.30 | Un reranking par cross-encoder est prévu pour l'optimisation. |
+| **Recall@5** | 0.400 | Identifié : les requêtes courtes (< 5 mots) pénalisent le score. |
+| **MRR** | 0.327 |  |
 | **Latence Retrieval** | ~180 ms | Temps moyen d'exécution sur le dataset de test. |
 
 *→ Script d'évaluation reproductible : `python scripts/evaluate_recall.py`*
@@ -68,10 +68,10 @@ Le système d'ingestion (Chunking sémantique) a été évalué sur un *Gold Set
 ---
 ## Limites actuelles : 
 Le pipeline intègre des guardrails déterministes (Regex PII, Injection patterns). Cependant, l'architecture actuelle présente des limites documentées :
-- **Bypass linguistique (Cross-lingual) :** Les filtres d'injection sont actuellement optimisés pour le français et l'anglais via Regex. Ils sont théoriquement vulnérables à des attaques dans des langues moins représentées dans les patterns de sécurité.
+- **Bypass linguistique  :** Les filtres d'injection sont actuellement optimisés pour le français et l'anglais via Regex. Ils sont théoriquement vulnérables à des attaques dans des langues moins représentées dans les patterns de sécurité.
 - **Limites des Regex :** Les Regex ne suffisent pas à capturer l'intention malveillante . 
-  - *Roadmap :* Transition prévue vers une validation via **"LLM-as-a-Judge"** (un modèle séparé qui valide la sortie du premier) pour une détection sémantique plutôt que lexicale.
-## 🚀 Lancer localement
+  - *Roadmap :* Transition prévue vers une validation via **"LLM-as-a-Judge"** pour une détection sémantique plutôt que lexicale.
+## Lancer localement
 
 ```bash
 git clone [https://github.com/nouredine-diallo/Agent-prompt](https://github.com/nouredine-diallo/Agent-prompt)
