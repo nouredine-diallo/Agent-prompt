@@ -5,7 +5,7 @@ import chromadb
 import requests
 
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer,CrossEncoder
 
 from src.prompts.meta_architect_prompt import (
     FEW_SHOT_EXAMPLES,
@@ -15,6 +15,7 @@ from src.prompts.meta_architect_prompt import (
     build_meta_prompt,
     validate_generated_prompt,
 )
+import numpy as np
 
 
 
@@ -33,6 +34,7 @@ LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
 
 
 embedding_model = SentenceTransformer(MODEL)
+reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")  #reranker qui va nous aider a rank les result donner du rag 
 
 chroma_client = chromadb.PersistentClient(path=DB_DIR)
 
@@ -56,24 +58,34 @@ def _normalize_source(meta):
 
 def _retrieve_documents(query_text, k=5):
     """
-    transformer une phrase en vecteurs, analyser chromadb, et ramener les k meilleurs extraits de texte.
+     Retrieval (Chroma) + Cross-Encoder Reranking
     """
-
-    q_emb = embedding_model.encode(
-        [query_text],
-        convert_to_numpy=True,
-    )
-
+    # dans chroma on recherche les 15 meilleurs result
+    q_emb = embedding_model.encode([query_text], convert_to_numpy=True)
     res = collection.query(
         query_embeddings=q_emb.tolist(),
-        n_results=k,
-        include=["documents", "metadatas"],
+        n_results=15, 
+        include=["documents", "metadatas"]
     )
 
     docs = res.get("documents", [[]])[0]
     metas = res.get("metadatas", [[]])[0]
 
-    return docs, metas
+    if not docs:
+        return [], []
+
+    # 2. Reranking avec le cross encoder , pertincne entre question et texte 
+    
+    pairs = [[query_text, doc] for doc in docs]
+    scores = reranker.predict(pairs)
+    
+   #trier les score 
+    best_indices = np.argsort(scores)[::-1][:k]
+
+    final_docs = [docs[i] for i in best_indices]
+    final_metas = [metas[i] for i in best_indices]
+
+    return final_docs, final_metas
 
 
 
@@ -511,24 +523,24 @@ def _fetch_prompt_context(ctx):
     rag_chunks = []
     sources = []
 
+    #traduction en anglais pour match les docs presnet
+    task_en = ctx['task'].replace('résumé', 'summarization').replace('extraction', 'data extraction')
+    format_en = ctx['format']
+    
     queries = [
-        f"techniques de prompt pour {ctx['task']}",
-        f"structurer un prompt pour {ctx['format']}",
+        f"prompt engineering best practices and techniques for {task_en}",
+        f"how to format LLM output generation strictly in {format_en}",
     ]
 
     if ctx.get("security"):
+        #words matching des mots de type securite
         queries.append(
-            "guardrails de sécurité dans les prompts"
+            "LLM security guardrails, prevent prompt injection, jailbreaking defense"
         )
 
     for query in queries:
-        docs, metas = _retrieve_documents(
-            query,
-            k=3,
-        )
-
+        docs, metas = _retrieve_documents(query, k=3)
         rag_chunks.extend(docs)
-
         sources.extend(
             [
                 _normalize_source(meta)
@@ -537,6 +549,7 @@ def _fetch_prompt_context(ctx):
             ]
         )
 
+    
     return rag_chunks, list(dict.fromkeys(sources))
 
 

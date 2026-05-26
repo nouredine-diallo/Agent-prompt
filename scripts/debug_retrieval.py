@@ -1,20 +1,29 @@
 
 #vérifier si tes embeddings sont bons, verifier que les docs sont bon , debug la qualité du rag ( pertinence des result) , affiche les distance 
-
 import sys
 import os
+
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from src.ingestion import model, col as collection
-import json, sys
 
 
-q = sys.argv[1] if len(sys.argv)>1 else "q08's text here"
-k = int(sys.argv[2]) if len(sys.argv)>2 else 10
+from src.agent_core import _retrieve_documents
 
-q_emb = model.encode([q], convert_to_numpy=True)
-res = collection.query(query_embeddings=q_emb.tolist(), n_results=k, include=["documents","metadatas","distances"])
-for i, doc in enumerate(res["documents"][0]):
-    meta = res["metadatas"][0][i]
-    dist = res["distances"][0][i]
-    print(f"RANK {i+1} | dist={dist:.4f} | source={meta.get('title') or meta.get('source')}")
-    print(doc[:500].replace('\n',' ') + "\n---\n")
+q = sys.argv[1] if len(sys.argv)>1 else "prompt injection defense"
+k = int(sys.argv[2]) if len(sys.argv)>2 else 5
+
+print(f"\n- DEBUGGING  RETRIEVAL (Chroma + Cross-Encoder) ")
+print(f"Query: '{q}'\n")
+
+
+docs, metas = _retrieve_documents(q, k=k)
+
+if not docs:
+    print("Aucun document trouvé.")
+    sys.exit()
+
+for i, doc in enumerate(docs):
+    meta = metas[i]
+    source = meta.get('title') or meta.get('source') or "Source Inconnue"
+    print(f"RANK {i+1} | source={source}")
+    print(doc[:300].replace('\n',' ') + "...\n---\n")

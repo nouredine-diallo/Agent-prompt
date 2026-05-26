@@ -1,51 +1,44 @@
 #EVALUE LE RAG 
 #On fait un embedding de query et compare a ce qui est present dans la chromaDB ? 1 = identique 0.8 proche 0.3 eloigne
-
 import argparse
 import os
+import json
 import pandas as pd
-import sys
-
-def lazy_imports():
-    global json, chromadb, np, SentenceTransformer
-    import json
-    import numpy as np
-    from chromadb.config import Settings
-    import chromadb
-    from sentence_transformers import SentenceTransformer
 
 BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-CHROMA_DIR = os.path.join(BASE, "chroma_db")
-EMBED_MODEL = "all-MiniLM-L6-v2"
 
 def load_queries(path):
-    lazy_imports()
     q = []
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
-            obj = json.loads(line)
-            q.append(obj)
+            q.append(json.loads(line))
     return q
 
 def evaluate(queries, k=5):
-    lazy_imports()
-    client = chromadb.PersistentClient(path=CHROMA_DIR)
-    col = client.get_or_create_collection("docs")
-    model = SentenceTransformer(EMBED_MODEL)
+    
+    import sys
+    sys.path.append(BASE)
+    from src.agent_core import _retrieve_documents
+
     total = len(queries)
     hits = 0
     mrr_total = 0.0
+    
+    print(f"Évaluation Hybride RAG sur {total} requêtes...")
+
     for q in queries:
         query = q["query"]
-        expected = q.get("expected", [])
-        q_emb = model.encode([query], convert_to_numpy=True).tolist()
-        res = col.query(query_embeddings=q_emb, n_results=k, include=["metadatas"])
-        ids = res.get("ids", [[]])[0]
-        metas = res.get("metadatas", [[]])[0]
+        
+        expected = q.get("expected") or q.get("expected_sources") or []
+        
+        # CHROMA + RERANKER
+        docs, metas = _retrieve_documents(query, k=k)
+        
         found = False
         rank = None
+        
         for idx, meta in enumerate(metas):
-            src = meta.get("source") or meta.get("title") or ids[idx]
+            src = meta.get("source") or meta.get("title") or ""
             for e in expected:
                 if e in src:
                     found = True
@@ -53,39 +46,23 @@ def evaluate(queries, k=5):
                     break
             if found:
                 break
+                
         if found:
             hits += 1
             mrr_total += 1.0 / rank
-        else:
-            mrr_total += 0.0
+
     recall = hits / total if total>0 else 0.0
     mrr = mrr_total / total if total>0 else 0.0
-    print(f"Queries: {total}, Recall@{k}: {recall:.3f}, MRR: {mrr:.3f}")
+    print(f"\n--- RÉSULTATS HYBRID RAG ---")
+    print(f"Queries: {total}")
+    print(f"Recall@{k}: {recall:.3f}")
+    print(f"MRR: {mrr:.3f}")
     return {"queries": total, "recall": recall, "mrr": mrr}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--queries", type=str, default=None, help="Path to queries JSONL file for embedding-based evaluation.")
-    parser.add_argument("--k", type=int, default=5, help="Top-k for recall evaluation.")
-    parser.add_argument("--csv", type=str, default=None, help="Path to CSV file for summary metrics (benchmarks.csv).")
+    parser.add_argument("--queries", type=str, default="tests/queries_agent_20.jsonl", help="Path to queries JSONL")
+    parser.add_argument("--k", type=int, default=5, help="Top-k for recall evaluation")
     args = parser.parse_args()
 
-
-    # Embedding-based evaluation (if queries provided and not empty string)
-    if args.queries and args.queries.strip():
-        qs = load_queries(args.queries)
-        evaluate(qs, k=args.k)
-
-    # CSV summary metrics (if csv provided)
-    csv_path = args.csv or "metrics/benchmarks.csv"
-    if csv_path and os.path.exists(csv_path):
-        df = pd.read_csv(csv_path)
-        print("--- Résumé Recall/MRR ---")
-        print("Recall@1:", df['recall1'].mean())
-        print("Recall@3:", df['recall3'].mean())
-        print("Recall@5:", df['recall5'].mean())
-        print("MRR:", df['mrr'].mean())
-        print("Fallback rate:", (df['status']!='ok').mean())
-        print("Latence moyenne (ms):", df['latency_ms'].mean())
-    else:
-        print(f"[INFO] CSV file not found or not provided: {csv_path}. Skipping summary metrics.")
+    evaluate(load_queries(args.queries), k=args.k)

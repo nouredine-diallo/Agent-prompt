@@ -31,13 +31,15 @@ nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 
+
+
 # Config
 SRC_MAP = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "source_map.json")
 MODEL = "all-MiniLM-L6-v2"
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "chroma_db")
 DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "txt")
-CHUNK_SIZE = 200  # words
-OVERLAP = 50
+CHUNK_SIZE = 250
+OVERLAP = 100
 
 # Init
 try:
