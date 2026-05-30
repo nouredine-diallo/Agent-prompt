@@ -1,6 +1,6 @@
 # Étape 4 — API & Interface
 
-Ajout d’une API FastAPI et d’une interface Streamlit pour tester le pipeline RAG localement avec Ollama.
+Ajout d’une API FastAPI et d’une interface Streamlit pour tester le pipeline RAG 
 
 ## Ce qui a été mis en place
 
@@ -17,9 +17,3 @@ Ajout d’une API FastAPI et d’une interface Streamlit pour tester le pipeline
 - Test UI → requête → affichage réponse
 - Vérification des erreurs dans les logs
 
-## Points à améliorer
-
-- Ajouter authentification et rate limiting
-- Réduire la latence des réponses
-- Ajouter Docker et CI
-- Améliorer le monitoring des erreurs

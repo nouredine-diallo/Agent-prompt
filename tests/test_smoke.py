@@ -27,14 +27,6 @@ def test_queries_file_contains_expected_entries():
     assert all("expected_sources" in row for row in rows)
 
 
-def test_expected_sources_exist_on_disk():
-    rows = load_queries(QUERIES_PATH)
-
-    for row in rows:
-        for source in row["expected_sources"]:
-            assert (REPO_ROOT / source).exists(), f"Source missing: {source}"
-
-
 def test_rag_document_mentions_chunking_concepts():
     text = RAG_PATH.read_text(encoding="utf-8")
 

@@ -5,11 +5,7 @@ import sys
 import nltk
 import chromadb
 from typing import List
-try:
-    from langdetect import detect
-except ImportError:
-    def detect(text):
-        return "und"
+
 from datetime import datetime
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
@@ -126,11 +122,7 @@ def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = O
             
             ids.append(doc_id)
             
-            # Detect language 
-            try:
-                lang = detect(chunk)
-            except:
-                lang = "und"
+            
             
             meta = {
                 "source": fpath,
@@ -139,7 +131,7 @@ def ingest(src_dir: str = DOCS_DIR, chunk_sz: int = CHUNK_SIZE, overlap: int = O
                 "ingested_at": datetime.utcnow().isoformat(),
                 "source_url": meta_info.get("source_url", ""),
                 "original_filename": meta_info.get("original_file", ""),
-                "language": lang,
+                "language": "und",
                 "author": meta_info.get("author", "")
             }
             metas.append(meta)

@@ -1,3 +1,7 @@
+from pydantic import BaseModel, ValidationError
+from typing import List, Optional
+import json
+import re
 """
 Chain-of-Thought 
 
@@ -13,6 +17,10 @@ la génération de prompts  basés sur le RAG.
 
 # SYSTEM PROMPT
 
+class LLMPayloadSchema(BaseModel):
+    prompt_final: str
+    sources_rag: List[str]
+    reasoning_steps: Optional[List[str]] = None
 
 SYSTEM_PROMPT = """
 RÔLE : Tu es un expert en Prompt engineering.
@@ -188,106 +196,59 @@ def build_meta_prompt(user_objective: str, rag_context: str = "") -> str:
 
 
 
-# VALIDATION DU PROMPT GÉNÉRÉ ( CODER PAR L HUMAIN )
-
+# VALIDATION DU PROMPT GÉNÉRÉ 
 
 def validate_generated_prompt(prompt: str) -> dict:
     """
-    Valide que le prompt généré respecte les contraintes de sécurité.
-    
-    Processus de validation en 3 étapes :
-    1. Test du format (JSON valide )
-    2. Test du contenu verfie si le formulaire retourné est valide ou pas 
-    3. Test de sécurité (PII détectées )
-    
-    Args:
-        prompt: Le prompt à valider (doit être un JSON string)
-        
-    Returns:
-        dict avec {valid: bool, errors: list, warnings: list}
+    Valide que le prompt généré respecte la structure Pydantic et les PII.
     """
-    import json
-    import re
-    
     errors = []
     warnings = []
     
-    # TEST DU FORMAT JSON
+    # 1. TEST DU FORMAT JSON ET STRUCTURE VIA PYDANTIC (Remplace json.loads et les IF)
     try:
-        # Essayer de charger le JSON
-        prompt_obj = json.loads(prompt)
-    except json.JSONDecodeError as e:
-        # Filet de sécurité : le JSON est cassé
-        errors.append(f"Format JSON invalide : {str(e)}")
+        # model_validate_json valide la syntaxe JSON et les types en une seule passe
+        prompt_obj = LLMPayloadSchema.model_validate_json(prompt)
+        prompt_text = prompt_obj.prompt_final
+    except ValidationError as e:
+        errors.append(f"Erreur de validation Pydantic (Structure incorrecte) : {str(e)}")
         return {"valid": False, "errors": errors, "warnings": warnings}
     except Exception as e:
-        errors.append(f"Erreur inattendue lors du parsing JSON : {str(e)}")
+        errors.append(f"Format JSON invalide ou illisible : {str(e)}")
+        return {"valid": False, "errors": errors, "warnings": warnings}
+        
+    if not prompt_text.strip():
+        errors.append("Le champ 'prompt_final' est vide")
         return {"valid": False, "errors": errors, "warnings": warnings}
     
-    #TEST DU CONTENU 
-    required_keys = ["prompt_final", "sources_rag"]
-    for key in required_keys:
-        if key not in prompt_obj:
-            errors.append(f"Clé requise manquante : '{key}'")
-    
-    # Vérifications optionnelles
-    if "reasoning_steps" not in prompt_obj:
-        warnings.append("Clé optionnelle 'reasoning_steps' absente (recommandée pour traçabilité)")
-    
-    # Vérifier que prompt_final n'est pas vide
-    if "prompt_final" in prompt_obj:
-        if not prompt_obj["prompt_final"] or not prompt_obj["prompt_final"].strip():
-            errors.append("Le champ 'prompt_final' est vide")
-    
-    # Vérifier que sources_rag est une liste
-    if "sources_rag" in prompt_obj:
-        if not isinstance(prompt_obj["sources_rag"], list):
-            errors.append("Le champ 'sources_rag' doit être une liste")
-    
-    # TEST DE SÉCURITÉ PII détectées ?
-    # Récupérer le texte brut du prompt_final pour analyse sécurité
-    prompt_text = prompt_obj.get("prompt_final", "")
-    
+    # 2. TEST DE SÉCURITÉ PII STRICT (Regex ciblées sur la sortie)
     # Détection PII - Emails
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     if re.search(email_pattern, prompt_text):
-        # Vérifier si c'est un exemple masqué (autorisé) ou une vraie adresse
         if not re.search(r'j\*\*\*@example\.com|example@example\.com|user@example\.com', prompt_text):
-            warnings.append("Email détecté dans le prompt (potentiel PII). Vérifier si c'est un exemple ou une vraie adresse.")
-    
+            warnings.append("Email détecté dans le prompt (potentiel PII). Vérifier si c'est un exemple.")
+            
     # Détection PII - SSN (format XXX-XX-XXXX)
     ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
     if re.search(ssn_pattern, prompt_text):
         errors.append("SSN (Social Security Number) détecté dans le prompt - PII INTERDIT")
-    
-    # Détection PII - Numéros de téléphone français (format 06 XX XX XX XX ou +33...)
+        
+    # Détection PII - Numéros de téléphone français
     phone_pattern = r'\b(?:\+33|0)[1-9](?:\s?\d{2}){4}\b'
     if re.search(phone_pattern, prompt_text):
         warnings.append("Numéro de téléphone détecté dans le prompt (potentiel PII)")
-    
-    # Détection PII - Cartes bancaires (16 chiffres groupés)
+        
+    # Détection PII - Cartes bancaires
     card_pattern = r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b'
     if re.search(card_pattern, prompt_text):
         errors.append("Numéro de carte bancaire détecté dans le prompt - PII INTERDIT")
-    
-    # Détection de code exécutable (mots-clés dangereux)
+        
+    # Détection de code exécutable
     dangerous_keywords = ["exec(", "eval(", "import os", "subprocess", "__import__", "system("]
     for keyword in dangerous_keywords:
         if keyword in prompt_text:
-            errors.append(f"Code exécutable détecté ('{keyword}') - INTERDIT par SECURITY_GUARDRAILS")
-    
-    # Détection d'injection de prompt (tentatives de bypass)
-    injection_patterns = [
-        r'ignore\s+(?:previous|all)\s+instructions',
-        r'forget\s+(?:your|the)\s+instructions',
-        r'you\s+are\s+now',
-        r'disregard\s+(?:all|previous)'
-    ]
-    for pattern in injection_patterns:
-        if re.search(pattern, prompt_text, re.IGNORECASE):
-            warnings.append(f"Tentative d'injection de prompt détectée (pattern: '{pattern}')")
-    
-    # RÉSULTAT FINAL
+            errors.append(f"Code exécutable détecté ('{keyword}') - INTERDIT")
+            
     valid = len(errors) == 0
     
     return {

@@ -518,22 +518,19 @@ Suis précisément le format demandé.
 
 
 #RAG CONTEXT 
-#Construire un contexte t pour le LLM en lançant plusieurs recherches très ciblées.Multi-Query Retrieval
+
 def _fetch_prompt_context(ctx):
     rag_chunks = []
     sources = []
 
-    #traduction en anglais pour match les docs presnet
-    task_en = ctx['task'].replace('résumé', 'summarization').replace('extraction', 'data extraction')
-    format_en = ctx['format']
     
     queries = [
-        f"prompt engineering best practices and techniques for {task_en}",
-        f"how to format LLM output generation strictly in {format_en}",
+        f"prompt engineering best practices for {ctx['target']}",
+        f"how to format LLM output strictly in {ctx['format']}",
     ]
 
     if ctx.get("security"):
-        #words matching des mots de type securite
+        #on match les mots type securité
         queries.append(
             "LLM security guardrails, prevent prompt injection, jailbreaking defense"
         )
@@ -657,14 +654,3 @@ def generate_prompt_with_metadata(
 
 
 
-def generer_meta_prompt(
-    goal: str,
-    max_retries: int = 2,
-) -> str:
-    """
-    Recupere le prompt generer de l'etape precedente 
-    """
-
-    result = generate_prompt_with_metadata(goal)
-
-    return result["prompt"]

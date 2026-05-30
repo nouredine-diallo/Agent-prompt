@@ -3,7 +3,7 @@
 import argparse
 import os
 import json
-import pandas as pd
+
 
 BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 

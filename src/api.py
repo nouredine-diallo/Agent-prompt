@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
 
-# Importation sécurisée
+# Pythonpath pour execution direct
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.agent_core import generate_prompt_with_metadata
 
