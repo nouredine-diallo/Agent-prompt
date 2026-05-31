@@ -7,14 +7,12 @@ sdk: streamlit
 app_file: src/ui_streamlit.py
 pinned: false
 ---
-# Agent-Prompt : Générateur de Prompts Sécurisé RAG 
+# Agent-Prompt : Générateur de Prompts Sécurisé venant d'un RAG 
 
-> Pipeline RAG utilisant  un LLM pour générer des prompts structurés à partir de documentations techniques sur le prompt eengerring (ArXiv, GitHub). 
+Pipeline orienté Data/Backend permettant de générer des System Prompts stricts et sécurisés pour l'extraction de données, basés sur les pratiques de Prompt Engineering (ArXiv, GitHub).
 
-##  À quoi sert ce projet ?
-Les LLMs génèrent souvent des prompts vagues ou  de manière aléatoire. Ce projet résout ce problème en :
-1. Récupérant les meilleures pratiques de Prompt Engineering via recherche vectorielle.
-2. Forçant le LLM à générer un prompt structuré  basé sur ces pratiques( structuré , limitant les hallucination , mettre en place des procédures de sécurités ...)
+Le problème : Les LLMs hallucine ,respectent pas forcément les consignes ...
+La solution : Un outil qui force le LLM à respecter un certain schema  strict via RAG, Pydantic et Guardrails. 
 
 ---
 * [Tester la Démo Live sur Hugging Face Spaces](https://huggingface.co/spaces/Land248/Agent-prompt)**
@@ -22,20 +20,12 @@ Les LLMs génèrent souvent des prompts vagues ou  de manière aléatoire. Ce pr
 *(Note : Si l'application affiche une erreur de quota API Groq, vous pouvez entrer votre propre clé API dans le menu de l'application pour la tester en illimité).*
 
 --- 
----
 
-## Démonstration 
-
-[[Demo](https://github.com/user-attachments/assets/e476c117-6402-4539-8faa-aad20c8ff8f5)]
-
-*Le pipeline extrait les bonnes pratiques depuis ChromaDB(RAG), construit la structure, vérifie la sécurité (Guardrails), et force une sortie JSON via Llama 3.1.*
-
----
 
 ## Fonctionnalités
-- **Structured Output  :** Utilisation de l'API Groq (Llama 3.1) avec une validation stricte du format JSON via **Pydantic V** (`model_validate_json`).
-- **Guardrails  :** Validation post-génération par Regex . Le systeme bloque la génération du LLM si il y a des données sensible non autorisées (Cartes bancaires, SSN).
-- **Fallback:** Si le LLM échoue, timeout, ou génère du PII, le système ne crash pas. Il bascule automatiquement sur un mode `fallback_template` déterministe pour garantir la continuité de service.
+- **Structured Output  :** Validation stricte des entrées/sorties avec Pydantic (model_validate_json). 
+- **Guardrails  :**Le système bloque la sortie si des données sensibles non autorisées (Cartes bancaires, SSN) sont générées ->utilisation du fallback
+- **Fallback:** Si le LLM échoue, timeout, ou génère du PII, le système ne crash pas. Il switch automatiquement sur un mode `fallback_template` 
 
 ---
 
@@ -56,7 +46,7 @@ Le système d'ingestion (Chunking sémantique) a été évalué sur un *Gold Set
 ---
 
 ## Stack Technique
-- **Orchestration LLM :** API Groq (Llama 3.1)
+- **LLM :** API Groq (Llama 3.1)
 - **Data & RAG :** ChromaDB, SentenceTransformers (`all-MiniLM-L6-v2`)
 - **Backend & UI :** Python, FastAPI, Streamlit
 - **Qualité :** Validation JSON stricte, Tests unitaires (Pytest)
@@ -66,11 +56,11 @@ Le système d'ingestion (Chunking sémantique) a été évalué sur un *Gold Set
 ---
 ## Limites Actuelles & Sécurité
 
-- **Bypass linguistique :** Les filtres sont actuellement optimisés via Regex. Ils sont vulnérables à des bypass sémantiques ou multilingues.
+- **Bypass linguistique :** Les filtres sont verifier grace a Regex . Mais ils sont vulnérables à des bypass sémantiques ou multilingues.
 - **Limites des Regex :** Les Regex ne suffisent pas à capturer l'intention malveillante (ex: Prompt Injection en entrée). 
   - *Roadmap Sécurité :* Transition possible/prévue vers l'intégration d'un  **"LLM-as-a-Judge"**  pour une détection sémantique complète.
  
-## Ameliorations & Peer Review
+## Ameliorations & Avis de dev 
 
 Suite à une revue de code externe par des développeurs Data/Backend seniors, le score de base actuel de la DB vectorielle (Recall@5 = 0.400) a mis en évidence des axes d'amélioration critiques . Voici les ameliorations proposées : 
 
